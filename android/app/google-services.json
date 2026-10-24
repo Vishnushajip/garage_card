@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "62265849009",
+    "project_id": "garage-b7ed1",
+    "storage_bucket": "garage-b7ed1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:62265849009:android:915daf797a14e885621e90",
+        "android_client_info": {
+          "package_name": "com.garagecard.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAD9PjSN7lU28SkjJYI9cZqSLt4JS5OOY8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
