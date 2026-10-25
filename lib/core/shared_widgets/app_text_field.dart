@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import '../colors/app_colors.dart';
 import '../fonts/app_fonts.dart';
 
@@ -73,10 +74,12 @@ class _AppTextFieldState extends State<AppTextField> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final fillBg = isDark ? AppColors.inputFillDark : AppColors.inputFillLight;
     final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
 
@@ -127,7 +130,9 @@ class _AppTextFieldState extends State<AppTextField> {
           style: AppFonts.bodyLarge(color: primaryTextColor),
           decoration: InputDecoration(
             filled: true,
-            fillColor: widget.enabled ? fillBg : borderColor.withValues(alpha: 0.3),
+            fillColor: widget.enabled
+                ? fillBg
+                : borderColor.withValues(alpha: 0.3),
             hintText: widget.hint,
             hintStyle: AppFonts.bodyMedium(color: secondaryTextColor),
             helperText: widget.helperText,
@@ -172,17 +177,11 @@ class _AppTextFieldState extends State<AppTextField> {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.error,
-                width: 1.4,
-              ),
+              borderSide: const BorderSide(color: AppColors.error, width: 1.4),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.error,
-                width: 1.8,
-              ),
+              borderSide: const BorderSide(color: AppColors.error, width: 1.8),
             ),
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

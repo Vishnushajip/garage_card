@@ -25,8 +25,10 @@ void main() {
       expect(firestoreMap['uid'], 'user_123');
       expect(firestoreMap['role'], 'merchant');
 
-      final reconstructed =
-          UserProfileModel.fromFirestore(firestoreMap, 'user_123');
+      final reconstructed = UserProfileModel.fromFirestore(
+        firestoreMap,
+        'user_123',
+      );
       expect(reconstructed.email, 'test@example.com');
       expect(reconstructed.garageId, 'garage_1');
     });

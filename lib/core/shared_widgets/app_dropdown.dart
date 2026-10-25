@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../colors/app_colors.dart';
 import '../fonts/app_fonts.dart';
 
@@ -48,10 +49,12 @@ class AppDropdown<T> extends StatelessWidget {
     if (!enabled || isLoading) return;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final modalBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     showModalBottomSheet<void>(
@@ -119,7 +122,8 @@ class AppDropdown<T> extends StatelessWidget {
                     child: ListView.separated(
                       shrinkWrap: true,
                       itemCount: items.length,
-                      separatorBuilder: (context, index) => const Divider(height: 1),
+                      separatorBuilder: (context, index) =>
+                          const Divider(height: 1),
                       itemBuilder: (ctx, index) {
                         final item = items[index];
                         final isSelected = item.value == value;
@@ -132,15 +136,16 @@ class AppDropdown<T> extends StatelessWidget {
                           leading: item.icon,
                           title: Text(
                             item.title,
-                            style: AppFonts.bodyLarge(
-                              color: isSelected
-                                  ? AppColors.accentBlue
-                                  : primaryTextColor,
-                            ).copyWith(
-                              fontWeight: isSelected
-                                  ? FontWeight.w700
-                                  : FontWeight.w400,
-                            ),
+                            style:
+                                AppFonts.bodyLarge(
+                                  color: isSelected
+                                      ? AppColors.accentBlue
+                                      : primaryTextColor,
+                                ).copyWith(
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w400,
+                                ),
                           ),
                           subtitle: item.subtitle != null
                               ? Text(
@@ -173,19 +178,21 @@ class AppDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final fillBg = isDark ? AppColors.inputFillDark : AppColors.inputFillLight;
     final borderColor = errorText != null
         ? AppColors.error
         : (isDark ? AppColors.borderDark : AppColors.borderLight);
 
     final selectedItem = items.cast<AppDropdownItem<T>?>().firstWhere(
-          (element) => element?.value == value,
-          orElse: () => null,
-        );
+      (element) => element?.value == value,
+      orElse: () => null,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,10 +202,7 @@ class AppDropdown<T> extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                label!,
-                style: AppFonts.labelLarge(color: primaryTextColor),
-              ),
+              Text(label!, style: AppFonts.labelLarge(color: primaryTextColor)),
               if (required) ...[
                 const SizedBox(width: 4),
                 const Text(
@@ -214,7 +218,9 @@ class AppDropdown<T> extends StatelessWidget {
           const SizedBox(height: 6),
         ],
         InkWell(
-          onTap: enabled && !isLoading ? () => _showSelectionModal(context) : null,
+          onTap: enabled && !isLoading
+              ? () => _showSelectionModal(context)
+              : null,
           borderRadius: BorderRadius.circular(12),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

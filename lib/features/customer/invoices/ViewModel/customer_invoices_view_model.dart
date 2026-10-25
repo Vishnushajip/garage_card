@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/customer_invoices_state.dart';
 
 class CustomerInvoicesViewModel extends Notifier<CustomerInvoicesState> {
@@ -33,5 +34,5 @@ class CustomerInvoicesViewModel extends Notifier<CustomerInvoicesState> {
 
 final customerInvoicesViewModelProvider =
     NotifierProvider<CustomerInvoicesViewModel, CustomerInvoicesState>(
-  CustomerInvoicesViewModel.new,
-);
+      CustomerInvoicesViewModel.new,
+    );

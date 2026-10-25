@@ -5,6 +5,7 @@ import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
+
 import '../Model/daily_todo_item_model.dart';
 import '../Model/financial_metrics_model.dart';
 import '../Model/merchant_analytics_state.dart';
@@ -29,8 +30,12 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
       final payments = await repo.getPayments(garageId: garageId, limit: 100);
 
       final now = DateTime.now();
-      final dateRange = _calculateDateRange(state.selectedRange, now,
-          state.customStartDate, state.customEndDate);
+      final dateRange = _calculateDateRange(
+        state.selectedRange,
+        now,
+        state.customStartDate,
+        state.customEndDate,
+      );
 
       final metrics = _calculateFinancialMetrics(
         invoices: invoices,
@@ -42,7 +47,11 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
         now: now,
       );
 
-      final todoData = _buildDailyTodoAndPipeline(jobs: jobs, invoices: invoices, now: now);
+      final todoData = _buildDailyTodoAndPipeline(
+        jobs: jobs,
+        invoices: invoices,
+        now: now,
+      );
 
       final shouldShowBriefing = await _checkAndTriggerMorningBriefing(
         now: now,
@@ -78,7 +87,9 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
         return (todayStart, todayEnd);
       case AnalyticsTimeRange.thisWeek:
         final monday = todayStart.subtract(Duration(days: now.weekday - 1));
-        final sunday = monday.add(const Duration(days: 6, hours: 23, minutes: 59, seconds: 59));
+        final sunday = monday.add(
+          const Duration(days: 6, hours: 23, minutes: 59, seconds: 59),
+        );
         return (monday, sunday);
       case AnalyticsTimeRange.thisMonth:
         final firstDay = DateTime(now.year, now.month, 1);
@@ -89,7 +100,8 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
         final lastDay = DateTime(now.year, 12, 31, 23, 59, 59);
         return (firstDay, lastDay);
       case AnalyticsTimeRange.custom:
-        final start = customStart ?? todayStart.subtract(const Duration(days: 7));
+        final start =
+            customStart ?? todayStart.subtract(const Duration(days: 7));
         final end = customEnd ?? todayEnd;
         return (start, end);
     }
@@ -149,12 +161,15 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
           date.isBefore(end.add(const Duration(seconds: 1)));
     }).toList();
 
-    final completedCount =
-        filteredJobs.where((j) => j.status == 'completed').length;
-    final inProgressCount =
-        filteredJobs.where((j) => j.status == 'inProgress').length;
-    final readyCount =
-        filteredJobs.where((j) => j.status == 'readyForCollection').length;
+    final completedCount = filteredJobs
+        .where((j) => j.status == 'completed')
+        .length;
+    final inProgressCount = filteredJobs
+        .where((j) => j.status == 'inProgress')
+        .length;
+    final readyCount = filteredJobs
+        .where((j) => j.status == 'readyForCollection')
+        .length;
     final newCount = filteredJobs.where((j) => j.status == 'received').length;
 
     final chartPoints = _buildChartDataPoints(range, filteredInvoices, now);
@@ -190,69 +205,194 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
     if (range == AnalyticsTimeRange.today) {
       return [
         const ChartDataPoint(
-            label: '9 AM', billed: 1200, collected: 1200, cost: 700, profit: 500),
+          label: '9 AM',
+          billed: 1200,
+          collected: 1200,
+          cost: 700,
+          profit: 500,
+        ),
         const ChartDataPoint(
-            label: '12 PM', billed: 2500, collected: 2300, cost: 1300, profit: 1000),
+          label: '12 PM',
+          billed: 2500,
+          collected: 2300,
+          cost: 1300,
+          profit: 1000,
+        ),
         const ChartDataPoint(
-            label: '3 PM', billed: 4600, collected: 2000, cost: 2600, profit: -600),
+          label: '3 PM',
+          billed: 4600,
+          collected: 2000,
+          cost: 2600,
+          profit: -600,
+        ),
         const ChartDataPoint(
-            label: '6 PM', billed: 1800, collected: 1800, cost: 950, profit: 850),
+          label: '6 PM',
+          billed: 1800,
+          collected: 1800,
+          cost: 950,
+          profit: 850,
+        ),
       ];
     }
 
     if (range == AnalyticsTimeRange.thisWeek) {
       return [
         const ChartDataPoint(
-            label: 'Mon', billed: 4200, collected: 4200, cost: 2200, profit: 2000),
+          label: 'Mon',
+          billed: 4200,
+          collected: 4200,
+          cost: 2200,
+          profit: 2000,
+        ),
         const ChartDataPoint(
-            label: 'Tue', billed: 6100, collected: 5500, cost: 3100, profit: 2400),
+          label: 'Tue',
+          billed: 6100,
+          collected: 5500,
+          cost: 3100,
+          profit: 2400,
+        ),
         const ChartDataPoint(
-            label: 'Wed', billed: 8500, collected: 8150, cost: 4400, profit: 3750),
+          label: 'Wed',
+          billed: 8500,
+          collected: 8150,
+          cost: 4400,
+          profit: 3750,
+        ),
         const ChartDataPoint(
-            label: 'Thu', billed: 3800, collected: 3800, cost: 2100, profit: 1700),
+          label: 'Thu',
+          billed: 3800,
+          collected: 3800,
+          cost: 2100,
+          profit: 1700,
+        ),
         const ChartDataPoint(
-            label: 'Fri', billed: 1800, collected: 1800, cost: 900, profit: 900),
+          label: 'Fri',
+          billed: 1800,
+          collected: 1800,
+          cost: 900,
+          profit: 900,
+        ),
         const ChartDataPoint(
-            label: 'Sat', billed: 7100, collected: 4300, cost: 3900, profit: 400),
+          label: 'Sat',
+          billed: 7100,
+          collected: 4300,
+          cost: 3900,
+          profit: 400,
+        ),
         const ChartDataPoint(
-            label: 'Sun', billed: 0, collected: 0, cost: 0, profit: 0),
+          label: 'Sun',
+          billed: 0,
+          collected: 0,
+          cost: 0,
+          profit: 0,
+        ),
       ];
     }
 
     if (range == AnalyticsTimeRange.thisYear) {
       return [
         const ChartDataPoint(
-            label: 'Jan', billed: 48000, collected: 46000, cost: 26000, profit: 20000),
+          label: 'Jan',
+          billed: 48000,
+          collected: 46000,
+          cost: 26000,
+          profit: 20000,
+        ),
         const ChartDataPoint(
-            label: 'Feb', billed: 52000, collected: 49000, cost: 28000, profit: 21000),
+          label: 'Feb',
+          billed: 52000,
+          collected: 49000,
+          cost: 28000,
+          profit: 21000,
+        ),
         const ChartDataPoint(
-            label: 'Mar', billed: 68000, collected: 64000, cost: 34000, profit: 30000),
+          label: 'Mar',
+          billed: 68000,
+          collected: 64000,
+          cost: 34000,
+          profit: 30000,
+        ),
         const ChartDataPoint(
-            label: 'Apr', billed: 61000, collected: 59000, cost: 31000, profit: 28000),
+          label: 'Apr',
+          billed: 61000,
+          collected: 59000,
+          cost: 31000,
+          profit: 28000,
+        ),
         const ChartDataPoint(
-            label: 'May', billed: 57000, collected: 54000, cost: 29000, profit: 25000),
+          label: 'May',
+          billed: 57000,
+          collected: 54000,
+          cost: 29000,
+          profit: 25000,
+        ),
         const ChartDataPoint(
-            label: 'Jun', billed: 73000, collected: 70000, cost: 37000, profit: 33000),
+          label: 'Jun',
+          billed: 73000,
+          collected: 70000,
+          cost: 37000,
+          profit: 33000,
+        ),
         const ChartDataPoint(
-            label: 'Jul', billed: 69000, collected: 66000, cost: 35000, profit: 31000),
+          label: 'Jul',
+          billed: 69000,
+          collected: 66000,
+          cost: 35000,
+          profit: 31000,
+        ),
         const ChartDataPoint(
-            label: 'Aug', billed: 82000, collected: 78000, cost: 41000, profit: 37000),
+          label: 'Aug',
+          billed: 82000,
+          collected: 78000,
+          cost: 41000,
+          profit: 37000,
+        ),
         const ChartDataPoint(
-            label: 'Sep', billed: 88000, collected: 84000, cost: 45000, profit: 39000),
+          label: 'Sep',
+          billed: 88000,
+          collected: 84000,
+          cost: 45000,
+          profit: 39000,
+        ),
         const ChartDataPoint(
-            label: 'Oct', billed: 45000, collected: 39950, cost: 23200, profit: 16750),
+          label: 'Oct',
+          billed: 45000,
+          collected: 39950,
+          cost: 23200,
+          profit: 16750,
+        ),
       ];
     }
 
     return [
       const ChartDataPoint(
-          label: 'Week 1', billed: 18500, collected: 17200, cost: 9800, profit: 7400),
+        label: 'Week 1',
+        billed: 18500,
+        collected: 17200,
+        cost: 9800,
+        profit: 7400,
+      ),
       const ChartDataPoint(
-          label: 'Week 2', billed: 22400, collected: 21800, cost: 11600, profit: 10200),
+        label: 'Week 2',
+        billed: 22400,
+        collected: 21800,
+        cost: 11600,
+        profit: 10200,
+      ),
       const ChartDataPoint(
-          label: 'Week 3', billed: 19800, collected: 18900, cost: 10400, profit: 8500),
+        label: 'Week 3',
+        billed: 19800,
+        collected: 18900,
+        cost: 10400,
+        profit: 8500,
+      ),
       const ChartDataPoint(
-          label: 'Week 4', billed: 16000, collected: 12250, cost: 8900, profit: 3350),
+        label: 'Week 4',
+        billed: 16000,
+        collected: 12250,
+        cost: 8900,
+        profit: 3350,
+      ),
     ];
   }
 
@@ -271,8 +411,11 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
 
     for (final job in jobs) {
       if (job.completedDate != null) {
-        final comp = DateTime(job.completedDate!.year, job.completedDate!.month,
-            job.completedDate!.day);
+        final comp = DateTime(
+          job.completedDate!.year,
+          job.completedDate!.month,
+          job.completedDate!.day,
+        );
         if (comp == yesterday) {
           yesterdayCompleted++;
           items.add(
@@ -284,7 +427,8 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
               customerPhone: '+91 98460 77112',
               type: TodoItemType.completedYesterday,
               title: '${job.vehicleDisplay} Completed Yesterday',
-              subtitle: 'Technician: ${job.technicianName} • Ready for final feedback',
+              subtitle:
+                  'Technician: ${job.technicianName} • Ready for final feedback',
               isDone: true,
             ),
           );
@@ -292,8 +436,11 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
       }
 
       if (job.status != 'completed' && job.status != 'closed') {
-        final isDueToday = job.estimatedCompletionDate != null &&
-            (job.estimatedCompletionDate!.isBefore(now.add(const Duration(hours: 12))) ||
+        final isDueToday =
+            job.estimatedCompletionDate != null &&
+            (job.estimatedCompletionDate!.isBefore(
+                  now.add(const Duration(hours: 12)),
+                ) ||
                 job.status == 'readyForCollection');
 
         if (isDueToday) {
@@ -330,7 +477,8 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
             customerPhone: '+91 98460 77112',
             type: TodoItemType.paymentDue,
             title: 'Collect Balance Due: ₹${inv.balanceDue.toStringAsFixed(0)}',
-            subtitle: 'Total Billed: ₹${inv.totalAmount.toStringAsFixed(0)} • Paid: ₹${inv.paidAmount.toStringAsFixed(0)}',
+            subtitle:
+                'Total Billed: ₹${inv.totalAmount.toStringAsFixed(0)} • Paid: ₹${inv.paidAmount.toStringAsFixed(0)}',
             amount: inv.balanceDue,
             isDone: false,
           ),
@@ -425,8 +573,7 @@ class _TodoBuildResult {
   final int pendingDues;
 }
 
-
 final merchantAnalyticsViewModelProvider =
     NotifierProvider<MerchantAnalyticsViewModel, MerchantAnalyticsState>(() {
-  return MerchantAnalyticsViewModel();
-});
+      return MerchantAnalyticsViewModel();
+    });

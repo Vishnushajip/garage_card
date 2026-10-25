@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
+
 import '../Model/financial_metrics_model.dart';
 
 class ProfitLossCard extends StatelessWidget {
-  const ProfitLossCard({
-    super.key,
-    required this.metrics,
-  });
+  const ProfitLossCard({super.key, required this.metrics});
 
   final FinancialMetricsModel metrics;
 
@@ -68,26 +66,24 @@ class ProfitLossCard extends StatelessWidget {
                         ),
                         Text(
                           '${isProfit ? "+" : ""}${CurrencyFormatter.format(metrics.netProfit, currencyCode: metrics.currencyCode)}',
-                          style: AppFonts.displayMedium(
-                            color: statusColor,
-                          ),
+                          style: AppFonts.displayMedium(color: statusColor),
                         ),
                       ],
                     ),
                   ],
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     '${metrics.profitMargin.toStringAsFixed(1)}% Margin',
-                    style: AppFonts.labelSmall(
-                      color: statusColor,
-                    ),
+                    style: AppFonts.labelSmall(color: statusColor),
                   ),
                 ),
               ],
@@ -102,8 +98,10 @@ class ProfitLossCard extends StatelessWidget {
                 _buildMetricItem(
                   context,
                   label: 'Gross Billed',
-                  value: CurrencyFormatter.format(metrics.grossBilled,
-                      currencyCode: metrics.currencyCode),
+                  value: CurrencyFormatter.format(
+                    metrics.grossBilled,
+                    currencyCode: metrics.currencyCode,
+                  ),
                   color: AppColors.accentBlue,
                 ),
                 _buildMetricItem(
@@ -116,8 +114,10 @@ class ProfitLossCard extends StatelessWidget {
                 _buildMetricItem(
                   context,
                   label: 'Net Billed',
-                  value: CurrencyFormatter.format(metrics.netBilled,
-                      currencyCode: metrics.currencyCode),
+                  value: CurrencyFormatter.format(
+                    metrics.netBilled,
+                    currencyCode: metrics.currencyCode,
+                  ),
                   color: isDark
                       ? AppColors.textPrimaryDark
                       : AppColors.textPrimaryLight,
@@ -125,15 +125,19 @@ class ProfitLossCard extends StatelessWidget {
                 _buildMetricItem(
                   context,
                   label: 'Actual Collected',
-                  value: CurrencyFormatter.format(metrics.totalCollected,
-                      currencyCode: metrics.currencyCode),
+                  value: CurrencyFormatter.format(
+                    metrics.totalCollected,
+                    currencyCode: metrics.currencyCode,
+                  ),
                   color: AppColors.success,
                 ),
                 _buildMetricItem(
                   context,
                   label: 'Estimated Costs (Parts+Labor)',
-                  value: CurrencyFormatter.format(metrics.totalCost,
-                      currencyCode: metrics.currencyCode),
+                  value: CurrencyFormatter.format(
+                    metrics.totalCost,
+                    currencyCode: metrics.currencyCode,
+                  ),
                   color: isDark
                       ? AppColors.textSecondaryDark
                       : AppColors.textSecondaryLight,
@@ -141,8 +145,10 @@ class ProfitLossCard extends StatelessWidget {
                 _buildMetricItem(
                   context,
                   label: 'Uncollected Receivables',
-                  value: CurrencyFormatter.format(metrics.pendingBalance,
-                      currencyCode: metrics.currencyCode),
+                  value: CurrencyFormatter.format(
+                    metrics.pendingBalance,
+                    currencyCode: metrics.currencyCode,
+                  ),
                   color: AppColors.error,
                 ),
               ],

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/customer_jobs_state.dart';
 
 class CustomerJobsViewModel extends Notifier<CustomerJobsState> {
@@ -12,7 +13,9 @@ class CustomerJobsViewModel extends Notifier<CustomerJobsState> {
   Future<void> _loadJobs() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final list = await ref.read(garageRepositoryProvider).getServiceJobs(
+      final list = await ref
+          .read(garageRepositoryProvider)
+          .getServiceJobs(
             customerId: 'cust_demo_1',
             status: state.filterStatus,
           );
@@ -25,15 +28,16 @@ class CustomerJobsViewModel extends Notifier<CustomerJobsState> {
   Future<void> loadJobDetail(String jobId) async {
     state = state.copyWith(isLoadingDetail: true);
     try {
-      final jobs = await ref.read(garageRepositoryProvider).getServiceJobs(
-            customerId: 'cust_demo_1',
-          );
+      final jobs = await ref
+          .read(garageRepositoryProvider)
+          .getServiceJobs(customerId: 'cust_demo_1');
       final job = jobs.cast().firstWhere(
-            (j) => j.id == jobId,
-            orElse: () => null,
-          );
-      final history =
-          await ref.read(garageRepositoryProvider).getJobHistory(jobId);
+        (j) => j.id == jobId,
+        orElse: () => null,
+      );
+      final history = await ref
+          .read(garageRepositoryProvider)
+          .getJobHistory(jobId);
 
       state = state.copyWith(
         isLoadingDetail: false,
@@ -63,5 +67,5 @@ class CustomerJobsViewModel extends Notifier<CustomerJobsState> {
 
 final customerJobsViewModelProvider =
     NotifierProvider<CustomerJobsViewModel, CustomerJobsState>(
-  CustomerJobsViewModel.new,
-);
+      CustomerJobsViewModel.new,
+    );

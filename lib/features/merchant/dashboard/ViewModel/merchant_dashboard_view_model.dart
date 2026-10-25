@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/merchant_dashboard_state.dart';
 
 class MerchantDashboardViewModel extends Notifier<MerchantDashboardState> {
@@ -22,13 +23,16 @@ class MerchantDashboardViewModel extends Notifier<MerchantDashboardState> {
       final appointments = await repo.getAppointments(garageId: garageId);
 
       final activeJobs = jobs.where((j) => j.status != 'completed').toList();
-      final awaitingInspection =
-          jobs.where((j) => j.status == 'inspectionPending').length;
-      final awaitingEstimate =
-          estimates.where((e) => e.status == 'sent').length;
+      final awaitingInspection = jobs
+          .where((j) => j.status == 'inspectionPending')
+          .length;
+      final awaitingEstimate = estimates
+          .where((e) => e.status == 'sent')
+          .length;
       final inProgress = jobs.where((j) => j.status == 'inProgress').length;
-      final readyForCollection =
-          jobs.where((j) => j.status == 'readyForCollection').length;
+      final readyForCollection = jobs
+          .where((j) => j.status == 'readyForCollection')
+          .length;
 
       final unpaidInvoices = invoices.where((i) => !i.isPaid).toList();
       final totalUnpaid = unpaidInvoices.fold<double>(
@@ -62,5 +66,5 @@ class MerchantDashboardViewModel extends Notifier<MerchantDashboardState> {
 
 final merchantDashboardViewModelProvider =
     NotifierProvider<MerchantDashboardViewModel, MerchantDashboardState>(
-  MerchantDashboardViewModel.new,
-);
+      MerchantDashboardViewModel.new,
+    );

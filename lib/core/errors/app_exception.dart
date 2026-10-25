@@ -49,7 +49,22 @@ class AppException implements Exception {
         str.contains('no firebase app')) {
       return const AppException(
         code: 'firebase-not-initialized',
-        message: 'Firebase service is initializing. Please try again in a moment.',
+        message:
+            'Firebase service is initializing. Please try again in a moment.',
+      );
+    }
+    if (str.contains('popup-closed-by-user') ||
+        str.contains('cancelled') ||
+        str.contains('canceled')) {
+      return const AppException(
+        code: 'auth-cancelled',
+        message: 'Sign in was cancelled.',
+      );
+    }
+    if (str.contains('popup-blocked') || str.contains('null check operator')) {
+      return const AppException(
+        code: 'popup-blocked',
+        message: 'The sign-in popup was blocked or closed. Please allow popups and try again.',
       );
     }
     return AppException(

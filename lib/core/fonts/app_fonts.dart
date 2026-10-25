@@ -98,7 +98,9 @@ class AppFonts {
       displayMedium: GoogleFonts.outfit(textStyle: primaryTheme.displayMedium),
       displaySmall: GoogleFonts.outfit(textStyle: primaryTheme.displaySmall),
       headlineLarge: GoogleFonts.outfit(textStyle: primaryTheme.headlineLarge),
-      headlineMedium: GoogleFonts.outfit(textStyle: primaryTheme.headlineMedium),
+      headlineMedium: GoogleFonts.outfit(
+        textStyle: primaryTheme.headlineMedium,
+      ),
       headlineSmall: GoogleFonts.outfit(textStyle: primaryTheme.headlineSmall),
       titleLarge: GoogleFonts.outfit(textStyle: primaryTheme.titleLarge),
       titleMedium: GoogleFonts.outfit(textStyle: primaryTheme.titleMedium),

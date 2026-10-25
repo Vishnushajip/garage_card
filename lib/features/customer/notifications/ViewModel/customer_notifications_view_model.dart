@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/customer_notifications_state.dart';
 
 class CustomerNotificationsViewModel
@@ -40,8 +41,9 @@ class CustomerNotificationsViewModel
         await repo.markNotificationAsRead(notif.id);
       }
     }
-    final updated =
-        state.notifications.map((n) => n.copyWith(isRead: true)).toList();
+    final updated = state.notifications
+        .map((n) => n.copyWith(isRead: true))
+        .toList();
     state = state.copyWith(notifications: updated);
   }
 
@@ -54,7 +56,8 @@ class CustomerNotificationsViewModel
   }
 }
 
-final customerNotificationsViewModelProvider = NotifierProvider<
-    CustomerNotificationsViewModel, CustomerNotificationsState>(
-  CustomerNotificationsViewModel.new,
-);
+final customerNotificationsViewModelProvider =
+    NotifierProvider<
+      CustomerNotificationsViewModel,
+      CustomerNotificationsState
+    >(CustomerNotificationsViewModel.new);

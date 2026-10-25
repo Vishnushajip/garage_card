@@ -43,10 +43,7 @@ class AppointmentModel {
     };
   }
 
-  factory AppointmentModel.fromFirestore(
-    Map<String, dynamic> data,
-    String id,
-  ) {
+  factory AppointmentModel.fromFirestore(Map<String, dynamic> data, String id) {
     return AppointmentModel(
       id: id,
       garageId: data['garageId'] as String? ?? '',

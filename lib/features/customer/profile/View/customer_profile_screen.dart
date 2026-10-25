@@ -10,6 +10,7 @@ import 'package:garage_card/core/notifications/notification_event_matrix.dart';
 import 'package:garage_card/core/notifications/push_notification_service.dart';
 import 'package:garage_card/core/theme/theme_controller.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
+
 import '../Widgets/preference_tile.dart';
 
 class CustomerProfileScreen extends ConsumerWidget {
@@ -23,10 +24,12 @@ class CustomerProfileScreen extends ConsumerWidget {
     final locale = ref.watch(localeProvider);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     return Scaffold(
@@ -46,8 +49,9 @@ class CustomerProfileScreen extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color:
-                        isDark ? AppColors.borderDark : AppColors.borderLight,
+                    color: isDark
+                        ? AppColors.borderDark
+                        : AppColors.borderLight,
                   ),
                 ),
                 child: Padding(
@@ -115,8 +119,9 @@ class CustomerProfileScreen extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
-                    color:
-                        isDark ? AppColors.borderDark : AppColors.borderLight,
+                    color: isDark
+                        ? AppColors.borderDark
+                        : AppColors.borderLight,
                   ),
                 ),
                 child: Column(
@@ -131,9 +136,7 @@ class CustomerProfileScreen extends ConsumerWidget {
                         value: locale.languageCode,
                         onChanged: (code) {
                           if (code != null) {
-                            ref
-                                .read(localeProvider.notifier)
-                                .setLocale(code);
+                            ref.read(localeProvider.notifier).setLocale(code);
                           }
                         },
                         items: const [
@@ -170,7 +173,8 @@ class CustomerProfileScreen extends ConsumerWidget {
                           AppDropdownItem(
                             value: ThemeMode.system,
                             title: 'System Default',
-                            subtitle: 'Follows operating system dark/light mode',
+                            subtitle:
+                                'Follows operating system dark/light mode',
                           ),
                           AppDropdownItem(
                             value: ThemeMode.light,
@@ -199,8 +203,9 @@ class CustomerProfileScreen extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
-                    color:
-                        isDark ? AppColors.borderDark : AppColors.borderLight,
+                    color: isDark
+                        ? AppColors.borderDark
+                        : AppColors.borderLight,
                   ),
                 ),
                 child: Column(
@@ -208,11 +213,11 @@ class CustomerProfileScreen extends ConsumerWidget {
                     PreferenceTile(
                       icon: Icons.notifications_active_rounded,
                       title: 'Enable Push Notifications',
-                      subtitle:
-                          'Receive instant repair status updates, estimates and photos',
+                      subtitle: 'Receive instant repair status updates, estimates and photos',
                       onTap: () async {
-                        final service =
-                            ref.read(pushNotificationServiceProvider);
+                        final service = ref.read(
+                          pushNotificationServiceProvider,
+                        );
                         final settings = await service.requestPermission();
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -232,11 +237,11 @@ class CustomerProfileScreen extends ConsumerWidget {
                     PreferenceTile(
                       icon: Icons.image_rounded,
                       title: 'Send Test Notification with Image',
-                      subtitle:
-                          'Preview a rich notification with vehicle image and deep link',
+                      subtitle: 'Preview a rich notification with vehicle image and deep link',
                       onTap: () async {
-                        final service =
-                            ref.read(pushNotificationServiceProvider);
+                        final service = ref.read(
+                          pushNotificationServiceProvider,
+                        );
                         await service.triggerEventNotification(
                           eventType: NotificationEventType.readyForCollection,
                           recipientUid: user?.uid ?? 'customer_demo_uid',
@@ -244,8 +249,7 @@ class CustomerProfileScreen extends ConsumerWidget {
                           qualifier:
                               'test_${DateTime.now().millisecondsSinceEpoch}',
                           title: 'Test: Vehicle Ready for Pickup!',
-                          body:
-                              'This is a test alert with an automotive vehicle photo.',
+                          body: 'This is a test alert with an automotive vehicle photo.',
                           customImageUrl:
                               NotificationEventMatrix.fallbackCarImage,
                           customDeepLink: '/customer/jobs/job_demo_1',
@@ -253,8 +257,9 @@ class CustomerProfileScreen extends ConsumerWidget {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content:
-                                  Text('Test notification dispatched with image!'),
+                              content: Text(
+                                'Test notification dispatched with image!',
+                              ),
                               backgroundColor: AppColors.success,
                             ),
                           );
@@ -275,8 +280,9 @@ class CustomerProfileScreen extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
-                    color:
-                        isDark ? AppColors.borderDark : AppColors.borderLight,
+                    color: isDark
+                        ? AppColors.borderDark
+                        : AppColors.borderLight,
                   ),
                 ),
                 child: Column(
@@ -284,8 +290,7 @@ class CustomerProfileScreen extends ConsumerWidget {
                     PreferenceTile(
                       icon: Icons.storefront_rounded,
                       title: 'Switch to Merchant Experience',
-                      subtitle:
-                          'Open garage management tools if you own or manage a shop',
+                      subtitle: 'Open garage management tools if you own or manage a shop',
                       onTap: () {
                         ref
                             .read(authViewModelProvider.notifier)
@@ -301,15 +306,12 @@ class CustomerProfileScreen extends ConsumerWidget {
                         final confirm = await AppDialog.confirm(
                           context,
                           title: 'Sign Out?',
-                          message:
-                              'Are you sure you want to sign out of your WeFix account?',
+                          message: 'Are you sure you want to sign out of your WeFix account?',
                           confirmLabel: 'Sign Out',
                           isDestructive: true,
                         );
                         if (confirm == true) {
-                          ref
-                              .read(authViewModelProvider.notifier)
-                              .signOut();
+                          ref.read(authViewModelProvider.notifier).signOut();
                         }
                       },
                     ),

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/location/location_service.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/nearby_garages_state.dart';
 
 class NearbyGaragesViewModel extends Notifier<NearbyGaragesState> {
@@ -17,7 +18,9 @@ class NearbyGaragesViewModel extends Notifier<NearbyGaragesState> {
       final lat = loc?.latitude ?? 9.9312;
       final lon = loc?.longitude ?? 76.2673;
 
-      final results = await ref.read(garageRepositoryProvider).getNearbyGarages(
+      final results = await ref
+          .read(garageRepositoryProvider)
+          .getNearbyGarages(
             latitude: lat,
             longitude: lon,
             searchQuery: state.searchQuery,
@@ -33,10 +36,7 @@ class NearbyGaragesViewModel extends Notifier<NearbyGaragesState> {
         page: 0,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
 
@@ -51,7 +51,9 @@ class NearbyGaragesViewModel extends Notifier<NearbyGaragesState> {
     state = state.copyWith(isFetchingNextPage: true);
     try {
       final nextPage = state.page + 1;
-      final results = await ref.read(garageRepositoryProvider).getNearbyGarages(
+      final results = await ref
+          .read(garageRepositoryProvider)
+          .getNearbyGarages(
             latitude: state.userLatitude,
             longitude: state.userLongitude,
             searchQuery: state.searchQuery,
@@ -59,7 +61,9 @@ class NearbyGaragesViewModel extends Notifier<NearbyGaragesState> {
           );
 
       final existingIds = state.garages.map((g) => g.id).toSet();
-      final newGarages = results.where((g) => !existingIds.contains(g.id)).toList();
+      final newGarages = results
+          .where((g) => !existingIds.contains(g.id))
+          .toList();
 
       state = state.copyWith(
         isFetchingNextPage: false,
@@ -82,5 +86,5 @@ class NearbyGaragesViewModel extends Notifier<NearbyGaragesState> {
 
 final nearbyGaragesViewModelProvider =
     NotifierProvider<NearbyGaragesViewModel, NearbyGaragesState>(
-  NearbyGaragesViewModel.new,
-);
+      NearbyGaragesViewModel.new,
+    );

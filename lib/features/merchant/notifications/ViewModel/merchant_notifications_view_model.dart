@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/merchant_notifications_state.dart';
 
 class MerchantNotificationsViewModel
@@ -16,15 +17,9 @@ class MerchantNotificationsViewModel
       final notifs = await repo.getNotifications(
         recipientUid: 'user_merchant_1',
       );
-      state = state.copyWith(
-        notifications: notifs,
-        isLoading: false,
-      );
+      state = state.copyWith(notifications: notifs, isLoading: false);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
 
@@ -52,8 +47,9 @@ class MerchantNotificationsViewModel
         await repo.markNotificationAsRead(notif.id);
       }
     }
-    final updated =
-        state.notifications.map((n) => n.copyWith(isRead: true)).toList();
+    final updated = state.notifications
+        .map((n) => n.copyWith(isRead: true))
+        .toList();
     state = state.copyWith(notifications: updated);
   }
 
@@ -62,7 +58,8 @@ class MerchantNotificationsViewModel
   }
 }
 
-final merchantNotificationsViewModelProvider = NotifierProvider<
-    MerchantNotificationsViewModel, MerchantNotificationsState>(
-  MerchantNotificationsViewModel.new,
-);
+final merchantNotificationsViewModelProvider =
+    NotifierProvider<
+      MerchantNotificationsViewModel,
+      MerchantNotificationsState
+    >(MerchantNotificationsViewModel.new);

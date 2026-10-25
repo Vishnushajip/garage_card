@@ -106,11 +106,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: RoutePaths.customerGarages,
                 builder: (context, state) => NearbyGaragesScreen(
                   onSelectGarage: (id) =>
-                      CustomerAppointmentsScreen.showBookingSheet(context,
-                          garageId: id),
+                      CustomerAppointmentsScreen.showBookingSheet(
+                        context,
+                        garageId: id,
+                      ),
                   onRequestService: (id) =>
-                      CustomerAppointmentsScreen.showBookingSheet(context,
-                          garageId: id),
+                      CustomerAppointmentsScreen.showBookingSheet(
+                        context,
+                        garageId: id,
+                      ),
                 ),
               ),
             ],
@@ -119,9 +123,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: RoutePaths.customerVehicles,
-                builder: (context, state) => CustomerVehiclesScreen(
-                  onSelectVehicle: (id) {},
-                ),
+                builder: (context, state) =>
+                    CustomerVehiclesScreen(onSelectVehicle: (id) {}),
               ),
             ],
           ),
@@ -254,8 +257,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline_rounded,
-                size: 48, color: Colors.red),
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: Colors.red,
+            ),
             const SizedBox(height: 16),
             Text('404 - Page not found: ${state.uri}'),
             const SizedBox(height: 16),

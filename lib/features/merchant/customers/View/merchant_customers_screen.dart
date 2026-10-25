@@ -9,6 +9,7 @@ import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
+
 import '../ViewModel/merchant_customers_view_model.dart';
 import '../Widgets/merchant_customer_card.dart';
 
@@ -47,8 +48,9 @@ class _MerchantCustomersScreenState
     final state = ref.watch(merchantCustomersViewModelProvider);
     final vm = ref.read(merchantCustomersViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Scaffold(
       appBar: AppBar(
@@ -166,24 +168,25 @@ class _AddCustomerSheetState extends ConsumerState<_AddCustomerSheet> {
           notes: _notesCtrl.text.trim(),
         )
         .then((success) {
-      if (success && mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Customer registered successfully!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      }
-    });
+          if (success && mounted) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Customer registered successfully!'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          }
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(merchantCustomersViewModelProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Padding(
       padding: EdgeInsets.only(

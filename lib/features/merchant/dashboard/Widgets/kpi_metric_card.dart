@@ -21,10 +21,12 @@ class KpiMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     return Card(
@@ -64,10 +66,7 @@ class KpiMetricCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              Text(
-                value,
-                style: AppFonts.numberLarge(color: primaryTextColor),
-              ),
+              Text(value, style: AppFonts.numberLarge(color: primaryTextColor)),
             ],
           ),
         ),

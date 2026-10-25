@@ -10,14 +10,12 @@ import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/features/customer/service_jobs/Widgets/status_timeline_view.dart';
 import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
+
 import '../ViewModel/merchant_jobs_view_model.dart';
 import '../Widgets/job_status_dialog.dart';
 
 class MerchantJobDetailScreen extends ConsumerStatefulWidget {
-  const MerchantJobDetailScreen({
-    super.key,
-    required this.jobId,
-  });
+  const MerchantJobDetailScreen({super.key, required this.jobId});
 
   final String jobId;
 
@@ -61,16 +59,16 @@ class _MerchantJobDetailScreenState
     final state = ref.watch(merchantJobsViewModelProvider);
     final vm = ref.read(merchantJobsViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     if (state.isLoading) {
-      return const Scaffold(
-        body: AppLoading(message: 'Loading job record...'),
-      );
+      return const Scaffold(body: AppLoading(message: 'Loading job record...'));
     }
 
     final job = state.selectedJob;
@@ -123,8 +121,9 @@ class _MerchantJobDetailScreenState
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
-                      color:
-                          isDark ? AppColors.borderDark : AppColors.borderLight,
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
                     ),
                   ),
                   child: Padding(
@@ -137,8 +136,9 @@ class _MerchantJobDetailScreenState
                           children: [
                             Text(
                               job.vehicleDisplay,
-                              style:
-                                  AppFonts.titleLarge(color: primaryTextColor),
+                              style: AppFonts.titleLarge(
+                                color: primaryTextColor,
+                              ),
                             ),
                             AppStatusBadge(status: job.status),
                           ],
@@ -155,7 +155,8 @@ class _MerchantJobDetailScreenState
                         const SizedBox(height: 16),
                         AppButton(
                           label: 'Update Status & Notify Customer',
-                          onPressed: () => _openStatusDialog(context, job.status),
+                          onPressed: () =>
+                              _openStatusDialog(context, job.status),
                           variant: AppButtonVariant.primary,
                           isFullWidth: true,
                           height: 44,
@@ -170,8 +171,9 @@ class _MerchantJobDetailScreenState
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
-                      color:
-                          isDark ? AppColors.borderDark : AppColors.borderLight,
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
                     ),
                   ),
                   child: Padding(
@@ -207,8 +209,9 @@ class _MerchantJobDetailScreenState
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
-                      color:
-                          isDark ? AppColors.borderDark : AppColors.borderLight,
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
                     ),
                   ),
                   child: Padding(

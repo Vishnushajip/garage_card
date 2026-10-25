@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/constants/app_constants.dart';
 import 'package:garage_card/core/location/geohash_helper.dart';
+
 import '../models/appointment_model.dart';
 import '../models/customer_model.dart';
 import '../models/estimate_model.dart';
@@ -237,10 +238,8 @@ class GarageRepository {
         'Slight squeaking sound from front suspension on speed bumps',
         'Scheduled 35,000 km general service and engine oil change',
       ],
-      customerNotes:
-          'Front brake rotor resurfacing and suspension bush replacement in progress. Expected delivery by 5:00 PM tomorrow.',
-      internalNotes:
-          'Front right disc rotor warped by 0.2mm. Turning on lathe approved. New Bosch semi-metallic pads ready.',
+      customerNotes: 'Front brake rotor resurfacing and suspension bush replacement in progress. Expected delivery by 5:00 PM tomorrow.',
+      internalNotes: 'Front right disc rotor warped by 0.2mm. Turning on lathe approved. New Bosch semi-metallic pads ready.',
       technicianName: 'Suresh Kumar (Senior Tech)',
       estimatedCompletionDate: now.add(const Duration(hours: 24)),
       vehicleDisplay: '2022 Hyundai Creta (KL 07 CD 4488)',
@@ -283,7 +282,8 @@ class GarageRepository {
         'Full synthetic oil change and oil filter',
         'Wheel alignment check',
       ],
-      customerNotes: 'Vehicle washed, sanitized and ready for pickup at billing counter.',
+      customerNotes:
+          'Vehicle washed, sanitized and ready for pickup at billing counter.',
       internalNotes: 'Ready in Bay 4.',
       technicianName: 'Suresh Kumar',
       vehicleDisplay: '2023 Maruti Suzuki Swift (KL 07 DD 1102)',
@@ -305,7 +305,8 @@ class GarageRepository {
         'Chain clean, lubrication, and slack adjustment',
         'Engine oil & filter change',
       ],
-      customerNotes: 'Service complete. Bike washed and ready for delivery today.',
+      customerNotes:
+          'Service complete. Bike washed and ready for delivery today.',
       internalNotes: 'Motul 15W50 used. Delivered in Bay 1.',
       technicianName: 'Vineeth Roy',
       estimatedCompletionDate: now,
@@ -392,7 +393,8 @@ class GarageRepository {
         jobId: 'job_demo_1',
         fromStatus: 'received',
         toStatus: 'inspectionPending',
-        notes: 'Vehicle received at front desk, preliminary checklist generated.',
+        notes:
+            'Vehicle received at front desk, preliminary checklist generated.',
         updatedBy: 'Front Desk',
         timestamp: now.subtract(const Duration(hours: 18)),
       ),
@@ -845,13 +847,11 @@ class GarageRepository {
         id: 'notif_1',
         recipientUid: 'customer_demo_uid',
         title: 'Vehicle Ready for Collection!',
-        body:
-            'All service tasks completed on your Hyundai Creta (JOB-2026-001). Ready for pickup.',
+        body: 'All service tasks completed on your Hyundai Creta (JOB-2026-001). Ready for pickup.',
         type: 'readyForCollection',
         referenceId: 'job_demo_1',
         referenceType: 'service_job',
-        imageUrl:
-            'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80',
         deepLink: '/customer/jobs/job_demo_1',
         garageId: 'garage_demo_1',
         eventId: 'job_demo_1_readyForCollection',
@@ -866,8 +866,7 @@ class GarageRepository {
         type: 'estimateCreated',
         referenceId: 'est_demo_1',
         referenceType: 'estimate',
-        imageUrl:
-            'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
         deepLink: '/customer/estimates',
         garageId: 'garage_demo_1',
         eventId: 'est_demo_1_created',
@@ -882,8 +881,7 @@ class GarageRepository {
         type: 'serviceReminderDue',
         referenceId: 'rem_2',
         referenceType: 'reminder',
-        imageUrl:
-            'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&q=80',
         deepLink: '/customer/reminders',
         garageId: 'garage_demo_1',
         eventId: 'rem_2_due',
@@ -898,8 +896,7 @@ class GarageRepository {
         type: 'serviceRequestSubmitted',
         referenceId: 'job_today_1',
         referenceType: 'service_job',
-        imageUrl:
-            'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80',
         deepLink: '/merchant/jobs',
         garageId: 'garage_demo_1',
         eventId: 'job_today_1_request',
@@ -914,8 +911,7 @@ class GarageRepository {
         type: 'estimateApproved',
         referenceId: 'est_m_1',
         referenceType: 'estimate',
-        imageUrl:
-            'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
         deepLink: '/merchant/estimates',
         garageId: 'garage_demo_1',
         eventId: 'est_m_1_approved',
@@ -930,8 +926,7 @@ class GarageRepository {
         type: 'readyForCollection',
         referenceId: 'job_today_2',
         referenceType: 'service_job',
-        imageUrl:
-            'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80',
         deepLink: '/merchant/jobs',
         garageId: 'garage_demo_1',
         eventId: 'job_today_2_ready',
@@ -1005,9 +1000,9 @@ class GarageRepository {
   Future<GarageModel?> getGarageDetails(String garageId) async {
     await Future<void>.delayed(const Duration(milliseconds: 150));
     return _garages.cast<GarageModel?>().firstWhere(
-          (g) => g?.id == garageId,
-          orElse: () => null,
-        );
+      (g) => g?.id == garageId,
+      orElse: () => null,
+    );
   }
 
   Future<void> updateGarageProfile(GarageModel updated) async {
@@ -1045,8 +1040,11 @@ class GarageRepository {
       return true;
     }).toList();
 
-    query.sort((a, b) => (b.createdAt ?? DateTime.now())
-        .compareTo(a.createdAt ?? DateTime.now()));
+    query.sort(
+      (a, b) => (b.createdAt ?? DateTime.now()).compareTo(
+        a.createdAt ?? DateTime.now(),
+      ),
+    );
 
     final start = page * limit;
     if (start >= query.length) return [];
@@ -1270,8 +1268,7 @@ class GarageRepository {
           type: 'estimateApproved',
           referenceId: estimateId,
           referenceType: 'estimate',
-          imageUrl:
-              'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
+          imageUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
           deepLink: '/merchant/estimates',
           garageId: est.garageId,
           eventId: 'est_${estimateId}_approved',
@@ -1305,8 +1302,7 @@ class GarageRepository {
           type: 'estimateRejected',
           referenceId: estimateId,
           referenceType: 'estimate',
-          imageUrl:
-              'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
+          imageUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
           deepLink: '/merchant/estimates',
           garageId: est.garageId,
           eventId: 'est_${estimateId}_rejected',
@@ -1375,8 +1371,7 @@ class GarageRepository {
         type: 'invoiceIssued',
         referenceId: inv.id,
         referenceType: 'invoice',
-        imageUrl:
-            'https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=800&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=800&q=80',
         deepLink: '/customer/invoices',
         garageId: estimate.garageId,
         eventId: 'inv_${inv.id}_issued',
@@ -1405,11 +1400,15 @@ class GarageRepository {
 
     final currentInv = _invoices[invIndex];
     final updatedDiscount = currentInv.discountAmount + discountAdjustment;
-    final updatedTotal =
-        (currentInv.totalAmount - discountAdjustment).clamp(0.0, double.infinity);
+    final updatedTotal = (currentInv.totalAmount - discountAdjustment).clamp(
+      0.0,
+      double.infinity,
+    );
     final updatedPaid = currentInv.paidAmount + amount;
-    final updatedBalance =
-        (updatedTotal - updatedPaid).clamp(0.0, double.infinity);
+    final updatedBalance = (updatedTotal - updatedPaid).clamp(
+      0.0,
+      double.infinity,
+    );
     final updatedStatus = updatedBalance <= 0.0 ? 'paid' : 'partially_paid';
 
     _invoices[invIndex] = currentInv.copyWith(
@@ -1445,8 +1444,7 @@ class GarageRepository {
         type: 'paymentRecorded',
         referenceId: payment.id,
         referenceType: 'payment',
-        imageUrl:
-            'https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=800&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=800&q=80',
         deepLink: '/customer/invoices',
         garageId: currentInv.garageId,
         eventId: 'pay_${payment.id}_recorded',
@@ -1490,7 +1488,9 @@ class GarageRepository {
     }).toList();
   }
 
-  Future<ServiceReminderModel> createReminder(ServiceReminderModel reminder) async {
+  Future<ServiceReminderModel> createReminder(
+    ServiceReminderModel reminder,
+  ) async {
     await Future<void>.delayed(const Duration(milliseconds: 250));
     final newRem = reminder.copyWith(
       id: const Uuid().v4(),
@@ -1506,14 +1506,18 @@ class GarageRepository {
     int limit = 20,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 200));
-    final list = _notifications.where((n) => n.recipientUid == recipientUid).toList();
+    final list = _notifications
+        .where((n) => n.recipientUid == recipientUid)
+        .toList();
     final start = page * limit;
     if (start >= list.length) return [];
     final end = (start + limit) > list.length ? list.length : (start + limit);
     return list.sublist(start, end);
   }
 
-  Future<NotificationModel> createNotification(NotificationModel notification) async {
+  Future<NotificationModel> createNotification(
+    NotificationModel notification,
+  ) async {
     await Future<void>.delayed(const Duration(milliseconds: 100));
     _notifications.insert(0, notification);
     return notification;
@@ -1538,7 +1542,9 @@ class GarageRepository {
     }).toList();
   }
 
-  Future<AppointmentModel> createAppointment(AppointmentModel appointment) async {
+  Future<AppointmentModel> createAppointment(
+    AppointmentModel appointment,
+  ) async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
     final newApp = appointment.copyWith(
       id: const Uuid().v4(),
@@ -1557,8 +1563,7 @@ class GarageRepository {
         type: 'serviceRequestSubmitted',
         referenceId: newApp.id,
         referenceType: 'appointment',
-        imageUrl:
-            'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80',
         deepLink: '/merchant/jobs',
         garageId: appointment.garageId,
         eventId: 'app_${newApp.id}_submitted',
@@ -1570,7 +1575,10 @@ class GarageRepository {
     return newApp;
   }
 
-  Future<void> updateAppointmentStatus(String appointmentId, String newStatus) async {
+  Future<void> updateAppointmentStatus(
+    String appointmentId,
+    String newStatus,
+  ) async {
     final idx = _appointments.indexWhere((a) => a.id == appointmentId);
     if (idx >= 0) {
       _appointments[idx] = _appointments[idx].copyWith(status: newStatus);
@@ -1600,8 +1608,7 @@ class GarageRepository {
           type: 'inspectionCompleted',
           referenceId: inspection.id,
           referenceType: 'inspection',
-          imageUrl:
-              'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800&q=80',
+          imageUrl: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800&q=80',
           deepLink: '/customer/jobs/${job.id}',
           garageId: job.garageId,
           eventId: 'insp_${inspection.id}_saved',

@@ -21,8 +21,9 @@ class CustomerQuickActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     return InkWell(
@@ -81,9 +82,8 @@ class CustomerQuickActionButton extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               label,
-              style: AppFonts.labelSmall(color: primaryTextColor).copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppFonts.labelSmall(color: primaryTextColor)
+                  .copyWith(fontWeight: FontWeight.w600),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

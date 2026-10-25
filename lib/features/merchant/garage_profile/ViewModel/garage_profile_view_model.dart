@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/shared/models/subscription_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/garage_profile_state.dart';
 
 class GarageProfileViewModel extends Notifier<GarageProfileState> {
@@ -58,9 +59,7 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
           currencyCode: currencyCode,
           openHours: openHours,
         );
-        await ref
-            .read(garageRepositoryProvider)
-            .updateGarageProfile(updated);
+        await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
         state = state.copyWith(isSaving: false, garage: updated);
         return true;
       }
@@ -79,5 +78,5 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
 
 final garageProfileViewModelProvider =
     NotifierProvider<GarageProfileViewModel, GarageProfileState>(
-  GarageProfileViewModel.new,
-);
+      GarageProfileViewModel.new,
+    );

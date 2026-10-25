@@ -12,6 +12,7 @@ import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/features/shared/models/invoice_model.dart';
+
 import '../ViewModel/merchant_invoices_view_model.dart';
 import '../Widgets/record_payment_dialog.dart';
 
@@ -19,30 +20,34 @@ class MerchantInvoicesScreen extends ConsumerWidget {
   const MerchantInvoicesScreen({super.key});
 
   void _showRecordPaymentDialog(
-      BuildContext context, WidgetRef ref, InvoiceModel invoice) {
+    BuildContext context,
+    WidgetRef ref,
+    InvoiceModel invoice,
+  ) {
     showDialog(
       context: context,
       builder: (dialogCtx) {
         return RecordPaymentDialog(
           invoice: invoice,
-          onRecord: ({
-            required double amount,
-            required String paymentMethod,
-            required String referenceNumber,
-            required String notes,
-            double discountAdjustment = 0.0,
-          }) {
-            return ref
-                .read(merchantInvoicesViewModelProvider.notifier)
-                .recordPayment(
-                  invoiceId: invoice.id,
-                  amount: amount,
-                  paymentMethod: paymentMethod,
-                  referenceNumber: referenceNumber,
-                  notes: notes,
-                  discountAdjustment: discountAdjustment,
-                );
-          },
+          onRecord:
+              ({
+                required double amount,
+                required String paymentMethod,
+                required String referenceNumber,
+                required String notes,
+                double discountAdjustment = 0.0,
+              }) {
+                return ref
+                    .read(merchantInvoicesViewModelProvider.notifier)
+                    .recordPayment(
+                      invoiceId: invoice.id,
+                      amount: amount,
+                      paymentMethod: paymentMethod,
+                      referenceNumber: referenceNumber,
+                      notes: notes,
+                      discountAdjustment: discountAdjustment,
+                    );
+              },
         );
       },
     );
@@ -53,8 +58,9 @@ class MerchantInvoicesScreen extends ConsumerWidget {
     final state = ref.watch(merchantInvoicesViewModelProvider);
     final vm = ref.read(merchantInvoicesViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     return DefaultTabController(
@@ -158,9 +164,9 @@ class MerchantInvoicesScreen extends ConsumerWidget {
                                         ),
                                         Text(
                                           CurrencyFormatter.format(
-                                              invoice.totalAmount,
-                                              currencyCode:
-                                                  invoice.currencyCode),
+                                            invoice.totalAmount,
+                                            currencyCode: invoice.currencyCode,
+                                          ),
                                           style: AppFonts.titleMedium(
                                             color: primaryTextColor,
                                           ),
@@ -179,9 +185,9 @@ class MerchantInvoicesScreen extends ConsumerWidget {
                                         ),
                                         Text(
                                           CurrencyFormatter.format(
-                                              invoice.balanceDue,
-                                              currencyCode:
-                                                  invoice.currencyCode),
+                                            invoice.balanceDue,
+                                            currencyCode: invoice.currencyCode,
+                                          ),
                                           style: AppFonts.titleMedium(
                                             color: invoice.balanceDue > 0
                                                 ? AppColors.error
@@ -200,7 +206,10 @@ class MerchantInvoicesScreen extends ConsumerWidget {
                                     isFullWidth: true,
                                     height: 42,
                                     onPressed: () => _showRecordPaymentDialog(
-                                        context, ref, invoice),
+                                      context,
+                                      ref,
+                                      invoice,
+                                    ),
                                   ),
                                 ],
                               ],
@@ -249,7 +258,9 @@ class MerchantInvoicesScreen extends ConsumerWidget {
                             ),
                             title: Text(
                               CurrencyFormatter.format(p.amount),
-                              style: AppFonts.titleMedium(color: primaryTextColor),
+                              style: AppFonts.titleMedium(
+                                color: primaryTextColor,
+                              ),
                             ),
                             subtitle: Text(
                               '${p.paymentMethod.toUpperCase()} • ${DateFormatter.formatDateTime(p.createdAt)}',

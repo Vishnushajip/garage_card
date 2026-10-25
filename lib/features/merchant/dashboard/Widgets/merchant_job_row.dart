@@ -6,11 +6,7 @@ import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
 
 class MerchantJobRow extends StatelessWidget {
-  const MerchantJobRow({
-    super.key,
-    required this.job,
-    required this.onTap,
-  });
+  const MerchantJobRow({super.key, required this.job, required this.onTap});
 
   final ServiceJobModel job;
   final VoidCallback onTap;
@@ -18,10 +14,12 @@ class MerchantJobRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return ListTile(
       onTap: onTap,

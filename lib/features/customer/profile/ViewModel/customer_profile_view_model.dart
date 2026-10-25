@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
+
 import '../Model/customer_profile_state.dart';
 
 class CustomerProfileViewModel extends Notifier<CustomerProfileState> {
@@ -32,5 +33,5 @@ class CustomerProfileViewModel extends Notifier<CustomerProfileState> {
 
 final customerProfileViewModelProvider =
     NotifierProvider<CustomerProfileViewModel, CustomerProfileState>(
-  CustomerProfileViewModel.new,
-);
+      CustomerProfileViewModel.new,
+    );

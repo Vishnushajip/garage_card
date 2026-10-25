@@ -38,7 +38,10 @@ class UserProfileModel {
     };
   }
 
-  factory UserProfileModel.fromFirestore(Map<String, dynamic> data, String uid) {
+  factory UserProfileModel.fromFirestore(
+    Map<String, dynamic> data,
+    String uid,
+  ) {
     return UserProfileModel(
       uid: uid,
       email: data['email'] as String? ?? '',

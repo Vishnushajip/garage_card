@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:intl/intl.dart';
+
 import '../Model/financial_metrics_model.dart';
 
 class TimeRangeChips extends StatelessWidget {
@@ -64,20 +65,21 @@ class TimeRangeChips extends StatelessWidget {
                   color: isSelected
                       ? Colors.white
                       : isDark
-                          ? AppColors.textPrimaryDark
-                          : AppColors.textPrimaryLight,
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
                 ),
               ),
               selected: isSelected,
               selectedColor: AppColors.accentBlue,
-              backgroundColor:
-                  isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+              backgroundColor: isDark
+                  ? AppColors.surfaceDark
+                  : AppColors.surfaceLight,
               side: BorderSide(
                 color: isSelected
                     ? AppColors.accentBlue
                     : isDark
-                        ? AppColors.borderDark
-                        : AppColors.borderLight,
+                    ? AppColors.borderDark
+                    : AppColors.borderLight,
               ),
               onSelected: (val) {
                 if (opt.$1 == AnalyticsTimeRange.custom) {

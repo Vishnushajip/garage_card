@@ -4,6 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
+
 import '../models/estimate_model.dart';
 import '../models/garage_model.dart';
 import '../models/invoice_model.dart';
@@ -41,13 +42,19 @@ class PdfGeneratorService {
                         ),
                       ),
                       pw.SizedBox(height: 4),
-                      pw.Text(garage.address,
-                          style: const pw.TextStyle(fontSize: 10)),
-                      pw.Text('Phone: ${garage.phone} | Email: ${garage.email}',
-                          style: const pw.TextStyle(fontSize: 10)),
+                      pw.Text(
+                        garage.address,
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
+                      pw.Text(
+                        'Phone: ${garage.phone} | Email: ${garage.email}',
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
                       if (garage.taxNumber.isNotEmpty)
-                        pw.Text('GSTIN / Tax ID: ${garage.taxNumber}',
-                            style: const pw.TextStyle(fontSize: 10)),
+                        pw.Text(
+                          'GSTIN / Tax ID: ${garage.taxNumber}',
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
                     ],
                   ),
                   pw.Container(
@@ -106,8 +113,10 @@ class PdfGeneratorService {
                           fontWeight: pw.FontWeight.bold,
                         ),
                       ),
-                      pw.Text('Vehicle: $vehicleDisplay',
-                          style: const pw.TextStyle(fontSize: 11)),
+                      pw.Text(
+                        'Vehicle: $vehicleDisplay',
+                        style: const pw.TextStyle(fontSize: 11),
+                      ),
                     ],
                   ),
                   pw.Column(
@@ -137,28 +146,40 @@ class PdfGeneratorService {
               ),
               pw.SizedBox(height: 20),
               pw.TableHelper.fromTextArray(
-                headers: ['#', 'Description', 'Type', 'Qty', 'Unit Price', 'Total'],
-                data: List<List<dynamic>>.generate(
-                  estimate.items.length,
-                  (index) {
-                    final item = estimate.items[index];
-                    return [
-                      '${index + 1}',
-                      item.description,
-                      item.type.toUpperCase(),
-                      '${item.quantity}',
-                      CurrencyFormatter.format(item.unitPrice,
-                          currencyCode: estimate.currencyCode),
-                      CurrencyFormatter.format(item.totalPrice,
-                          currencyCode: estimate.currencyCode),
-                    ];
-                  },
-                ),
+                headers: [
+                  '#',
+                  'Description',
+                  'Type',
+                  'Qty',
+                  'Unit Price',
+                  'Total',
+                ],
+                data: List<List<dynamic>>.generate(estimate.items.length, (
+                  index,
+                ) {
+                  final item = estimate.items[index];
+                  return [
+                    '${index + 1}',
+                    item.description,
+                    item.type.toUpperCase(),
+                    '${item.quantity}',
+                    CurrencyFormatter.format(
+                      item.unitPrice,
+                      currencyCode: estimate.currencyCode,
+                    ),
+                    CurrencyFormatter.format(
+                      item.totalPrice,
+                      currencyCode: estimate.currencyCode,
+                    ),
+                  ];
+                }),
                 headerStyle: pw.TextStyle(
                   fontWeight: pw.FontWeight.bold,
                   color: PdfColors.white,
                 ),
-                headerDecoration: const pw.BoxDecoration(color: PdfColors.blue900),
+                headerDecoration: const pw.BoxDecoration(
+                  color: PdfColors.blue900,
+                ),
                 cellHeight: 28,
                 cellAlignments: {
                   0: pw.Alignment.centerLeft,
@@ -178,18 +199,33 @@ class PdfGeneratorService {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.stretch,
                       children: [
-                        _buildTotalRow('Subtotal:',
-                            CurrencyFormatter.format(estimate.subtotal, currencyCode: estimate.currencyCode)),
+                        _buildTotalRow(
+                          'Subtotal:',
+                          CurrencyFormatter.format(
+                            estimate.subtotal,
+                            currencyCode: estimate.currencyCode,
+                          ),
+                        ),
                         if (estimate.discountAmount > 0)
-                          _buildTotalRow('Discount:',
-                              '-${CurrencyFormatter.format(estimate.discountAmount, currencyCode: estimate.currencyCode)}'),
+                          _buildTotalRow(
+                            'Discount:',
+                            '-${CurrencyFormatter.format(estimate.discountAmount, currencyCode: estimate.currencyCode)}',
+                          ),
                         if (estimate.taxAmount > 0)
-                          _buildTotalRow('Tax (${estimate.taxRate}%):',
-                              CurrencyFormatter.format(estimate.taxAmount, currencyCode: estimate.currencyCode)),
+                          _buildTotalRow(
+                            'Tax (${estimate.taxRate}%):',
+                            CurrencyFormatter.format(
+                              estimate.taxAmount,
+                              currencyCode: estimate.currencyCode,
+                            ),
+                          ),
                         pw.Divider(thickness: 1, color: PdfColors.grey400),
                         _buildTotalRow(
                           'Estimated Total:',
-                          CurrencyFormatter.format(estimate.totalAmount, currencyCode: estimate.currencyCode),
+                          CurrencyFormatter.format(
+                            estimate.totalAmount,
+                            currencyCode: estimate.currencyCode,
+                          ),
                           isBold: true,
                           fontSize: 14,
                         ),
@@ -201,12 +237,18 @@ class PdfGeneratorService {
               pw.Spacer(),
               pw.Text(
                 'Note: This is an estimated cost. Final invoice may vary based on unforeseen parts or labor required during repairs.',
-                style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+                style: const pw.TextStyle(
+                  fontSize: 9,
+                  color: PdfColors.grey600,
+                ),
               ),
               pw.SizedBox(height: 4),
               pw.Text(
                 'Generated securely via WeFix Platform',
-                style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
+                style: const pw.TextStyle(
+                  fontSize: 8,
+                  color: PdfColors.grey500,
+                ),
               ),
             ],
           );
@@ -247,13 +289,19 @@ class PdfGeneratorService {
                         ),
                       ),
                       pw.SizedBox(height: 4),
-                      pw.Text(garage.address,
-                          style: const pw.TextStyle(fontSize: 10)),
-                      pw.Text('Phone: ${garage.phone} | Email: ${garage.email}',
-                          style: const pw.TextStyle(fontSize: 10)),
+                      pw.Text(
+                        garage.address,
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
+                      pw.Text(
+                        'Phone: ${garage.phone} | Email: ${garage.email}',
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
                       if (garage.taxNumber.isNotEmpty)
-                        pw.Text('GSTIN / Tax ID: ${garage.taxNumber}',
-                            style: const pw.TextStyle(fontSize: 10)),
+                        pw.Text(
+                          'GSTIN / Tax ID: ${garage.taxNumber}',
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
                     ],
                   ),
                   pw.Container(
@@ -312,8 +360,10 @@ class PdfGeneratorService {
                           fontWeight: pw.FontWeight.bold,
                         ),
                       ),
-                      pw.Text('Vehicle: $vehicleDisplay',
-                          style: const pw.TextStyle(fontSize: 11)),
+                      pw.Text(
+                        'Vehicle: $vehicleDisplay',
+                        style: const pw.TextStyle(fontSize: 11),
+                      ),
                     ],
                   ),
                   pw.Column(
@@ -343,28 +393,40 @@ class PdfGeneratorService {
               ),
               pw.SizedBox(height: 20),
               pw.TableHelper.fromTextArray(
-                headers: ['#', 'Description', 'Type', 'Qty', 'Unit Price', 'Total'],
-                data: List<List<dynamic>>.generate(
-                  invoice.items.length,
-                  (index) {
-                    final item = invoice.items[index];
-                    return [
-                      '${index + 1}',
-                      item.description,
-                      item.type.toUpperCase(),
-                      '${item.quantity}',
-                      CurrencyFormatter.format(item.unitPrice,
-                          currencyCode: invoice.currencyCode),
-                      CurrencyFormatter.format(item.totalPrice,
-                          currencyCode: invoice.currencyCode),
-                    ];
-                  },
-                ),
+                headers: [
+                  '#',
+                  'Description',
+                  'Type',
+                  'Qty',
+                  'Unit Price',
+                  'Total',
+                ],
+                data: List<List<dynamic>>.generate(invoice.items.length, (
+                  index,
+                ) {
+                  final item = invoice.items[index];
+                  return [
+                    '${index + 1}',
+                    item.description,
+                    item.type.toUpperCase(),
+                    '${item.quantity}',
+                    CurrencyFormatter.format(
+                      item.unitPrice,
+                      currencyCode: invoice.currencyCode,
+                    ),
+                    CurrencyFormatter.format(
+                      item.totalPrice,
+                      currencyCode: invoice.currencyCode,
+                    ),
+                  ];
+                }),
                 headerStyle: pw.TextStyle(
                   fontWeight: pw.FontWeight.bold,
                   color: PdfColors.white,
                 ),
-                headerDecoration: const pw.BoxDecoration(color: PdfColors.blue900),
+                headerDecoration: const pw.BoxDecoration(
+                  color: PdfColors.blue900,
+                ),
                 cellHeight: 28,
                 cellAlignments: {
                   0: pw.Alignment.centerLeft,
@@ -384,29 +446,50 @@ class PdfGeneratorService {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.stretch,
                       children: [
-                        _buildTotalRow('Subtotal:',
-                            CurrencyFormatter.format(invoice.subtotal, currencyCode: invoice.currencyCode)),
+                        _buildTotalRow(
+                          'Subtotal:',
+                          CurrencyFormatter.format(
+                            invoice.subtotal,
+                            currencyCode: invoice.currencyCode,
+                          ),
+                        ),
                         if (invoice.discountAmount > 0)
-                          _buildTotalRow('Discount:',
-                              '-${CurrencyFormatter.format(invoice.discountAmount, currencyCode: invoice.currencyCode)}'),
+                          _buildTotalRow(
+                            'Discount:',
+                            '-${CurrencyFormatter.format(invoice.discountAmount, currencyCode: invoice.currencyCode)}',
+                          ),
                         if (invoice.taxAmount > 0)
-                          _buildTotalRow('Tax (${invoice.taxRate}%):',
-                              CurrencyFormatter.format(invoice.taxAmount, currencyCode: invoice.currencyCode)),
+                          _buildTotalRow(
+                            'Tax (${invoice.taxRate}%):',
+                            CurrencyFormatter.format(
+                              invoice.taxAmount,
+                              currencyCode: invoice.currencyCode,
+                            ),
+                          ),
                         pw.Divider(thickness: 1, color: PdfColors.grey400),
                         _buildTotalRow(
                           'Grand Total:',
-                          CurrencyFormatter.format(invoice.totalAmount, currencyCode: invoice.currencyCode),
+                          CurrencyFormatter.format(
+                            invoice.totalAmount,
+                            currencyCode: invoice.currencyCode,
+                          ),
                           isBold: true,
                           fontSize: 13,
                         ),
                         _buildTotalRow(
                           'Amount Paid:',
-                          CurrencyFormatter.format(invoice.paidAmount, currencyCode: invoice.currencyCode),
+                          CurrencyFormatter.format(
+                            invoice.paidAmount,
+                            currencyCode: invoice.currencyCode,
+                          ),
                         ),
                         pw.Divider(thickness: 1.5, color: PdfColors.blue900),
                         _buildTotalRow(
                           'Balance Due:',
-                          CurrencyFormatter.format(invoice.balanceDue, currencyCode: invoice.currencyCode),
+                          CurrencyFormatter.format(
+                            invoice.balanceDue,
+                            currencyCode: invoice.currencyCode,
+                          ),
                           isBold: true,
                           fontSize: 14,
                           textColor: invoice.balanceDue > 0
@@ -421,12 +504,18 @@ class PdfGeneratorService {
               pw.Spacer(),
               pw.Text(
                 'Thank you for your business. For any billing queries, contact ${garage.phone}.',
-                style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+                style: const pw.TextStyle(
+                  fontSize: 9,
+                  color: PdfColors.grey600,
+                ),
               ),
               pw.SizedBox(height: 4),
               pw.Text(
                 'Generated securely via WeFix Platform',
-                style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
+                style: const pw.TextStyle(
+                  fontSize: 8,
+                  color: PdfColors.grey500,
+                ),
               ),
             ],
           );

@@ -8,6 +8,7 @@ import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:go_router/go_router.dart';
+
 import '../ViewModel/customer_notifications_view_model.dart';
 import '../Widgets/notification_tile.dart';
 
@@ -19,8 +20,9 @@ class CustomerNotificationsScreen extends ConsumerWidget {
     final state = ref.watch(customerNotificationsViewModelProvider);
     final vm = ref.read(customerNotificationsViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Scaffold(
       appBar: AppBar(
@@ -66,9 +68,7 @@ class CustomerNotificationsScreen extends ConsumerWidget {
                   title: state.filterOnlyUnread
                       ? 'No Unread Notifications'
                       : 'No Notifications Yet',
-                  message: state.filterOnlyUnread
-                      ? 'You are all caught up!'
-                      : 'Repair status changes, estimate approvals, and reminders will notify you here.',
+                  message: state.filterOnlyUnread ? 'You are all caught up!' : 'Repair status changes, estimate approvals, and reminders will notify you here.',
                   icon: Icons.notifications_none_rounded,
                 );
               }

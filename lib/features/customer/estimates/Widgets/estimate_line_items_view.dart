@@ -5,20 +5,19 @@ import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/features/shared/models/estimate_model.dart';
 
 class EstimateLineItemsView extends StatelessWidget {
-  const EstimateLineItemsView({
-    super.key,
-    required this.estimate,
-  });
+  const EstimateLineItemsView({super.key, required this.estimate});
 
   final EstimateModel estimate;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -30,8 +29,10 @@ class EstimateLineItemsView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: item.type == 'part'
                         ? AppColors.infoBg
@@ -66,8 +67,10 @@ class EstimateLineItemsView extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  CurrencyFormatter.format(item.totalPrice,
-                      currencyCode: estimate.currencyCode),
+                  CurrencyFormatter.format(
+                    item.totalPrice,
+                    currencyCode: estimate.currencyCode,
+                  ),
                   style: AppFonts.labelLarge(color: primaryTextColor),
                 ),
               ],
@@ -75,18 +78,29 @@ class EstimateLineItemsView extends StatelessWidget {
           );
         }),
         const Divider(height: 24),
-        _buildRow('Subtotal',
-            CurrencyFormatter.format(estimate.subtotal, currencyCode: estimate.currencyCode), secondaryTextColor),
+        _buildRow(
+          'Subtotal',
+          CurrencyFormatter.format(
+            estimate.subtotal,
+            currencyCode: estimate.currencyCode,
+          ),
+          secondaryTextColor,
+        ),
         if (estimate.discountAmount > 0)
           _buildRow(
-              'Discount',
-              '-${CurrencyFormatter.format(estimate.discountAmount, currencyCode: estimate.currencyCode)}',
-              AppColors.success),
+            'Discount',
+            '-${CurrencyFormatter.format(estimate.discountAmount, currencyCode: estimate.currencyCode)}',
+            AppColors.success,
+          ),
         if (estimate.taxAmount > 0)
           _buildRow(
-              'Tax (${estimate.taxRate}%)',
-              CurrencyFormatter.format(estimate.taxAmount, currencyCode: estimate.currencyCode),
-              secondaryTextColor),
+            'Tax (${estimate.taxRate}%)',
+            CurrencyFormatter.format(
+              estimate.taxAmount,
+              currencyCode: estimate.currencyCode,
+            ),
+            secondaryTextColor,
+          ),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -96,8 +110,10 @@ class EstimateLineItemsView extends StatelessWidget {
               style: AppFonts.titleLarge(color: primaryTextColor),
             ),
             Text(
-              CurrencyFormatter.format(estimate.totalAmount,
-                  currencyCode: estimate.currencyCode),
+              CurrencyFormatter.format(
+                estimate.totalAmount,
+                currencyCode: estimate.currencyCode,
+              ),
               style: AppFonts.numberLarge(color: AppColors.accentBlue),
             ),
           ],
@@ -113,7 +129,14 @@ class EstimateLineItemsView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: color, fontSize: 13)),
-          Text(value, style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w600)),
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );

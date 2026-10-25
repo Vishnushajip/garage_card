@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/shared/models/service_reminder_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/customer_reminders_state.dart';
 
 class CustomerRemindersViewModel extends Notifier<CustomerRemindersState> {
@@ -51,8 +52,9 @@ class CustomerRemindersViewModel extends Notifier<CustomerRemindersState> {
         createdAt: DateTime.now(),
       );
 
-      final created =
-          await ref.read(garageRepositoryProvider).createReminder(reminder);
+      final created = await ref
+          .read(garageRepositoryProvider)
+          .createReminder(reminder);
       state = state.copyWith(
         isSaving: false,
         reminders: [created, ...state.reminders],
@@ -71,5 +73,5 @@ class CustomerRemindersViewModel extends Notifier<CustomerRemindersState> {
 
 final customerRemindersViewModelProvider =
     NotifierProvider<CustomerRemindersViewModel, CustomerRemindersState>(
-  CustomerRemindersViewModel.new,
-);
+      CustomerRemindersViewModel.new,
+    );

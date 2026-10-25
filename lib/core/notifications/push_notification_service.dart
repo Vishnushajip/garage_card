@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+
 import '../../firebase_options.dart';
 import 'fcm_token_model.dart';
 import 'notification_event_matrix.dart';
@@ -34,7 +36,7 @@ class PushNotificationService {
     this.firestore,
     this.auth,
   }) : _localNotifications =
-            localNotifications ?? FlutterLocalNotificationsPlugin();
+           localNotifications ?? FlutterLocalNotificationsPlugin();
 
   final FirebaseMessaging? messaging;
   final FlutterLocalNotificationsPlugin _localNotifications;
@@ -91,8 +93,10 @@ class PushNotificationService {
       );
 
       if (!kIsWeb) {
-        final androidPlugin = _localNotifications.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+        final androidPlugin = _localNotifications
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
         if (androidPlugin != null) {
           const channel = AndroidNotificationChannel(
             channelId,
@@ -122,8 +126,10 @@ class PushNotificationService {
     );
 
     if (!kIsWeb) {
-      final androidPlugin = _localNotifications.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final androidPlugin = _localNotifications
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       if (androidPlugin != null) {
         await androidPlugin.requestNotificationsPermission();
       }
@@ -252,7 +258,8 @@ class PushNotificationService {
     final notification = message.notification;
     final title = notification?.title ?? message.data['title'] ?? 'WeFix';
     final body = notification?.body ?? message.data['body'] ?? '';
-    final imageUrl = notification?.android?.imageUrl ??
+    final imageUrl =
+        notification?.android?.imageUrl ??
         notification?.apple?.imageUrl ??
         message.data['imageUrl'] as String?;
     final deepLink = message.data['deepLink'] as String? ?? '/';
@@ -336,7 +343,8 @@ class PushNotificationService {
     final resolvedTitle = title ?? def.defaultTitle;
     final resolvedBody = body ?? def.defaultBody;
     final resolvedImage = customImageUrl ?? def.defaultImageUrl;
-    final resolvedLink = customDeepLink ??
+    final resolvedLink =
+        customDeepLink ??
         NotificationEventMatrix.resolveDeepLink(
           type: eventType,
           entityId: entityId,
@@ -394,8 +402,9 @@ class PushNotificationService {
   }
 }
 
-final pushNotificationServiceProvider =
-    Provider<PushNotificationService>((ref) {
+final pushNotificationServiceProvider = Provider<PushNotificationService>((
+  ref,
+) {
   if (Firebase.apps.isEmpty) {
     return PushNotificationService(
       messaging: null,

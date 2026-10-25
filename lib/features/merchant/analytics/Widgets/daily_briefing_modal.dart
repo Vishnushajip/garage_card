@@ -21,8 +21,9 @@ class DailyBriefingModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -71,8 +72,11 @@ class DailyBriefingModal extends StatelessWidget {
                     ),
                     InkWell(
                       onTap: onDismiss,
-                      child: const Icon(Icons.close_rounded,
-                          size: 18, color: Colors.grey),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: Colors.grey,
+                      ),
                     ),
                   ],
                 ),

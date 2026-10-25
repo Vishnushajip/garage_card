@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/merchant_invoices_state.dart';
 
 class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
@@ -37,7 +38,9 @@ class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
   }) async {
     state = state.copyWith(isRecordingPayment: true, errorMessage: null);
     try {
-      await ref.read(garageRepositoryProvider).recordPayment(
+      await ref
+          .read(garageRepositoryProvider)
+          .recordPayment(
             invoiceId: invoiceId,
             amount: amount,
             paymentMethod: paymentMethod,
@@ -50,8 +53,10 @@ class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
       state = state.copyWith(isRecordingPayment: false);
       return true;
     } catch (e) {
-      state =
-          state.copyWith(isRecordingPayment: false, errorMessage: e.toString());
+      state = state.copyWith(
+        isRecordingPayment: false,
+        errorMessage: e.toString(),
+      );
       return false;
     }
   }
@@ -63,5 +68,5 @@ class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
 
 final merchantInvoicesViewModelProvider =
     NotifierProvider<MerchantInvoicesViewModel, MerchantInvoicesState>(
-  MerchantInvoicesViewModel.new,
-);
+      MerchantInvoicesViewModel.new,
+    );

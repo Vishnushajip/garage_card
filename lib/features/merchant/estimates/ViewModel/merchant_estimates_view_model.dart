@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/shared/models/estimate_model.dart';
 import 'package:garage_card/features/shared/models/line_item_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/merchant_estimates_state.dart';
 
 class MerchantEstimatesViewModel extends Notifier<MerchantEstimatesState> {
@@ -31,10 +32,15 @@ class MerchantEstimatesViewModel extends Notifier<MerchantEstimatesState> {
   }) async {
     state = state.copyWith(isCreating: true, errorMessage: null);
     try {
-      final subtotal =
-          items.fold<double>(0.0, (sum, item) => sum + item.totalPrice);
+      final subtotal = items.fold<double>(
+        0.0,
+        (sum, item) => sum + item.totalPrice,
+      );
       final taxAmount = (subtotal - discountAmount) * (taxRate / 100);
-      final total = (subtotal - discountAmount + taxAmount).clamp(0.0, double.infinity);
+      final total = (subtotal - discountAmount + taxAmount).clamp(
+        0.0,
+        double.infinity,
+      );
 
       final est = EstimateModel(
         id: '',
@@ -52,8 +58,9 @@ class MerchantEstimatesViewModel extends Notifier<MerchantEstimatesState> {
         createdAt: DateTime.now(),
       );
 
-      final created =
-          await ref.read(garageRepositoryProvider).createEstimate(est);
+      final created = await ref
+          .read(garageRepositoryProvider)
+          .createEstimate(est);
       state = state.copyWith(
         isCreating: false,
         estimates: [created, ...state.estimates],
@@ -86,5 +93,5 @@ class MerchantEstimatesViewModel extends Notifier<MerchantEstimatesState> {
 
 final merchantEstimatesViewModelProvider =
     NotifierProvider<MerchantEstimatesViewModel, MerchantEstimatesState>(
-  MerchantEstimatesViewModel.new,
-);
+      MerchantEstimatesViewModel.new,
+    );

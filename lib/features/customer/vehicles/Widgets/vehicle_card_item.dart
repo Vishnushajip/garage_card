@@ -17,10 +17,12 @@ class VehicleCardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     return Card(
@@ -77,9 +79,8 @@ class VehicleCardItem extends StatelessWidget {
                           ),
                           child: Text(
                             vehicle.licensePlate,
-                            style: AppFonts.labelSmall(
-                              color: primaryTextColor,
-                            ).copyWith(fontWeight: FontWeight.bold),
+                            style: AppFonts.labelSmall(color: primaryTextColor)
+                                .copyWith(fontWeight: FontWeight.bold),
                           ),
                         ),
                         const SizedBox(width: 8),

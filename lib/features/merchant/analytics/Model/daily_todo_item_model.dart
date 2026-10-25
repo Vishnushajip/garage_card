@@ -1,9 +1,4 @@
-enum TodoItemType {
-  deliveryToday,
-  paymentDue,
-  workPending,
-  completedYesterday,
-}
+enum TodoItemType { deliveryToday, paymentDue, workPending, completedYesterday }
 
 class DailyTodoItemModel {
   const DailyTodoItemModel({

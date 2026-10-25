@@ -8,12 +8,14 @@ import 'package:garage_card/core/shared_widgets/app_error_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
+
 import '../ViewModel/merchant_dashboard_view_model.dart';
 import '../Widgets/kpi_metric_card.dart';
 import '../Widgets/merchant_job_row.dart';
 import '../../analytics/ViewModel/merchant_analytics_view_model.dart';
 import '../../analytics/Widgets/daily_briefing_modal.dart';
 import '../../notifications/ViewModel/merchant_notifications_view_model.dart';
+
 import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:go_router/go_router.dart';
 
@@ -43,13 +45,16 @@ class MerchantDashboardScreen extends ConsumerWidget {
     final vm = ref.read(merchantDashboardViewModelProvider.notifier);
     final analyticsState = ref.watch(merchantAnalyticsViewModelProvider);
     final analyticsVm = ref.read(merchantAnalyticsViewModelProvider.notifier);
-    final merchantNotifState =
-        ref.watch(merchantNotificationsViewModelProvider);
+    final merchantNotifState = ref.watch(
+      merchantNotificationsViewModelProvider,
+    );
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     if (state.isLoading) {
@@ -60,10 +65,7 @@ class MerchantDashboardScreen extends ConsumerWidget {
 
     if (state.errorMessage != null && state.recentJobs.isEmpty) {
       return Scaffold(
-        body: AppErrorState(
-          message: state.errorMessage!,
-          onRetry: vm.refresh,
-        ),
+        body: AppErrorState(message: state.errorMessage!, onRetry: vm.refresh),
       );
     }
 
@@ -126,8 +128,8 @@ class MerchantDashboardScreen extends ConsumerWidget {
                   crossAxisCount: AppResponsiveLayout.isDesktop(context)
                       ? 4
                       : AppResponsiveLayout.isTablet(context)
-                          ? 3
-                          : 2,
+                      ? 3
+                      : 2,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisSpacing: 12,
@@ -170,8 +172,9 @@ class MerchantDashboardScreen extends ConsumerWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
-                      color:
-                          isDark ? AppColors.borderDark : AppColors.borderLight,
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
                     ),
                   ),
                   child: Padding(
@@ -184,8 +187,9 @@ class MerchantDashboardScreen extends ConsumerWidget {
                           children: [
                             Text(
                               'Outstanding Receivables',
-                              style:
-                                   AppFonts.labelSmall(color: secondaryTextColor),
+                              style: AppFonts.labelSmall(
+                                color: secondaryTextColor,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -196,8 +200,9 @@ class MerchantDashboardScreen extends ConsumerWidget {
                             ),
                             Text(
                               '${state.unpaidInvoices.length} invoices awaiting payment',
-                              style:
-                                   AppFonts.labelSmall(color: secondaryTextColor),
+                              style: AppFonts.labelSmall(
+                                color: secondaryTextColor,
+                              ),
                             ),
                           ],
                         ),
@@ -217,8 +222,9 @@ class MerchantDashboardScreen extends ConsumerWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
-                      color:
-                          isDark ? AppColors.borderDark : AppColors.borderLight,
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
                     ),
                   ),
                   child: Padding(
@@ -234,8 +240,9 @@ class MerchantDashboardScreen extends ConsumerWidget {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: AppColors.accentBlue
-                                        .withValues(alpha: 0.12),
+                                    color: AppColors.accentBlue.withValues(
+                                      alpha: 0.12,
+                                    ),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: const Icon(
@@ -248,7 +255,8 @@ class MerchantDashboardScreen extends ConsumerWidget {
                                 Text(
                                   'Daily Pipeline & Analytics',
                                   style: AppFonts.titleMedium(
-                                      color: primaryTextColor),
+                                    color: primaryTextColor,
+                                  ),
                                 ),
                               ],
                             ),
@@ -275,8 +283,9 @@ class MerchantDashboardScreen extends ConsumerWidget {
                                   color: AppColors.info.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color:
-                                        AppColors.info.withValues(alpha: 0.2),
+                                    color: AppColors.info.withValues(
+                                      alpha: 0.2,
+                                    ),
                                   ),
                                 ),
                                 child: Column(
@@ -285,13 +294,15 @@ class MerchantDashboardScreen extends ConsumerWidget {
                                     Text(
                                       'Due Today',
                                       style: AppFonts.labelSmall(
-                                          color: secondaryTextColor),
+                                        color: secondaryTextColor,
+                                      ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       '${analyticsState.todayDeliveriesCount} Vehicles',
                                       style: AppFonts.titleMedium(
-                                          color: AppColors.info),
+                                        color: AppColors.info,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -302,12 +313,14 @@ class MerchantDashboardScreen extends ConsumerWidget {
                               child: Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color:
-                                      AppColors.success.withValues(alpha: 0.08),
+                                  color: AppColors.success.withValues(
+                                    alpha: 0.08,
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: AppColors.success
-                                        .withValues(alpha: 0.2),
+                                    color: AppColors.success.withValues(
+                                      alpha: 0.2,
+                                    ),
                                   ),
                                 ),
                                 child: Column(
@@ -316,13 +329,15 @@ class MerchantDashboardScreen extends ConsumerWidget {
                                     Text(
                                       'Completed Yesterday',
                                       style: AppFonts.labelSmall(
-                                          color: secondaryTextColor),
+                                        color: secondaryTextColor,
+                                      ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       '${analyticsState.yesterdayCompletedCount} Jobs',
                                       style: AppFonts.titleMedium(
-                                          color: AppColors.success),
+                                        color: AppColors.success,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -333,12 +348,14 @@ class MerchantDashboardScreen extends ConsumerWidget {
                               child: Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color:
-                                      AppColors.warning.withValues(alpha: 0.08),
+                                  color: AppColors.warning.withValues(
+                                    alpha: 0.08,
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: AppColors.warning
-                                        .withValues(alpha: 0.2),
+                                    color: AppColors.warning.withValues(
+                                      alpha: 0.2,
+                                    ),
                                   ),
                                 ),
                                 child: Column(
@@ -347,13 +364,15 @@ class MerchantDashboardScreen extends ConsumerWidget {
                                     Text(
                                       'Payment Dues',
                                       style: AppFonts.labelSmall(
-                                          color: secondaryTextColor),
+                                        color: secondaryTextColor,
+                                      ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       '${analyticsState.todayPendingPaymentsCount} Invoices',
                                       style: AppFonts.titleMedium(
-                                          color: AppColors.warning),
+                                        color: AppColors.warning,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -385,15 +404,17 @@ class MerchantDashboardScreen extends ConsumerWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
-                      color:
-                          isDark ? AppColors.borderDark : AppColors.borderLight,
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
                     ),
                   ),
                   child: ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: state.recentJobs.length,
-                    separatorBuilder: (context, index) => const Divider(height: 1),
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 1),
                     itemBuilder: (ctx, index) {
                       final job = state.recentJobs[index];
                       return MerchantJobRow(

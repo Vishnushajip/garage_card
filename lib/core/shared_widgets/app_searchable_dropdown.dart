@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../colors/app_colors.dart';
 import '../fonts/app_fonts.dart';
 import 'app_dropdown.dart';
@@ -37,10 +38,12 @@ class AppSearchableDropdown<T> extends StatefulWidget {
 class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
   void _openSearchDialog(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final modalBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     showModalBottomSheet<void>(
@@ -71,19 +74,21 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final fillBg = isDark ? AppColors.inputFillDark : AppColors.inputFillLight;
     final borderColor = widget.errorText != null
         ? AppColors.error
         : (isDark ? AppColors.borderDark : AppColors.borderLight);
 
     final selectedItem = widget.items.cast<AppDropdownItem<T>?>().firstWhere(
-          (e) => e?.value == widget.value,
-          orElse: () => null,
-        );
+      (e) => e?.value == widget.value,
+      orElse: () => null,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,8 +122,9 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color:
-                  widget.enabled ? fillBg : borderColor.withValues(alpha: 0.3),
+              color: widget.enabled
+                  ? fillBg
+                  : borderColor.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: borderColor,
@@ -146,11 +152,7 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
                           overflow: TextOverflow.ellipsis,
                         ),
                 ),
-                Icon(
-                  Icons.search_rounded,
-                  color: secondaryTextColor,
-                  size: 20,
-                ),
+                Icon(Icons.search_rounded, color: secondaryTextColor, size: 20),
               ],
             ),
           ),
@@ -265,7 +267,9 @@ class _SearchSheetContentState<T> extends State<_SearchSheetContent<T>> {
                 style: AppFonts.bodyLarge(color: widget.primaryTextColor),
                 decoration: InputDecoration(
                   hintText: widget.searchHint,
-                  hintStyle: AppFonts.bodyMedium(color: widget.secondaryTextColor),
+                  hintStyle: AppFonts.bodyMedium(
+                    color: widget.secondaryTextColor,
+                  ),
                   prefixIcon: const Icon(Icons.search_rounded, size: 20),
                   filled: true,
                   fillColor: widget.isDark
@@ -301,7 +305,8 @@ class _SearchSheetContentState<T> extends State<_SearchSheetContent<T>> {
                   : ListView.separated(
                       shrinkWrap: true,
                       itemCount: _filtered.length,
-                      separatorBuilder: (context, index) => const Divider(height: 1),
+                      separatorBuilder: (context, index) =>
+                          const Divider(height: 1),
                       itemBuilder: (ctx, index) {
                         final item = _filtered[index];
                         final isSelected = item.value == widget.selectedValue;
@@ -311,15 +316,16 @@ class _SearchSheetContentState<T> extends State<_SearchSheetContent<T>> {
                           leading: item.icon,
                           title: Text(
                             item.title,
-                            style: AppFonts.bodyLarge(
-                              color: isSelected
-                                  ? AppColors.accentBlue
-                                  : widget.primaryTextColor,
-                            ).copyWith(
-                              fontWeight: isSelected
-                                  ? FontWeight.w700
-                                  : FontWeight.w400,
-                            ),
+                            style:
+                                AppFonts.bodyLarge(
+                                  color: isSelected
+                                      ? AppColors.accentBlue
+                                      : widget.primaryTextColor,
+                                ).copyWith(
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w400,
+                                ),
                           ),
                           subtitle: item.subtitle != null
                               ? Text(

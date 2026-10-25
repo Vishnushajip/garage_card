@@ -1,15 +1,21 @@
-gradle-wrapper.jar
-/.gradle
-/captures/
-/gradlew
-/gradlew.bat
-/local.properties
-GeneratedPluginRegistrant.java
-.cxx/
-
-# Remember to never publicly share your keystore.
-# See https://flutter.dev/to/reference-keystore
-key.properties
-**/*.keystore
-**/*.jks
+# Only ignore heavy build artifacts, temporary caches, and generated files
+/.gradle/
+.gradle/
 /build/
+build/
+.cxx/
+/captures/
+GeneratedPluginRegistrant.java
+
+# Explicitly do NOT ignore configuration, signing keys, keystores, or source files
+!local.properties
+!key.properties
+!gradle-wrapper.jar
+!gradlew
+!gradlew.bat
+!**/*.keystore
+!**/*.jks
+!keystore/
+!keystore/**
+!MainActivity.kt
+!**/MainActivity.kt

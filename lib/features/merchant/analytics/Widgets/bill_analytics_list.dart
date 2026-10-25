@@ -19,10 +19,12 @@ class BillAnalyticsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return Card(
       elevation: 0,
@@ -130,10 +132,13 @@ class BillAnalyticsList extends StatelessWidget {
                                     const SizedBox(width: 6),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 4, vertical: 1),
+                                        horizontal: 4,
+                                        vertical: 1,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: AppColors.accentAmber
-                                            .withValues(alpha: 0.15),
+                                        color: AppColors.accentAmber.withValues(
+                                          alpha: 0.15,
+                                        ),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
@@ -148,10 +153,13 @@ class BillAnalyticsList extends StatelessWidget {
                                     const SizedBox(width: 8),
                                   ],
                                   Text(
-                                    CurrencyFormatter.format(inv.totalAmount,
-                                        currencyCode: inv.currencyCode),
+                                    CurrencyFormatter.format(
+                                      inv.totalAmount,
+                                      currencyCode: inv.currencyCode,
+                                    ),
                                     style: AppFonts.labelLarge(
-                                        color: primaryTextColor),
+                                      color: primaryTextColor,
+                                    ),
                                   ),
                                 ],
                               ),

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/shared/models/customer_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/merchant_customers_state.dart';
 
 class MerchantCustomersViewModel extends Notifier<MerchantCustomersState> {
@@ -13,10 +14,9 @@ class MerchantCustomersViewModel extends Notifier<MerchantCustomersState> {
   Future<void> _loadCustomers() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final list = await ref.read(garageRepositoryProvider).getCustomers(
-            garageId: 'garage_demo_1',
-            search: state.searchQuery,
-          );
+      final list = await ref
+          .read(garageRepositoryProvider)
+          .getCustomers(garageId: 'garage_demo_1', search: state.searchQuery);
       state = state.copyWith(isLoading: false, customers: list);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
@@ -47,8 +47,9 @@ class MerchantCustomersViewModel extends Notifier<MerchantCustomersState> {
         notes: notes,
         createdAt: DateTime.now(),
       );
-      final created =
-          await ref.read(garageRepositoryProvider).createCustomer(cust);
+      final created = await ref
+          .read(garageRepositoryProvider)
+          .createCustomer(cust);
       state = state.copyWith(
         isSaving: false,
         customers: [created, ...state.customers],
@@ -67,5 +68,5 @@ class MerchantCustomersViewModel extends Notifier<MerchantCustomersState> {
 
 final merchantCustomersViewModelProvider =
     NotifierProvider<MerchantCustomersViewModel, MerchantCustomersState>(
-  MerchantCustomersViewModel.new,
-);
+      MerchantCustomersViewModel.new,
+    );

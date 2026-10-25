@@ -53,8 +53,9 @@ class _JobStatusDialogState extends State<JobStatusDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return AlertDialog(
       title: Text(
@@ -111,8 +112,7 @@ class _JobStatusDialogState extends State<JobStatusDialog> {
             AppTextField(
               controller: _notesCtrl,
               label: 'Customer Update Note',
-              hint:
-                  'e.g. Brake rotors turned, new pads installed. Testing car now.',
+              hint: 'e.g. Brake rotors turned, new pads installed. Testing car now.',
               maxLines: 3,
             ),
           ],

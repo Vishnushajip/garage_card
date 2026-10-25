@@ -10,6 +10,7 @@ import 'package:garage_card/core/shared_widgets/app_pagination_loader.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
+
 import '../ViewModel/nearby_garages_view_model.dart';
 import '../Widgets/garage_card_item.dart';
 
@@ -24,7 +25,8 @@ class NearbyGaragesScreen extends ConsumerStatefulWidget {
   final ValueChanged<String> onRequestService;
 
   @override
-  ConsumerState<NearbyGaragesScreen> createState() => _NearbyGaragesScreenState();
+  ConsumerState<NearbyGaragesScreen> createState() =>
+      _NearbyGaragesScreenState();
 }
 
 class _NearbyGaragesScreenState extends ConsumerState<NearbyGaragesScreen> {
@@ -52,8 +54,9 @@ class _NearbyGaragesScreenState extends ConsumerState<NearbyGaragesScreen> {
     final state = ref.watch(nearbyGaragesViewModelProvider);
     final vm = ref.read(nearbyGaragesViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Scaffold(
       appBar: AppBar(
@@ -91,7 +94,9 @@ class _NearbyGaragesScreenState extends ConsumerState<NearbyGaragesScreen> {
                   child: Builder(
                     builder: (context) {
                       if (state.isLoading) {
-                        return const AppLoading(message: 'Searching nearby garages...');
+                        return const AppLoading(
+                          message: 'Searching nearby garages...',
+                        );
                       }
                       if (state.errorMessage != null && state.garages.isEmpty) {
                         return AppErrorState(
@@ -102,8 +107,7 @@ class _NearbyGaragesScreenState extends ConsumerState<NearbyGaragesScreen> {
                       if (state.garages.isEmpty) {
                         return const AppEmptyState(
                           title: 'No Garages Found',
-                          message:
-                              'Try searching for another locality or extending your search radius.',
+                          message: 'Try searching for another locality or extending your search radius.',
                           icon: Icons.location_off_rounded,
                         );
                       }

@@ -21,10 +21,12 @@ class PreferenceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return ListTile(
       onTap: onTap,
@@ -36,15 +38,13 @@ class PreferenceTile extends StatelessWidget {
         ),
         child: Icon(icon, color: AppColors.accentBlue, size: 20),
       ),
-      title: Text(
-        title,
-        style: AppFonts.titleMedium(color: primaryTextColor),
-      ),
+      title: Text(title, style: AppFonts.titleMedium(color: primaryTextColor)),
       subtitle: Text(
         subtitle,
         style: AppFonts.labelSmall(color: secondaryTextColor),
       ),
-      trailing: trailing ??
+      trailing:
+          trailing ??
           const Icon(
             Icons.chevron_right_rounded,
             size: 20,

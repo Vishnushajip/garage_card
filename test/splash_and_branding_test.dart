@@ -10,8 +10,10 @@ void main() {
   group('WeFix Branding & Logo Tests', () {
     test('AppBranding constants reflect WeFix brand identity', () {
       expect(AppBranding.appName, equals('WeFix'));
-      expect(AppBranding.appTagline,
-          equals('Vehicle Service & Garage Management Platform'));
+      expect(
+        AppBranding.appTagline,
+        equals('Vehicle Service & Garage Management Platform'),
+      );
       expect(AppBranding.defaultSupportEmail, equals('support@wefix.app'));
     });
 
@@ -19,9 +21,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: AppLogo(size: 64, showBadge: true),
-            ),
+            body: Center(child: AppLogo(size: 64, showBadge: true)),
           ),
         ),
       );
@@ -35,11 +35,7 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: Center(
-              child: AppLogo(
-                size: 80,
-                showBadge: true,
-                showWordmark: true,
-              ),
+              child: AppLogo(size: 80, showBadge: true, showWordmark: true),
             ),
           ),
         ),
@@ -49,8 +45,9 @@ void main() {
       expect(find.text('VEHICLE SERVICE PLATFORM'), findsOneWidget);
     });
 
-    testWidgets('AppLogo renders in white variant for dark backgrounds',
-        (tester) async {
+    testWidgets('AppLogo renders in white variant for dark backgrounds', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -83,25 +80,26 @@ void main() {
     });
 
     testWidgets(
-        'SplashRevealPainter renders smoothly at different progress levels',
-        (tester) async {
-      for (final progress in [0.0, 0.25, 0.5, 0.75, 1.0]) {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: CustomPaint(
-                size: const Size(400, 800),
-                painter: SplashRevealPainter(
-                  progress: progress,
-                  revealColor: AppColors.primaryRed,
+      'SplashRevealPainter renders smoothly at different progress levels',
+      (tester) async {
+        for (final progress in [0.0, 0.25, 0.5, 0.75, 1.0]) {
+          await tester.pumpWidget(
+            MaterialApp(
+              home: Scaffold(
+                body: CustomPaint(
+                  size: const Size(400, 800),
+                  painter: SplashRevealPainter(
+                    progress: progress,
+                    revealColor: AppColors.primaryRed,
+                  ),
                 ),
               ),
             ),
-          ),
-        );
-        expect(find.byType(CustomPaint), findsWidgets);
-      }
-    });
+          );
+          expect(find.byType(CustomPaint), findsWidgets);
+        }
+      },
+    );
   });
 
   group('SplashTachometerPainter Tests', () {
@@ -126,8 +124,9 @@ void main() {
       expect(p1.shouldRepaint(p3), isFalse);
     });
 
-    testWidgets('SplashTachometerPainter renders gauge ticks and arc',
-        (tester) async {
+    testWidgets('SplashTachometerPainter renders gauge ticks and arc', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

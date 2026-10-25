@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../branding/app_logo.dart';
 import '../colors/app_colors.dart';
 import '../fonts/app_fonts.dart';
 
 class AppLoading extends StatelessWidget {
-  const AppLoading({
-    super.key,
-    this.message,
-    this.showLogo = false,
-  });
+  const AppLoading({super.key, this.message, this.showLogo = false});
 
   final String? message;
   final bool showLogo;
@@ -16,8 +13,9 @@ class AppLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return Center(
       child: Column(

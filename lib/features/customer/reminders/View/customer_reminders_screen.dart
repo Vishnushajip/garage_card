@@ -10,6 +10,7 @@ import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
+
 import '../ViewModel/customer_reminders_view_model.dart';
 import '../Widgets/reminder_card_item.dart';
 
@@ -33,8 +34,9 @@ class CustomerRemindersScreen extends ConsumerWidget {
     final state = ref.watch(customerRemindersViewModelProvider);
     final vm = ref.read(customerRemindersViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Scaffold(
       appBar: AppBar(
@@ -56,7 +58,9 @@ class CustomerRemindersScreen extends ConsumerWidget {
           child: Builder(
             builder: (context) {
               if (state.isLoading) {
-                return const AppLoading(message: 'Loading service reminders...');
+                return const AppLoading(
+                  message: 'Loading service reminders...',
+                );
               }
               if (state.errorMessage != null && state.reminders.isEmpty) {
                 return AppErrorState(
@@ -67,8 +71,7 @@ class CustomerRemindersScreen extends ConsumerWidget {
               if (state.reminders.isEmpty) {
                 return AppEmptyState(
                   title: 'No Active Reminders',
-                  message:
-                      'Service reminders are automatically generated when repair jobs complete, or you can record external maintenance.',
+                  message: 'Service reminders are automatically generated when repair jobs complete, or you can record external maintenance.',
                   icon: Icons.notifications_none_rounded,
                   actionLabel: 'Log External Service',
                   onAction: () => _showLogExternalSheet(context, ref),
@@ -78,9 +81,7 @@ class CustomerRemindersScreen extends ConsumerWidget {
               return ListView.builder(
                 itemCount: state.reminders.length,
                 itemBuilder: (ctx, index) {
-                  return ReminderCardItem(
-                    reminder: state.reminders[index],
-                  );
+                  return ReminderCardItem(reminder: state.reminders[index]);
                 },
               );
             },
@@ -102,8 +103,9 @@ class _LogExternalServiceSheet extends ConsumerStatefulWidget {
 class _LogExternalServiceSheetState
     extends ConsumerState<_LogExternalServiceSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _vehicleDisplayCtrl =
-      TextEditingController(text: '2022 Hyundai Creta (KL 07 CD 4488)');
+  final _vehicleDisplayCtrl = TextEditingController(
+    text: '2022 Hyundai Creta (KL 07 CD 4488)',
+  );
   final _odometerCtrl = TextEditingController(text: '35000');
   final _notesCtrl = TextEditingController();
 
@@ -131,25 +133,27 @@ class _LogExternalServiceSheetState
           notes: _notesCtrl.text.trim(),
         )
         .then((success) {
-      if (success && mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'External service recorded. Next interval scheduled!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      }
-    });
+          if (success && mounted) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'External service recorded. Next interval scheduled!',
+                ),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          }
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(customerRemindersViewModelProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Padding(
       padding: EdgeInsets.only(

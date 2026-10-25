@@ -9,6 +9,7 @@ import 'package:garage_card/core/shared_widgets/app_error_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
+
 import '../ViewModel/customer_invoices_view_model.dart';
 import '../Widgets/invoice_card_item.dart';
 
@@ -20,10 +21,12 @@ class CustomerInvoicesScreen extends ConsumerWidget {
     final state = ref.watch(customerInvoicesViewModelProvider);
     final vm = ref.read(customerInvoicesViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return DefaultTabController(
       length: 2,
@@ -59,17 +62,14 @@ class CustomerInvoicesScreen extends ConsumerWidget {
                     if (state.invoices.isEmpty) {
                       return const AppEmptyState(
                         title: 'No Invoices Found',
-                        message:
-                            'Completed repair jobs and issued invoices will appear here.',
+                        message: 'Completed repair jobs and issued invoices will appear here.',
                         icon: Icons.receipt_long_outlined,
                       );
                     }
                     return ListView.builder(
                       itemCount: state.invoices.length,
                       itemBuilder: (ctx, index) {
-                        return InvoiceCardItem(
-                          invoice: state.invoices[index],
-                        );
+                        return InvoiceCardItem(invoice: state.invoices[index]);
                       },
                     );
                   },
@@ -83,7 +83,8 @@ class CustomerInvoicesScreen extends ConsumerWidget {
                   builder: (context) {
                     if (state.isLoading) {
                       return const AppLoading(
-                          message: 'Loading payment history...');
+                        message: 'Loading payment history...',
+                      );
                     }
                     if (state.payments.isEmpty) {
                       return const AppEmptyState(

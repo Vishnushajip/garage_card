@@ -6,20 +6,19 @@ import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/features/shared/models/appointment_model.dart';
 
 class AppointmentCard extends StatelessWidget {
-  const AppointmentCard({
-    super.key,
-    required this.appointment,
-  });
+  const AppointmentCard({super.key, required this.appointment});
 
   final AppointmentModel appointment;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     return Card(

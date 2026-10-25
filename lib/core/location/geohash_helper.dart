@@ -14,7 +14,8 @@ class GeohashHelper {
     final dLat = _degreesToRadians(lat2 - lat1);
     final dLon = _degreesToRadians(lon2 - lon1);
 
-    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
         math.cos(_degreesToRadians(lat1)) *
             math.cos(_degreesToRadians(lat2)) *
             math.sin(dLon / 2) *
@@ -29,7 +30,7 @@ class GeohashHelper {
   }
 
   static ({double minLat, double maxLat, double minLon, double maxLon})
-      calculateBoundingBox({
+  calculateBoundingBox({
     required double latitude,
     required double longitude,
     required double radiusKm,
@@ -37,7 +38,8 @@ class GeohashHelper {
     const double earthRadiusKm = 6371.0;
 
     final latDelta = (radiusKm / earthRadiusKm) * (180.0 / math.pi);
-    final lonDelta = (radiusKm / (earthRadiusKm * math.cos(_degreesToRadians(latitude)))) *
+    final lonDelta =
+        (radiusKm / (earthRadiusKm * math.cos(_degreesToRadians(latitude)))) *
         (180.0 / math.pi);
 
     return (

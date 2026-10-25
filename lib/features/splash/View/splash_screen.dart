@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/branding/app_logo.dart';
@@ -165,9 +166,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             child: AnimatedBuilder(
               animation: _controller,
               builder: (context, _) {
-                final breathScale = _controller.value >= 0.25 &&
-                        _controller.value <= 0.72
-                    ? 1.0 + 0.02 * math.sin((_controller.value - 0.25) * math.pi * 4)
+                final breathScale =
+                    _controller.value >= 0.25 && _controller.value <= 0.72
+                    ? 1.0 +
+                          0.02 *
+                              math.sin((_controller.value - 0.25) * math.pi * 4)
                     : 1.0;
 
                 final totalScale = _badgeScaleAnimation.value * breathScale;
@@ -202,13 +205,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                     width: 88,
                                     height: 88,
                                     decoration: BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.circular(88 * 0.28),
+                                      borderRadius: BorderRadius.circular(
+                                        88 * 0.28,
+                                      ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: AppColors.primaryRed.withValues(
-                                              alpha: 0.28 +
-                                                  0.08 * (breathScale - 1.0)),
+                                          color: AppColors.primaryRed
+                                              .withValues(
+                                                alpha:
+                                                    0.28 +
+                                                    0.08 * (breathScale - 1.0),
+                                              ),
                                           blurRadius: 28,
                                           offset: const Offset(0, 10),
                                         ),
@@ -221,8 +228,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   ),
                                   if (shimmerVal > 0.0 && shimmerVal < 1.0)
                                     ClipRRect(
-                                      borderRadius:
-                                          BorderRadius.circular(88 * 0.28),
+                                      borderRadius: BorderRadius.circular(
+                                        88 * 0.28,
+                                      ),
                                       child: SizedBox(
                                         width: 88,
                                         height: 88,
@@ -241,7 +249,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                                 colors: [
                                                   Colors.transparent,
                                                   Colors.white.withValues(
-                                                      alpha: 0.38),
+                                                    alpha: 0.38,
+                                                  ),
                                                   Colors.transparent,
                                                 ],
                                               ),
@@ -267,13 +276,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           children: [
                             RichText(
                               text: TextSpan(
-                                style: AppFonts.displayLarge(
-                                  color: AppColors.textPrimaryLight,
-                                ).copyWith(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -1.2,
-                                ),
+                                style:
+                                    AppFonts.displayLarge(
+                                      color: AppColors.textPrimaryLight,
+                                    ).copyWith(
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -1.2,
+                                    ),
                                 children: const [
                                   TextSpan(text: 'We'),
                                   TextSpan(
@@ -291,14 +301,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                               opacity: _taglineFadeAnimation.value,
                               child: Text(
                                 'VEHICLE SERVICE PLATFORM',
-                                style: AppFonts.labelSmall(
-                                  color: AppColors.textMutedLight,
-                                ).copyWith(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing:
-                                      _taglineTrackingAnimation.value,
-                                ),
+                                style:
+                                    AppFonts.labelSmall(
+                                      color: AppColors.textMutedLight,
+                                    ).copyWith(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing:
+                                          _taglineTrackingAnimation.value,
+                                    ),
                               ),
                             ),
                           ],

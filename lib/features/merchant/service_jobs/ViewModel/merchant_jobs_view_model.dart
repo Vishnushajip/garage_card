@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/merchant_jobs_state.dart';
 
 class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
@@ -13,7 +14,9 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
   Future<void> _loadJobs() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final list = await ref.read(garageRepositoryProvider).getServiceJobs(
+      final list = await ref
+          .read(garageRepositoryProvider)
+          .getServiceJobs(
             garageId: 'garage_demo_1',
             status: state.filterStatus,
             search: state.searchQuery,
@@ -27,15 +30,16 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
   Future<void> selectJob(String jobId) async {
     state = state.copyWith(isLoading: true);
     try {
-      final jobs = await ref.read(garageRepositoryProvider).getServiceJobs(
-            garageId: 'garage_demo_1',
-          );
+      final jobs = await ref
+          .read(garageRepositoryProvider)
+          .getServiceJobs(garageId: 'garage_demo_1');
       final job = jobs.cast<ServiceJobModel?>().firstWhere(
-            (j) => j?.id == jobId,
-            orElse: () => null,
-          );
-      final history =
-          await ref.read(garageRepositoryProvider).getJobHistory(jobId);
+        (j) => j?.id == jobId,
+        orElse: () => null,
+      );
+      final history = await ref
+          .read(garageRepositoryProvider)
+          .getJobHistory(jobId);
 
       state = state.copyWith(
         isLoading: false,
@@ -54,7 +58,9 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
   }) async {
     state = state.copyWith(isUpdatingStatus: true, errorMessage: null);
     try {
-      await ref.read(garageRepositoryProvider).updateJobStatus(
+      await ref
+          .read(garageRepositoryProvider)
+          .updateJobStatus(
             jobId: jobId,
             newStatus: newStatus,
             notes: notes,
@@ -97,8 +103,9 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
         createdAt: DateTime.now(),
       );
 
-      final created =
-          await ref.read(garageRepositoryProvider).createServiceJob(newJob);
+      final created = await ref
+          .read(garageRepositoryProvider)
+          .createServiceJob(newJob);
       state = state.copyWith(
         isCreatingJob: false,
         jobs: [created, ...state.jobs],
@@ -130,5 +137,5 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
 
 final merchantJobsViewModelProvider =
     NotifierProvider<MerchantJobsViewModel, MerchantJobsState>(
-  MerchantJobsViewModel.new,
-);
+      MerchantJobsViewModel.new,
+    );

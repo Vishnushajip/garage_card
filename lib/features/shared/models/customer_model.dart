@@ -47,7 +47,8 @@ class CustomerModel {
       email: data['email'] as String? ?? '',
       address: data['address'] as String? ?? '',
       notes: data['notes'] as String? ?? '',
-      vehicleIds: (data['vehicleIds'] as List<dynamic>?)
+      vehicleIds:
+          (data['vehicleIds'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const [],

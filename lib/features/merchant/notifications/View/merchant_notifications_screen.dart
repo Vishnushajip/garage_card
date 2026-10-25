@@ -9,6 +9,7 @@ import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/features/customer/notifications/Widgets/notification_tile.dart';
 import 'package:go_router/go_router.dart';
+
 import '../ViewModel/merchant_notifications_view_model.dart';
 
 class MerchantNotificationsScreen extends ConsumerWidget {
@@ -19,8 +20,9 @@ class MerchantNotificationsScreen extends ConsumerWidget {
     final state = ref.watch(merchantNotificationsViewModelProvider);
     final vm = ref.read(merchantNotificationsViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Scaffold(
       appBar: AppBar(
@@ -53,7 +55,8 @@ class MerchantNotificationsScreen extends ConsumerWidget {
             builder: (context) {
               if (state.isLoading) {
                 return const AppLoading(
-                    message: 'Loading garage notifications...');
+                  message: 'Loading garage notifications...',
+                );
               }
               if (state.errorMessage != null && state.notifications.isEmpty) {
                 return AppErrorState(
@@ -67,9 +70,7 @@ class MerchantNotificationsScreen extends ConsumerWidget {
                   title: state.filterOnlyUnread
                       ? 'No Unread Notifications'
                       : 'No Notifications Yet',
-                  message: state.filterOnlyUnread
-                      ? 'You are all caught up!'
-                      : 'Booking requests, estimate approvals, and payments will alert you here.',
+                  message: state.filterOnlyUnread ? 'You are all caught up!' : 'Booking requests, estimate approvals, and payments will alert you here.',
                   icon: Icons.notifications_none_rounded,
                 );
               }

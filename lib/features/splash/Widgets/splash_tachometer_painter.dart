@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 
@@ -88,7 +89,8 @@ class SplashTachometerPainter extends CustomPainter {
       final rippleOpacity = (1.0 - sparkRippleProgress).clamp(0.0, 1.0);
 
       final ripplePaint = Paint()
-        ..color = const Color(0xFFFEF08A).withValues(alpha: 0.65 * rippleOpacity)
+        ..color = const Color(0xFFFEF08A)
+            .withValues(alpha: 0.65 * rippleOpacity)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.8 * (1.0 - sparkRippleProgress)
         ..isAntiAlias = true;

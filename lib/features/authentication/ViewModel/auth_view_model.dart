@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/errors/app_exception.dart';
 import 'package:garage_card/core/firebase/firebase_config.dart';
 import 'package:garage_card/features/shared/models/user_profile_model.dart';
+
 import '../Model/auth_state.dart';
 
 class AuthViewModel extends Notifier<AuthState> {
@@ -45,7 +46,9 @@ class AuthViewModel extends Notifier<AuthState> {
           isLoading: false,
           isInitialized: true,
           userProfile: profile,
-          activeExperience: profile.role == 'merchant' ? 'merchant' : 'customer',
+          activeExperience: profile.role == 'merchant'
+              ? 'merchant'
+              : 'customer',
         );
         return;
       }
@@ -128,8 +131,9 @@ class AuthViewModel extends Notifier<AuthState> {
         );
       }
 
-      final authorizedExperience =
-          profile.role == 'merchant' ? 'merchant' : 'customer';
+      final authorizedExperience = profile.role == 'merchant'
+          ? 'merchant'
+          : 'customer';
 
       state = state.copyWith(
         isLoading: false,
@@ -139,10 +143,7 @@ class AuthViewModel extends Notifier<AuthState> {
       return true;
     } catch (e) {
       final appEx = AppException.fromFirebase(e);
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: appEx.message,
-      );
+      state = state.copyWith(isLoading: false, errorMessage: appEx.message);
       return false;
     }
   }
@@ -201,10 +202,7 @@ class AuthViewModel extends Notifier<AuthState> {
       return true;
     } catch (e) {
       final appEx = AppException.fromFirebase(e);
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: appEx.message,
-      );
+      state = state.copyWith(isLoading: false, errorMessage: appEx.message);
       return false;
     }
   }
@@ -216,8 +214,9 @@ class AuthViewModel extends Notifier<AuthState> {
       UserCredential credential;
       if (kIsWeb) {
         final googleProvider = GoogleAuthProvider();
-        credential =
-            await FirebaseAuth.instance.signInWithPopup(googleProvider);
+        credential = await FirebaseAuth.instance.signInWithPopup(
+          googleProvider,
+        );
       } else {
         final googleSignIn = GoogleSignIn();
         final googleUser = await googleSignIn.signIn();
@@ -230,8 +229,7 @@ class AuthViewModel extends Notifier<AuthState> {
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         );
-        credential =
-            await FirebaseAuth.instance.signInWithCredential(authCred);
+        credential = await FirebaseAuth.instance.signInWithCredential(authCred);
       }
 
       final user = credential.user;
@@ -278,8 +276,9 @@ class AuthViewModel extends Notifier<AuthState> {
         );
       }
 
-      final authorizedExperience =
-          profile.role == 'merchant' ? 'merchant' : 'customer';
+      final authorizedExperience = profile.role == 'merchant'
+          ? 'merchant'
+          : 'customer';
 
       state = state.copyWith(
         isLoading: false,
@@ -287,12 +286,15 @@ class AuthViewModel extends Notifier<AuthState> {
         activeExperience: authorizedExperience,
       );
       return true;
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('SIGN_IN_WITH_GOOGLE_EXCEPTION: $e');
+      debugPrint('SIGN_IN_WITH_GOOGLE_STACK: $st');
       final appEx = AppException.fromFirebase(e);
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: appEx.message,
-      );
+      if (appEx.code == 'auth-cancelled') {
+        state = state.copyWith(isLoading: false, errorMessage: null);
+        return false;
+      }
+      state = state.copyWith(isLoading: false, errorMessage: appEx.message);
       return false;
     }
   }
@@ -307,17 +309,15 @@ class AuthViewModel extends Notifier<AuthState> {
       return true;
     } catch (e) {
       final appEx = AppException.fromFirebase(e);
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: appEx.message,
-      );
+      state = state.copyWith(isLoading: false, errorMessage: appEx.message);
       return false;
     }
   }
 
   void switchExperience(String targetExperience) {
     if (state.userProfile == null) return;
-    if (targetExperience == 'merchant' && state.userProfile?.role != 'merchant') {
+    if (targetExperience == 'merchant' &&
+        state.userProfile?.role != 'merchant') {
       state = state.copyWith(
         errorMessage:
             'Unauthorized: Your account does not have merchant privileges.',
@@ -339,5 +339,6 @@ class AuthViewModel extends Notifier<AuthState> {
   }
 }
 
-final authViewModelProvider =
-    NotifierProvider<AuthViewModel, AuthState>(AuthViewModel.new);
+final authViewModelProvider = NotifierProvider<AuthViewModel, AuthState>(
+  AuthViewModel.new,
+);

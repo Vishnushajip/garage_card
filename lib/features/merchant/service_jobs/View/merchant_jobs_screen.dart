@@ -10,6 +10,7 @@ import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
+
 import '../ViewModel/merchant_jobs_view_model.dart';
 import 'merchant_job_detail_screen.dart';
 
@@ -27,9 +28,7 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
   @override
   void initState() {
     super.initState();
-    _scrollListener = ProactiveScrollListener(
-      onPrefetchRequested: () {},
-    );
+    _scrollListener = ProactiveScrollListener(onPrefetchRequested: () {});
   }
 
   @override
@@ -55,8 +54,9 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
     final state = ref.watch(merchantJobsViewModelProvider);
     final vm = ref.read(merchantJobsViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Scaffold(
       appBar: AppBar(
@@ -103,7 +103,8 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
                       if (state.jobs.isEmpty) {
                         return AppEmptyState(
                           title: 'No Repair Jobs Found',
-                          message: 'Create a new job order when a vehicle arrives.',
+                          message:
+                              'Create a new job order when a vehicle arrives.',
                           icon: Icons.car_repair_rounded,
                           actionLabel: 'Create New Job',
                           onAction: () => _showNewJobSheet(context),
@@ -112,7 +113,8 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
 
                       return ListView.separated(
                         itemCount: state.jobs.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 10),
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 10),
                         itemBuilder: (ctx, index) {
                           final job = state.jobs[index];
                           return Card(
@@ -202,8 +204,9 @@ class _NewJobSheet extends ConsumerStatefulWidget {
 class _NewJobSheetState extends ConsumerState<_NewJobSheet> {
   final _formKey = GlobalKey<FormState>();
   final _custCtrl = TextEditingController(text: 'Arjun Menon');
-  final _vehCtrl =
-      TextEditingController(text: '2022 Hyundai Creta (KL 07 CD 4488)');
+  final _vehCtrl = TextEditingController(
+    text: '2022 Hyundai Creta (KL 07 CD 4488)',
+  );
   final _complaintCtrl = TextEditingController();
   final _odometerCtrl = TextEditingController(text: '34500');
   final _techCtrl = TextEditingController(text: 'Suresh Kumar');
@@ -231,24 +234,25 @@ class _NewJobSheetState extends ConsumerState<_NewJobSheet> {
           technicianName: _techCtrl.text.trim(),
         )
         .then((success) {
-      if (success && mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Repair job created and logged successfully!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      }
-    });
+          if (success && mounted) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Repair job created and logged successfully!'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          }
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(merchantJobsViewModelProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Padding(
       padding: EdgeInsets.only(

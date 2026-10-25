@@ -10,7 +10,8 @@ void main() {
   group('Notification Models & Serialization Tests', () {
     test('NotificationModel serializes and deserializes image and deepLink fields', () {
       final now = DateTime.now();
-      const imageUrl = 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80';
+      const imageUrl =
+          'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80';
       const deepLink = '/customer/jobs/job_123';
 
       final notification = NotificationModel(
@@ -39,7 +40,10 @@ void main() {
       expect(map['eventId'], 'job_123_readyForCollection');
       expect(map['garageId'], 'garage_test_1');
 
-      final reconstructed = NotificationModel.fromFirestore(map, 'notif_test_1');
+      final reconstructed = NotificationModel.fromFirestore(
+        map,
+        'notif_test_1',
+      );
       expect(reconstructed.id, 'notif_test_1');
       expect(reconstructed.imageUrl, imageUrl);
       expect(reconstructed.deepLink, deepLink);
@@ -64,7 +68,10 @@ void main() {
       expect(map['deviceId'], 'device_pixel_8');
       expect(map['isActive'], isTrue);
 
-      final reconstructed = FcmTokenModel.fromFirestore(map, 'fcm_token_sample_abc');
+      final reconstructed = FcmTokenModel.fromFirestore(
+        map,
+        'fcm_token_sample_abc',
+      );
       expect(reconstructed.token, 'fcm_token_sample_abc');
       expect(reconstructed.userId, 'user_456');
       expect(reconstructed.platform, 'android');
@@ -77,17 +84,22 @@ void main() {
   });
 
   group('Notification Event Matrix & Routing Tests', () {
-    test('NotificationEventMatrix definitions contain valid targets and images', () {
-      final readyDef = NotificationEventMatrix.definitions[NotificationEventType.readyForCollection];
-      expect(readyDef, isNotNull);
-      expect(readyDef!.targetRole, 'customer');
-      expect(readyDef.defaultImageUrl, isNotEmpty);
+    test(
+      'NotificationEventMatrix definitions contain valid targets and images',
+      () {
+        final readyDef = NotificationEventMatrix
+            .definitions[NotificationEventType.readyForCollection];
+        expect(readyDef, isNotNull);
+        expect(readyDef!.targetRole, 'customer');
+        expect(readyDef.defaultImageUrl, isNotEmpty);
 
-      final estimateApprovedDef = NotificationEventMatrix.definitions[NotificationEventType.estimateApproved];
-      expect(estimateApprovedDef, isNotNull);
-      expect(estimateApprovedDef!.targetRole, 'merchant');
-      expect(estimateApprovedDef.defaultDeepLink, '/merchant/estimates');
-    });
+        final estimateApprovedDef = NotificationEventMatrix
+            .definitions[NotificationEventType.estimateApproved];
+        expect(estimateApprovedDef, isNotNull);
+        expect(estimateApprovedDef!.targetRole, 'merchant');
+        expect(estimateApprovedDef.defaultDeepLink, '/merchant/estimates');
+      },
+    );
 
     test('NotificationEventMatrix resolves deep links accurately', () {
       final jobLink = NotificationEventMatrix.resolveDeepLink(
@@ -190,23 +202,30 @@ void main() {
       expect(latest.isRead, isFalse);
     });
 
-    test('Estimate approval creates merchant notification with estimate image', () async {
-      final repo = GarageRepository();
-      final estimates = await repo.getEstimates(garageId: 'garage_demo_1');
-      expect(estimates, isNotEmpty);
-      final est = estimates.first;
+    test(
+      'Estimate approval creates merchant notification with estimate image',
+      () async {
+        final repo = GarageRepository();
+        final estimates = await repo.getEstimates(garageId: 'garage_demo_1');
+        expect(estimates, isNotEmpty);
+        final est = estimates.first;
 
-      final success = await repo.approveEstimate(est.id);
-      expect(success, isTrue);
+        final success = await repo.approveEstimate(est.id);
+        expect(success, isTrue);
 
-      final merchantNotifs = await repo.getNotifications(recipientUid: 'user_merchant_1');
-      expect(merchantNotifs, isNotEmpty);
-      final approvalNotif = merchantNotifs.firstWhere((n) => n.eventId == 'est_${est.id}_approved');
-      expect(approvalNotif.type, 'estimateApproved');
-      expect(approvalNotif.referenceId, est.id);
-      expect(approvalNotif.imageUrl, isNotNull);
-      expect(approvalNotif.deepLink, '/merchant/estimates');
-    });
+        final merchantNotifs = await repo.getNotifications(
+          recipientUid: 'user_merchant_1',
+        );
+        expect(merchantNotifs, isNotEmpty);
+        final approvalNotif = merchantNotifs.firstWhere(
+          (n) => n.eventId == 'est_${est.id}_approved',
+        );
+        expect(approvalNotif.type, 'estimateApproved');
+        expect(approvalNotif.referenceId, est.id);
+        expect(approvalNotif.imageUrl, isNotNull);
+        expect(approvalNotif.deepLink, '/merchant/estimates');
+      },
+    );
 
     test('Invoice issuance from estimate creates customer notification with invoice image', () async {
       final repo = GarageRepository();
@@ -216,49 +235,69 @@ void main() {
       final invoice = await repo.createInvoiceFromEstimate(est);
       expect(invoice.id, isNotEmpty);
 
-      final customerNotifs = await repo.getNotifications(recipientUid: est.customerId);
-      final invoiceNotif = customerNotifs.firstWhere((n) => n.eventId == 'inv_${invoice.id}_issued');
+      final customerNotifs = await repo.getNotifications(
+        recipientUid: est.customerId,
+      );
+      final invoiceNotif = customerNotifs.firstWhere(
+        (n) => n.eventId == 'inv_${invoice.id}_issued',
+      );
       expect(invoiceNotif.type, 'invoiceIssued');
       expect(invoiceNotif.imageUrl, contains('unsplash.com'));
       expect(invoiceNotif.deepLink, '/customer/invoices');
     });
 
-    test('Payment recording creates customer notification with balance update', () async {
-      final repo = GarageRepository();
-      final invoices = await repo.getInvoices(garageId: 'garage_demo_1');
-      final inv = invoices.first;
+    test(
+      'Payment recording creates customer notification with balance update',
+      () async {
+        final repo = GarageRepository();
+        final invoices = await repo.getInvoices(garageId: 'garage_demo_1');
+        final inv = invoices.first;
 
-      final payment = await repo.recordPayment(
-        invoiceId: inv.id,
-        amount: 2000.0,
-        paymentMethod: 'UPI',
-        referenceNumber: 'UPI-TEST-9988',
-        notes: 'Partial advance payment',
-        recordedByUid: 'staff_1',
-      );
-      expect(payment.id, isNotEmpty);
+        final payment = await repo.recordPayment(
+          invoiceId: inv.id,
+          amount: 2000.0,
+          paymentMethod: 'UPI',
+          referenceNumber: 'UPI-TEST-9988',
+          notes: 'Partial advance payment',
+          recordedByUid: 'staff_1',
+        );
+        expect(payment.id, isNotEmpty);
 
-      final customerNotifs = await repo.getNotifications(recipientUid: inv.customerId);
-      final paymentNotif = customerNotifs.firstWhere((n) => n.eventId == 'pay_${payment.id}_recorded');
-      expect(paymentNotif.type, 'paymentRecorded');
-      expect(paymentNotif.body, contains('₹2000'));
-      expect(paymentNotif.deepLink, '/customer/invoices');
-      expect(paymentNotif.imageUrl, isNotNull);
-    });
+        final customerNotifs = await repo.getNotifications(
+          recipientUid: inv.customerId,
+        );
+        final paymentNotif = customerNotifs.firstWhere(
+          (n) => n.eventId == 'pay_${payment.id}_recorded',
+        );
+        expect(paymentNotif.type, 'paymentRecorded');
+        expect(paymentNotif.body, contains('₹2000'));
+        expect(paymentNotif.deepLink, '/customer/invoices');
+        expect(paymentNotif.imageUrl, isNotNull);
+      },
+    );
 
-    test('Customer appointment booking creates merchant notification', () async {
-      final repo = GarageRepository();
-      final initialAppointments = await repo.getAppointments(garageId: 'garage_demo_1');
-      final app = initialAppointments.first;
+    test(
+      'Customer appointment booking creates merchant notification',
+      () async {
+        final repo = GarageRepository();
+        final initialAppointments = await repo.getAppointments(
+          garageId: 'garage_demo_1',
+        );
+        final app = initialAppointments.first;
 
-      await repo.createAppointment(app);
+        await repo.createAppointment(app);
 
-      final merchantNotifs = await repo.getNotifications(recipientUid: 'user_merchant_1');
-      expect(merchantNotifs, isNotEmpty);
-      final bookingNotif = merchantNotifs.firstWhere((n) => n.type == 'serviceRequestSubmitted');
-      expect(bookingNotif.imageUrl, isNotNull);
-      expect(bookingNotif.deepLink, '/merchant/jobs');
-    });
+        final merchantNotifs = await repo.getNotifications(
+          recipientUid: 'user_merchant_1',
+        );
+        expect(merchantNotifs, isNotEmpty);
+        final bookingNotif = merchantNotifs.firstWhere(
+          (n) => n.type == 'serviceRequestSubmitted',
+        );
+        expect(bookingNotif.imageUrl, isNotNull);
+        expect(bookingNotif.deepLink, '/merchant/jobs');
+      },
+    );
 
     test('Saving digital inspection creates customer notification with inspection photo', () async {
       final repo = GarageRepository();
@@ -271,14 +310,19 @@ void main() {
         jobId: job.id,
         vehicleId: job.vehicleId,
         inspectorName: 'Chief Diagnostics Technician',
-        summaryNotes: 'Multipoint health inspection complete. Brake pads at 40%.',
+        summaryNotes:
+            'Multipoint health inspection complete. Brake pads at 40%.',
         createdAt: DateTime.now(),
       );
 
       await repo.saveInspection(inspection);
 
-      final customerNotifs = await repo.getNotifications(recipientUid: job.customerId);
-      final inspNotif = customerNotifs.firstWhere((n) => n.eventId == 'insp_${inspection.id}_saved');
+      final customerNotifs = await repo.getNotifications(
+        recipientUid: job.customerId,
+      );
+      final inspNotif = customerNotifs.firstWhere(
+        (n) => n.eventId == 'insp_${inspection.id}_saved',
+      );
       expect(inspNotif.type, 'inspectionCompleted');
       expect(inspNotif.imageUrl, isNotNull);
       expect(inspNotif.deepLink, '/customer/jobs/${job.id}');
@@ -286,13 +330,17 @@ void main() {
 
     test('Marking notification as read updates read state', () async {
       final repo = GarageRepository();
-      final notifs = await repo.getNotifications(recipientUid: 'customer_demo_uid');
+      final notifs = await repo.getNotifications(
+        recipientUid: 'customer_demo_uid',
+      );
       expect(notifs, isNotEmpty);
       final unread = notifs.firstWhere((n) => !n.isRead);
 
       await repo.markNotificationAsRead(unread.id);
 
-      final updated = await repo.getNotifications(recipientUid: 'customer_demo_uid');
+      final updated = await repo.getNotifications(
+        recipientUid: 'customer_demo_uid',
+      );
       final target = updated.firstWhere((n) => n.id == unread.id);
       expect(target.isRead, isTrue);
     });

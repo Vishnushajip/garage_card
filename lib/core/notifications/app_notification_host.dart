@@ -1,16 +1,15 @@
 import 'dart:async';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/routing/app_router.dart';
+
 import 'foreground_notification_banner.dart';
 import 'push_notification_service.dart';
 
 class AppNotificationHost extends ConsumerStatefulWidget {
-  const AppNotificationHost({
-    super.key,
-    required this.child,
-  });
+  const AppNotificationHost({super.key, required this.child});
 
   final Widget child;
 
@@ -81,13 +80,14 @@ class _AppNotificationHostState extends ConsumerState<AppNotificationHost> {
             left: 0,
             right: 0,
             child: ForegroundNotificationBanner(
-              title: activeMsg.notification?.title ??
+              title:
+                  activeMsg.notification?.title ??
                   activeMsg.data['title'] ??
                   'Garage Alert',
-              body: activeMsg.notification?.body ??
-                  activeMsg.data['body'] ??
-                  '',
-              imageUrl: activeMsg.notification?.android?.imageUrl ??
+              body:
+                  activeMsg.notification?.body ?? activeMsg.data['body'] ?? '',
+              imageUrl:
+                  activeMsg.notification?.android?.imageUrl ??
                   activeMsg.notification?.apple?.imageUrl ??
                   activeMsg.data['imageUrl'] as String?,
               onTap: () {

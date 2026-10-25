@@ -67,7 +67,8 @@ class ServiceJobModel {
       jobNumber: data['jobNumber'] as String? ?? '',
       status: data['status'] as String? ?? 'received',
       odometerReading: (data['odometerReading'] as num?)?.toInt() ?? 0,
-      complaints: (data['complaints'] as List<dynamic>?)
+      complaints:
+          (data['complaints'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const [],

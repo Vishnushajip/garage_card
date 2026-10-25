@@ -16,6 +16,7 @@ import 'package:garage_card/core/shared_widgets/app_text_field.dart';
 import 'package:garage_card/features/shared/documents/pdf_generator_service.dart';
 import 'package:garage_card/features/shared/models/estimate_model.dart';
 import 'package:garage_card/features/shared/models/garage_model.dart';
+
 import '../ViewModel/customer_estimates_view_model.dart';
 import '../Widgets/estimate_line_items_view.dart';
 
@@ -23,7 +24,10 @@ class CustomerEstimatesScreen extends ConsumerWidget {
   const CustomerEstimatesScreen({super.key});
 
   void _confirmApprove(
-      BuildContext context, WidgetRef ref, EstimateModel estimate) async {
+    BuildContext context,
+    WidgetRef ref,
+    EstimateModel estimate,
+  ) async {
     final confirmed = await AppDialog.confirm(
       context,
       title: 'Approve Estimate?',
@@ -48,7 +52,10 @@ class CustomerEstimatesScreen extends ConsumerWidget {
   }
 
   void _promptReject(
-      BuildContext context, WidgetRef ref, EstimateModel estimate) {
+    BuildContext context,
+    WidgetRef ref,
+    EstimateModel estimate,
+  ) {
     final reasonCtrl = TextEditingController();
 
     showDialog(
@@ -99,8 +106,9 @@ class CustomerEstimatesScreen extends ConsumerWidget {
     final state = ref.watch(customerEstimatesViewModelProvider);
     final vm = ref.read(customerEstimatesViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     return Scaffold(
@@ -127,8 +135,7 @@ class CustomerEstimatesScreen extends ConsumerWidget {
               if (state.estimates.isEmpty) {
                 return const AppEmptyState(
                   title: 'No Estimates Available',
-                  message:
-                      'When your mechanic completes vehicle inspection, digital estimates will appear here for your review.',
+                  message: 'When your mechanic completes vehicle inspection, digital estimates will appear here for your review.',
                   icon: Icons.request_quote_outlined,
                 );
               }
@@ -163,12 +170,14 @@ class CustomerEstimatesScreen extends ConsumerWidget {
                                   Text(
                                     estimate.estimateNumber,
                                     style: AppFonts.titleLarge(
-                                        color: primaryTextColor),
+                                      color: primaryTextColor,
+                                    ),
                                   ),
                                   Text(
                                     'Created: ${DateFormatter.formatDate(estimate.createdAt)}',
                                     style: AppFonts.labelSmall(
-                                        color: AppColors.textSecondaryLight),
+                                      color: AppColors.textSecondaryLight,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -182,14 +191,16 @@ class CustomerEstimatesScreen extends ConsumerWidget {
                             children: [
                               IconButton.outlined(
                                 tooltip: 'Print or Save PDF',
-                                icon: const Icon(Icons.picture_as_pdf_rounded,
-                                    color: AppColors.accentBlue, size: 20),
+                                icon: const Icon(
+                                  Icons.picture_as_pdf_rounded,
+                                  color: AppColors.accentBlue,
+                                  size: 20,
+                                ),
                                 onPressed: () {
                                   final dummyGarage = GarageModel(
                                     id: estimate.garageId,
                                     name: 'Apex Precision Automotive',
-                                    address:
-                                        'Near MG Road, Ravipuram, Kochi, Kerala',
+                                    address: 'Near MG Road, Ravipuram, Kochi, Kerala',
                                     phone: '+91 98460 12345',
                                     email: 'service@apexprecision.com',
                                     ownerUid: 'merchant_1',
@@ -224,20 +235,26 @@ class CustomerEstimatesScreen extends ConsumerWidget {
                               ] else ...[
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 8),
+                                    horizontal: 14,
+                                    vertical: 8,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: AppColors.successBg,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Row(
                                     children: [
-                                      const Icon(Icons.check_circle_rounded,
-                                          color: AppColors.success, size: 18),
+                                      const Icon(
+                                        Icons.check_circle_rounded,
+                                        color: AppColors.success,
+                                        size: 18,
+                                      ),
                                       const SizedBox(width: 6),
                                       Text(
                                         'Approved by you on ${DateFormatter.formatDate(estimate.approvedAt)}',
                                         style: AppFonts.labelSmall(
-                                            color: AppColors.success),
+                                          color: AppColors.success,
+                                        ),
                                       ),
                                     ],
                                   ),

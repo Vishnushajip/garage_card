@@ -7,6 +7,7 @@ import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
+
 import '../ViewModel/auth_view_model.dart';
 
 enum AuthMode { signIn, signUp, forgotPassword }
@@ -43,7 +44,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         .read(authViewModelProvider.notifier)
         .signInWithGoogle(intendedRole: _selectedRole);
   }
-
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
@@ -85,15 +85,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(authViewModelProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
     final isCustomer = _selectedRole == 'customer';
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: isDark
+          ? AppColors.backgroundDark
+          : AppColors.backgroundLight,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -107,7 +111,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                   side: BorderSide(
-                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                    color: isDark
+                        ? AppColors.borderDark
+                        : AppColors.borderLight,
                     width: 1.2,
                   ),
                 ),
@@ -127,8 +133,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 borderRadius: BorderRadius.circular(22),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primaryRed
-                                        .withValues(alpha: 0.32),
+                                    color: AppColors.primaryRed.withValues(
+                                      alpha: 0.32,
+                                    ),
                                     blurRadius: 22,
                                     offset: const Offset(0, 8),
                                   ),
@@ -275,12 +282,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                   const SizedBox(width: 12),
                                   Text(
                                     'Continue with Google',
-                                    style: AppFonts.labelLarge(
-                                      color: const Color(0xFF1F2937),
-                                    ).copyWith(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style:
+                                        AppFonts.labelLarge(
+                                          color: const Color(0xFF1F2937),
+                                        ).copyWith(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -452,8 +460,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 label: _mode == AuthMode.signIn
                                     ? 'Sign In to Account'
                                     : _mode == AuthMode.signUp
-                                        ? 'Create Account'
-                                        : 'Send Reset Link',
+                                    ? 'Create Account'
+                                    : 'Send Reset Link',
                                 isLoading: state.isLoading,
                                 isFullWidth: true,
                                 onPressed: _submit,
@@ -515,10 +523,12 @@ class _RoleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return InkWell(
       onTap: onTap,
@@ -550,8 +560,8 @@ class _RoleCard extends StatelessWidget {
                   color: isSelected
                       ? AppColors.primaryRed
                       : (isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight),
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight),
                 ),
                 if (isSelected)
                   const Icon(
@@ -571,9 +581,7 @@ class _RoleCard extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               subtitle,
-              style: AppFonts.labelSmall(
-                color: secondaryTextColor,
-              ),
+              style: AppFonts.labelSmall(color: secondaryTextColor),
             ),
           ],
         ),
@@ -592,9 +600,7 @@ class _GoogleGLogo extends StatelessWidget {
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(
-        painter: _GoogleLogoPainter(),
-      ),
+      child: CustomPaint(painter: _GoogleLogoPainter()),
     );
   }
 }
@@ -608,7 +614,10 @@ class _GoogleLogoPainter extends CustomPainter {
     final radius = w / 2;
     final strokeWidth = w * 0.22;
 
-    final rect = Rect.fromCircle(center: center, radius: radius - strokeWidth / 2);
+    final rect = Rect.fromCircle(
+      center: center,
+      radius: radius - strokeWidth / 2,
+    );
 
     final paintBlue = Paint()
       ..color = const Color(0xFF4285F4)
@@ -644,7 +653,12 @@ class _GoogleLogoPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     canvas.drawRect(
-      Rect.fromLTWH(center.dx, center.dy - strokeWidth / 2, radius, strokeWidth),
+      Rect.fromLTWH(
+        center.dx,
+        center.dy - strokeWidth / 2,
+        radius,
+        strokeWidth,
+      ),
       barPaint,
     );
   }

@@ -6,20 +6,19 @@ import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/features/shared/models/service_reminder_model.dart';
 
 class ReminderCardItem extends StatelessWidget {
-  const ReminderCardItem({
-    super.key,
-    required this.reminder,
-  });
+  const ReminderCardItem({super.key, required this.reminder});
 
   final ServiceReminderModel reminder;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     return Card(

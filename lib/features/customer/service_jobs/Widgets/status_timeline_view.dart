@@ -5,20 +5,19 @@ import 'package:garage_card/core/formatting/date_formatter.dart';
 import 'package:garage_card/features/shared/models/job_status_history_model.dart';
 
 class StatusTimelineView extends StatelessWidget {
-  const StatusTimelineView({
-    super.key,
-    required this.history,
-  });
+  const StatusTimelineView({super.key, required this.history});
 
   final List<JobStatusHistoryModel> history;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     if (history.isEmpty) {
       return Padding(
@@ -91,8 +90,9 @@ class StatusTimelineView extends StatelessWidget {
                           ),
                           Text(
                             DateFormatter.formatDateTime(item.timestamp),
-                            style:
-                                AppFonts.labelSmall(color: secondaryTextColor),
+                            style: AppFonts.labelSmall(
+                              color: secondaryTextColor,
+                            ),
                           ),
                         ],
                       ),

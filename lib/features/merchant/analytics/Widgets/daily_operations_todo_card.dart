@@ -4,6 +4,7 @@ import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../Model/daily_todo_item_model.dart';
 
 class DailyOperationsTodoCard extends StatelessWidget {
@@ -36,7 +37,8 @@ class DailyOperationsTodoCard extends StatelessWidget {
       msg =
           'Hello ${item.customerName}, gentle reminder regarding outstanding payment of ${CurrencyFormatter.format(item.amount ?? 0)} for your recent garage service. Kindly settle at your earliest convenience.';
     } else {
-      msg = 'Hello ${item.customerName}, service update for your vehicle ${item.vehicleDisplay}.';
+      msg =
+          'Hello ${item.customerName}, service update for your vehicle ${item.vehicleDisplay}.';
     }
     WhatsAppShareService.sendWhatsAppMessage(
       phoneNumber: item.customerPhone,
@@ -47,10 +49,12 @@ class DailyOperationsTodoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return Card(
       elevation: 0,
@@ -100,8 +104,10 @@ class DailyOperationsTodoCard extends StatelessWidget {
                   ],
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.accentBlue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -209,8 +215,10 @@ class DailyOperationsTodoCard extends StatelessWidget {
                             onPressed: () => _callCustomer(item.customerPhone),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.chat_bubble_outline_rounded,
-                                size: 18),
+                            icon: const Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              size: 18,
+                            ),
                             color: AppColors.success,
                             tooltip: 'Send WhatsApp Update',
                             onPressed: () => _sendWhatsApp(item),

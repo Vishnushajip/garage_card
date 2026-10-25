@@ -9,20 +9,19 @@ import 'package:garage_card/features/shared/models/garage_model.dart';
 import 'package:garage_card/features/shared/models/invoice_model.dart';
 
 class InvoiceCardItem extends StatelessWidget {
-  const InvoiceCardItem({
-    super.key,
-    required this.invoice,
-  });
+  const InvoiceCardItem({super.key, required this.invoice});
 
   final InvoiceModel invoice;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     return Card(
@@ -65,11 +64,15 @@ class InvoiceCardItem extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Total Amount',
-                        style: AppFonts.labelSmall(color: secondaryTextColor)),
                     Text(
-                      CurrencyFormatter.format(invoice.totalAmount,
-                          currencyCode: invoice.currencyCode),
+                      'Total Amount',
+                      style: AppFonts.labelSmall(color: secondaryTextColor),
+                    ),
+                    Text(
+                      CurrencyFormatter.format(
+                        invoice.totalAmount,
+                        currencyCode: invoice.currencyCode,
+                      ),
                       style: AppFonts.titleMedium(color: primaryTextColor),
                     ),
                   ],
@@ -77,11 +80,15 @@ class InvoiceCardItem extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('Balance Due',
-                        style: AppFonts.labelSmall(color: secondaryTextColor)),
                     Text(
-                      CurrencyFormatter.format(invoice.balanceDue,
-                          currencyCode: invoice.currencyCode),
+                      'Balance Due',
+                      style: AppFonts.labelSmall(color: secondaryTextColor),
+                    ),
+                    Text(
+                      CurrencyFormatter.format(
+                        invoice.balanceDue,
+                        currencyCode: invoice.currencyCode,
+                      ),
                       style: AppFonts.titleMedium(
                         color: invoice.balanceDue > 0
                             ? AppColors.error

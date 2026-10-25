@@ -25,10 +25,12 @@ class GarageCardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     final distanceKm = GeohashHelper.calculateDistanceKm(
@@ -131,7 +133,9 @@ class GarageCardItem extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.accentBlue.withValues(alpha: 0.1),
+                                color: AppColors.accentBlue.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -145,7 +149,8 @@ class GarageCardItem extends StatelessWidget {
                             Text(
                               garage.openHours,
                               style: AppFonts.labelSmall(
-                                  color: secondaryTextColor),
+                                color: secondaryTextColor,
+                              ),
                             ),
                           ],
                         ),
@@ -159,18 +164,23 @@ class GarageCardItem extends StatelessWidget {
                 children: [
                   IconButton.outlined(
                     tooltip: 'Call Garage',
-                    icon: const Icon(Icons.phone_rounded,
-                        size: 18, color: AppColors.accentBlue),
+                    icon: const Icon(
+                      Icons.phone_rounded,
+                      size: 18,
+                      color: AppColors.accentBlue,
+                    ),
                     onPressed: () =>
                         WhatsAppShareService.makePhoneCall(garage.phone),
                   ),
                   const SizedBox(width: 8),
                   IconButton.outlined(
                     tooltip: 'Chat on WhatsApp',
-                    icon: const Icon(Icons.chat_rounded,
-                        size: 18, color: AppColors.success),
-                    onPressed: () =>
-                        WhatsAppShareService.sendWhatsAppMessage(
+                    icon: const Icon(
+                      Icons.chat_rounded,
+                      size: 18,
+                      color: AppColors.success,
+                    ),
+                    onPressed: () => WhatsAppShareService.sendWhatsAppMessage(
                       phoneNumber: garage.phone,
                       message:
                           'Hello ${garage.name}, I found your garage on WeFix and would like some service information.',
@@ -179,10 +189,12 @@ class GarageCardItem extends StatelessWidget {
                   const SizedBox(width: 8),
                   IconButton.outlined(
                     tooltip: 'Directions',
-                    icon: const Icon(Icons.directions_rounded,
-                        size: 18, color: AppColors.info),
-                    onPressed: () =>
-                        WhatsAppShareService.openMapDirections(
+                    icon: const Icon(
+                      Icons.directions_rounded,
+                      size: 18,
+                      color: AppColors.info,
+                    ),
+                    onPressed: () => WhatsAppShareService.openMapDirections(
                       latitude: garage.latitude,
                       longitude: garage.longitude,
                       label: garage.name,

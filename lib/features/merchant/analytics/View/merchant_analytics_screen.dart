@@ -9,6 +9,7 @@ import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 import 'package:go_router/go_router.dart';
+
 import '../ViewModel/merchant_analytics_view_model.dart';
 import '../Widgets/bill_analytics_list.dart';
 import '../Widgets/daily_briefing_modal.dart';
@@ -27,8 +28,9 @@ class MerchantAnalyticsScreen extends ConsumerWidget {
     final vm = ref.read(merchantAnalyticsViewModelProvider.notifier);
     final repo = ref.watch(garageRepositoryProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     if (state.isLoading && state.metrics == null) {
       return const Scaffold(
@@ -38,10 +40,7 @@ class MerchantAnalyticsScreen extends ConsumerWidget {
 
     if (state.errorMessage != null && state.metrics == null) {
       return Scaffold(
-        body: AppErrorState(
-          message: state.errorMessage!,
-          onRetry: vm.refresh,
-        ),
+        body: AppErrorState(message: state.errorMessage!, onRetry: vm.refresh),
       );
     }
 
@@ -114,7 +113,10 @@ class MerchantAnalyticsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 FutureBuilder(
-                  future: repo.getInvoices(garageId: 'garage_demo_1', limit: 50),
+                  future: repo.getInvoices(
+                    garageId: 'garage_demo_1',
+                    limit: 50,
+                  ),
                   builder: (context, snapshot) {
                     final invoices = snapshot.data ?? [];
                     return BillAnalyticsList(

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/customer_estimates_state.dart';
 
 class CustomerEstimatesViewModel extends Notifier<CustomerEstimatesState> {
@@ -68,5 +69,5 @@ class CustomerEstimatesViewModel extends Notifier<CustomerEstimatesState> {
 
 final customerEstimatesViewModelProvider =
     NotifierProvider<CustomerEstimatesViewModel, CustomerEstimatesState>(
-  CustomerEstimatesViewModel.new,
-);
+      CustomerEstimatesViewModel.new,
+    );

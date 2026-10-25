@@ -10,14 +10,12 @@ import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
+
 import '../ViewModel/customer_vehicles_view_model.dart';
 import '../Widgets/vehicle_card_item.dart';
 
 class CustomerVehiclesScreen extends ConsumerWidget {
-  const CustomerVehiclesScreen({
-    super.key,
-    required this.onSelectVehicle,
-  });
+  const CustomerVehiclesScreen({super.key, required this.onSelectVehicle});
 
   final ValueChanged<String> onSelectVehicle;
 
@@ -38,8 +36,9 @@ class CustomerVehiclesScreen extends ConsumerWidget {
     final state = ref.watch(customerVehiclesViewModelProvider);
     final vm = ref.read(customerVehiclesViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Scaffold(
       appBar: AppBar(
@@ -71,8 +70,7 @@ class CustomerVehiclesScreen extends ConsumerWidget {
               if (state.vehicles.isEmpty) {
                 return AppEmptyState(
                   title: 'No vehicles registered',
-                  message:
-                      'Add your car or two-wheeler to track maintenance and book services.',
+                  message: 'Add your car or two-wheeler to track maintenance and book services.',
                   icon: Icons.directions_car_outlined,
                   actionLabel: 'Add First Vehicle',
                   onAction: () => _showAddVehicleSheet(context, ref),
@@ -147,24 +145,25 @@ class _AddVehicleSheetState extends ConsumerState<_AddVehicleSheet> {
           color: _colorCtrl.text.trim(),
         )
         .then((success) {
-      if (success && mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Vehicle registered successfully!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      }
-    });
+          if (success && mounted) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Vehicle registered successfully!'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          }
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(customerVehiclesViewModelProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Padding(
       padding: EdgeInsets.only(

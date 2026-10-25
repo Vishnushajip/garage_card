@@ -50,24 +50,29 @@ class NotificationEventMatrix {
   static const String fallbackReminderImage =
       'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&q=80';
 
-  static final Map<NotificationEventType, NotificationEventDefinition> definitions = {
-    NotificationEventType.serviceRequestSubmitted: const NotificationEventDefinition(
-      type: NotificationEventType.serviceRequestSubmitted,
-      targetRole: 'merchant',
-      defaultTitle: 'New Service Request Received',
-      defaultBody: 'A customer submitted a new service booking request for their vehicle.',
-      defaultImageUrl: fallbackCarImage,
-      defaultDeepLink: '/merchant/jobs',
-    ),
-    NotificationEventType.serviceRequestAccepted: const NotificationEventDefinition(
-      type: NotificationEventType.serviceRequestAccepted,
-      targetRole: 'customer',
-      defaultTitle: 'Service Request Accepted',
-      defaultBody: 'Your service request has been confirmed by the garage team.',
-      defaultImageUrl: fallbackCarImage,
-      defaultDeepLink: '/customer/jobs',
-    ),
-    NotificationEventType.serviceRequestRejected: const NotificationEventDefinition(
+  static final Map<NotificationEventType, NotificationEventDefinition>
+  definitions = {
+    NotificationEventType.serviceRequestSubmitted:
+        const NotificationEventDefinition(
+          type: NotificationEventType.serviceRequestSubmitted,
+          targetRole: 'merchant',
+          defaultTitle: 'New Service Request Received',
+          defaultBody: 'A customer submitted a new service booking request for their vehicle.',
+          defaultImageUrl: fallbackCarImage,
+          defaultDeepLink: '/merchant/jobs',
+        ),
+    NotificationEventType.serviceRequestAccepted:
+        const NotificationEventDefinition(
+          type: NotificationEventType.serviceRequestAccepted,
+          targetRole: 'customer',
+          defaultTitle: 'Service Request Accepted',
+          defaultBody:
+              'Your service request has been confirmed by the garage team.',
+          defaultImageUrl: fallbackCarImage,
+          defaultDeepLink: '/customer/jobs',
+        ),
+    NotificationEventType
+        .serviceRequestRejected: const NotificationEventDefinition(
       type: NotificationEventType.serviceRequestRejected,
       targetRole: 'customer',
       defaultTitle: 'Service Request Update',
@@ -75,27 +80,31 @@ class NotificationEventMatrix {
       defaultImageUrl: null,
       defaultDeepLink: '/customer/garages',
     ),
-    NotificationEventType.appointmentConfirmed: const NotificationEventDefinition(
-      type: NotificationEventType.appointmentConfirmed,
-      targetRole: 'customer',
-      defaultTitle: 'Appointment Confirmed',
-      defaultBody: 'Your garage appointment is scheduled and confirmed.',
-      defaultImageUrl: fallbackCarImage,
-      defaultDeepLink: '/customer/jobs',
-    ),
-    NotificationEventType.appointmentCancelled: const NotificationEventDefinition(
-      type: NotificationEventType.appointmentCancelled,
-      targetRole: 'both',
-      defaultTitle: 'Appointment Cancelled',
-      defaultBody: 'The scheduled appointment was cancelled.',
-      defaultImageUrl: null,
-      defaultDeepLink: '/customer/jobs',
-    ),
-    NotificationEventType.inspectionCompleted: const NotificationEventDefinition(
+    NotificationEventType.appointmentConfirmed:
+        const NotificationEventDefinition(
+          type: NotificationEventType.appointmentConfirmed,
+          targetRole: 'customer',
+          defaultTitle: 'Appointment Confirmed',
+          defaultBody: 'Your garage appointment is scheduled and confirmed.',
+          defaultImageUrl: fallbackCarImage,
+          defaultDeepLink: '/customer/jobs',
+        ),
+    NotificationEventType.appointmentCancelled:
+        const NotificationEventDefinition(
+          type: NotificationEventType.appointmentCancelled,
+          targetRole: 'both',
+          defaultTitle: 'Appointment Cancelled',
+          defaultBody: 'The scheduled appointment was cancelled.',
+          defaultImageUrl: null,
+          defaultDeepLink: '/customer/jobs',
+        ),
+    NotificationEventType
+        .inspectionCompleted: const NotificationEventDefinition(
       type: NotificationEventType.inspectionCompleted,
       targetRole: 'customer',
       defaultTitle: 'Digital Inspection Completed',
-      defaultBody: 'Our technician completed the digital health check for your vehicle.',
+      defaultBody:
+          'Our technician completed the digital health check for your vehicle.',
       defaultImageUrl: fallbackInspectionImage,
       defaultDeepLink: '/customer/jobs',
     ),
@@ -119,7 +128,8 @@ class NotificationEventMatrix {
       type: NotificationEventType.readyForCollection,
       targetRole: 'customer',
       defaultTitle: 'Vehicle Ready for Collection!',
-      defaultBody: 'All service tasks are complete. Your vehicle is ready for pickup.',
+      defaultBody:
+          'All service tasks are complete. Your vehicle is ready for pickup.',
       defaultImageUrl: fallbackCarImage,
       defaultDeepLink: '/customer/jobs',
     ),
@@ -127,7 +137,8 @@ class NotificationEventMatrix {
       type: NotificationEventType.estimateCreated,
       targetRole: 'customer',
       defaultTitle: 'New Repair Estimate Ready',
-      defaultBody: 'An itemized repair estimate requires your review and approval.',
+      defaultBody:
+          'An itemized repair estimate requires your review and approval.',
       defaultImageUrl: fallbackEstimateImage,
       defaultDeepLink: '/customer/estimates',
     ),
@@ -143,7 +154,8 @@ class NotificationEventMatrix {
       type: NotificationEventType.estimateRejected,
       targetRole: 'merchant',
       defaultTitle: 'Estimate Declined',
-      defaultBody: 'The customer requested modifications or declined the estimate.',
+      defaultBody:
+          'The customer requested modifications or declined the estimate.',
       defaultImageUrl: null,
       defaultDeepLink: '/merchant/estimates',
     ),
@@ -151,7 +163,8 @@ class NotificationEventMatrix {
       type: NotificationEventType.invoiceIssued,
       targetRole: 'customer',
       defaultTitle: 'Invoice Issued',
-      defaultBody: 'Your service invoice has been generated and is ready for payment.',
+      defaultBody:
+          'Your service invoice has been generated and is ready for payment.',
       defaultImageUrl: fallbackInvoiceImage,
       defaultDeepLink: '/customer/invoices',
     ),
@@ -167,7 +180,8 @@ class NotificationEventMatrix {
       type: NotificationEventType.paymentOverdue,
       targetRole: 'customer',
       defaultTitle: 'Payment Reminder',
-      defaultBody: 'A pending service invoice has a balance awaiting settlement.',
+      defaultBody:
+          'A pending service invoice has a balance awaiting settlement.',
       defaultImageUrl: fallbackInvoiceImage,
       defaultDeepLink: '/customer/invoices',
     ),
@@ -175,18 +189,21 @@ class NotificationEventMatrix {
       type: NotificationEventType.serviceReminderDue,
       targetRole: 'customer',
       defaultTitle: 'Upcoming Service Due',
-      defaultBody: 'Your vehicle service interval is due soon. Book in advance.',
+      defaultBody:
+          'Your vehicle service interval is due soon. Book in advance.',
       defaultImageUrl: fallbackReminderImage,
       defaultDeepLink: '/customer/reminders',
     ),
-    NotificationEventType.dailyMorningBriefing: const NotificationEventDefinition(
-      type: NotificationEventType.dailyMorningBriefing,
-      targetRole: 'merchant',
-      defaultTitle: 'Daily Garage Briefing',
-      defaultBody: 'Check today deliveries, in-progress jobs, and pending invoices.',
-      defaultImageUrl: fallbackCarImage,
-      defaultDeepLink: '/merchant/analytics',
-    ),
+    NotificationEventType.dailyMorningBriefing:
+        const NotificationEventDefinition(
+          type: NotificationEventType.dailyMorningBriefing,
+          targetRole: 'merchant',
+          defaultTitle: 'Daily Garage Briefing',
+          defaultBody:
+              'Check today deliveries, in-progress jobs, and pending invoices.',
+          defaultImageUrl: fallbackCarImage,
+          defaultDeepLink: '/merchant/analytics',
+        ),
   };
 
   static String generateIdempotencyKey({

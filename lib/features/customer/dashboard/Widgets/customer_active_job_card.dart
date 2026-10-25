@@ -18,10 +18,12 @@ class CustomerActiveJobCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     return Card(
@@ -72,8 +74,11 @@ class CustomerActiveJobCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.schedule_rounded,
-                          size: 16, color: AppColors.accentBlue),
+                      const Icon(
+                        Icons.schedule_rounded,
+                        size: 16,
+                        color: AppColors.accentBlue,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         job.estimatedCompletionDate != null

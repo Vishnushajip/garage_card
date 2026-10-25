@@ -1,8 +1,10 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
+
 import '../Model/financial_metrics_model.dart';
 
 class RevenueBarChart extends StatefulWidget {
@@ -25,10 +27,12 @@ class _RevenueBarChartState extends State<RevenueBarChart> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     if (widget.dataPoints.isEmpty) {
       return Center(
@@ -44,7 +48,10 @@ class _RevenueBarChartState extends State<RevenueBarChart> {
 
     double maxVal = 0.0;
     for (final dp in widget.dataPoints) {
-      maxVal = math.max(maxVal, math.max(dp.billed, math.max(dp.collected, dp.cost)));
+      maxVal = math.max(
+        maxVal,
+        math.max(dp.billed, math.max(dp.collected, dp.cost)),
+      );
     }
     if (maxVal <= 0) maxVal = 1000;
 
@@ -82,7 +89,8 @@ class _RevenueBarChartState extends State<RevenueBarChart> {
                 _buildLegend(isDark),
               ],
             ),
-            if (_selectedIndex != null && _selectedIndex! < widget.dataPoints.length) ...[
+            if (_selectedIndex != null &&
+                _selectedIndex! < widget.dataPoints.length) ...[
               const SizedBox(height: 12),
               _buildSelectedTooltip(widget.dataPoints[_selectedIndex!], isDark),
             ],
@@ -96,8 +104,14 @@ class _RevenueBarChartState extends State<RevenueBarChart> {
                   final dp = entry.value;
                   final isSelected = _selectedIndex == idx;
 
-                  final billedHeight = (dp.billed / maxVal * 140).clamp(4.0, 140.0);
-                  final collectedHeight = (dp.collected / maxVal * 140).clamp(4.0, 140.0);
+                  final billedHeight = (dp.billed / maxVal * 140).clamp(
+                    4.0,
+                    140.0,
+                  );
+                  final collectedHeight = (dp.collected / maxVal * 140).clamp(
+                    4.0,
+                    140.0,
+                  );
                   final costHeight = (dp.cost / maxVal * 140).clamp(4.0, 140.0);
 
                   return Expanded(
@@ -112,7 +126,9 @@ class _RevenueBarChartState extends State<RevenueBarChart> {
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         decoration: isSelected
                             ? BoxDecoration(
-                                color: AppColors.accentBlue.withValues(alpha: 0.1),
+                                color: AppColors.accentBlue.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(8),
                               )
                             : null,
@@ -213,15 +229,27 @@ class _RevenueBarChartState extends State<RevenueBarChart> {
           ),
           Text(
             'Billed: ${CurrencyFormatter.format(dp.billed, currencyCode: widget.currencyCode)}',
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.accentBlue),
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.accentBlue,
+            ),
           ),
           Text(
             'Collected: ${CurrencyFormatter.format(dp.collected, currencyCode: widget.currencyCode)}',
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.success),
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.success,
+            ),
           ),
           Text(
             'Cost: ${CurrencyFormatter.format(dp.cost, currencyCode: widget.currencyCode)}',
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.accentAmber),
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.accentAmber,
+            ),
           ),
         ],
       ),

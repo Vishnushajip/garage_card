@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../colors/app_colors.dart';
 import '../fonts/app_fonts.dart';
 import 'app_button.dart';
@@ -22,10 +23,12 @@ class AppEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return Center(
       child: Padding(
@@ -39,11 +42,7 @@ class AppEmptyState extends StatelessWidget {
                 color: isDark ? AppColors.cardDark : AppColors.inputFillLight,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                size: 48,
-                color: secondaryTextColor,
-              ),
+              child: Icon(icon, size: 48, color: secondaryTextColor),
             ),
             const SizedBox(height: 20),
             Text(

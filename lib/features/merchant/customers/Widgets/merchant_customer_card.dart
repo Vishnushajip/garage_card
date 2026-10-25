@@ -17,10 +17,12 @@ class MerchantCustomerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     return Card(
@@ -72,17 +74,24 @@ class MerchantCustomerCard extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.phone_rounded,
-                      color: AppColors.accentBlue, size: 20),
+                  icon: const Icon(
+                    Icons.phone_rounded,
+                    color: AppColors.accentBlue,
+                    size: 20,
+                  ),
                   onPressed: () =>
                       WhatsAppShareService.makePhoneCall(customer.phone),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.chat_rounded,
-                      color: AppColors.success, size: 20),
+                  icon: const Icon(
+                    Icons.chat_rounded,
+                    color: AppColors.success,
+                    size: 20,
+                  ),
                   onPressed: () => WhatsAppShareService.sendWhatsAppMessage(
                     phoneNumber: customer.phone,
-                    message: 'Hello ${customer.name}, message from your garage.',
+                    message:
+                        'Hello ${customer.name}, message from your garage.',
                   ),
                 ),
               ],
@@ -97,7 +106,10 @@ class MerchantCustomerCard extends StatelessWidget {
             if (customer.notes.isNotEmpty) ...[
               const SizedBox(height: 6),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.cardDark : AppColors.inputFillLight,
                   borderRadius: BorderRadius.circular(8),

@@ -37,7 +37,10 @@ void main() {
 
       expect(metrics.isProfit, isTrue);
       expect(metrics.netProfit, 800.0);
-      expect(metrics.grossBilled - metrics.discountAdjustments, metrics.netBilled);
+      expect(
+        metrics.grossBilled - metrics.discountAdjustments,
+        metrics.netBilled,
+      );
       expect(metrics.profitMargin, closeTo(34.78, 0.01));
       expect(metrics.chartPoints.length, 1);
     });
@@ -95,11 +98,26 @@ void main() {
 
     test('AnalyticsTimeRange values check', () {
       expect(AnalyticsTimeRange.values.length, 5);
-      expect(AnalyticsTimeRange.values.contains(AnalyticsTimeRange.today), isTrue);
-      expect(AnalyticsTimeRange.values.contains(AnalyticsTimeRange.thisWeek), isTrue);
-      expect(AnalyticsTimeRange.values.contains(AnalyticsTimeRange.thisMonth), isTrue);
-      expect(AnalyticsTimeRange.values.contains(AnalyticsTimeRange.thisYear), isTrue);
-      expect(AnalyticsTimeRange.values.contains(AnalyticsTimeRange.custom), isTrue);
+      expect(
+        AnalyticsTimeRange.values.contains(AnalyticsTimeRange.today),
+        isTrue,
+      );
+      expect(
+        AnalyticsTimeRange.values.contains(AnalyticsTimeRange.thisWeek),
+        isTrue,
+      );
+      expect(
+        AnalyticsTimeRange.values.contains(AnalyticsTimeRange.thisMonth),
+        isTrue,
+      );
+      expect(
+        AnalyticsTimeRange.values.contains(AnalyticsTimeRange.thisYear),
+        isTrue,
+      );
+      expect(
+        AnalyticsTimeRange.values.contains(AnalyticsTimeRange.custom),
+        isTrue,
+      );
     });
   });
 }

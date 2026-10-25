@@ -15,11 +15,6 @@ void showBrowserNotification({
   String? deepLink,
 }) {
   try {
-    _showWebNotification(
-      title.toJS,
-      body.toJS,
-      imageUrl?.toJS,
-      deepLink?.toJS,
-    );
+    _showWebNotification(title.toJS, body.toJS, imageUrl?.toJS, deepLink?.toJS);
   } catch (_) {}
 }

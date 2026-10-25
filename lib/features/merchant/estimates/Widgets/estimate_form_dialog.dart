@@ -6,17 +6,15 @@ import 'package:garage_card/core/shared_widgets/app_text_field.dart';
 import 'package:garage_card/features/shared/models/line_item_model.dart';
 
 class EstimateFormDialog extends StatefulWidget {
-  const EstimateFormDialog({
-    super.key,
-    required this.onSave,
-  });
+  const EstimateFormDialog({super.key, required this.onSave});
 
   final Future<bool> Function({
     required String estimateNumber,
     required List<LineItemModel> items,
     required double taxRate,
     required double discountAmount,
-  }) onSave;
+  })
+  onSave;
 
   @override
   State<EstimateFormDialog> createState() => _EstimateFormDialogState();
@@ -25,7 +23,8 @@ class EstimateFormDialog extends StatefulWidget {
 class _EstimateFormDialogState extends State<EstimateFormDialog> {
   final _formKey = GlobalKey<FormState>();
   final _estNumberCtrl = TextEditingController(
-      text: 'EST-2026-${DateTime.now().millisecondsSinceEpoch % 1000}');
+    text: 'EST-2026-${DateTime.now().millisecondsSinceEpoch % 1000}',
+  );
   final _taxCtrl = TextEditingController(text: '18');
   final _discountCtrl = TextEditingController(text: '0');
 
@@ -78,8 +77,9 @@ class _EstimateFormDialogState extends State<EstimateFormDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return AlertDialog(
       title: Text(
@@ -124,13 +124,15 @@ class _EstimateFormDialogState extends State<EstimateFormDialog> {
                 style: AppFonts.labelLarge(color: primaryTextColor),
               ),
               const SizedBox(height: 6),
-              ..._items.map((item) => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                    title: Text(item.description),
-                    subtitle: Text('${item.quantity} x ₹${item.unitPrice}'),
-                    trailing: Text('₹${item.totalPrice}'),
-                  )),
+              ..._items.map(
+                (item) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  title: Text(item.description),
+                  subtitle: Text('${item.quantity} x ₹${item.unitPrice}'),
+                  trailing: Text('₹${item.totalPrice}'),
+                ),
+              ),
             ],
           ),
         ),

@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../colors/app_colors.dart';
 import '../fonts/app_fonts.dart';
 
-enum AppButtonVariant {
-  primary,
-  secondary,
-  outline,
-  danger,
-  ghost,
-}
+enum AppButtonVariant { primary, secondary, outline, danger, ghost }
 
 class AppButton extends StatelessWidget {
   const AppButton({
@@ -67,7 +62,9 @@ class AppButton extends StatelessWidget {
         break;
       case AppButtonVariant.ghost:
         bg = Colors.transparent;
-        fg = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+        fg = isDark
+            ? AppColors.textSecondaryDark
+            : AppColors.textSecondaryLight;
         break;
     }
 
@@ -105,10 +102,8 @@ class AppButton extends StatelessWidget {
         ],
         Text(
           label,
-          style: AppFonts.labelLarge(color: fg).copyWith(
-            fontSize: fontSize ?? 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppFonts.labelLarge(color: fg)
+              .copyWith(fontSize: fontSize ?? 14, fontWeight: FontWeight.w600),
         ),
       ],
     );

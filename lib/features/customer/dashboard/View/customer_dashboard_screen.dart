@@ -10,10 +10,12 @@ import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
+
 import '../ViewModel/customer_dashboard_view_model.dart';
 import '../Widgets/customer_active_job_card.dart';
 import '../Widgets/customer_quick_action_button.dart';
 import '../../notifications/ViewModel/customer_notifications_view_model.dart';
+
 import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:go_router/go_router.dart';
 
@@ -41,10 +43,12 @@ class CustomerDashboardScreen extends ConsumerWidget {
     final vm = ref.read(customerDashboardViewModelProvider.notifier);
     final notifState = ref.watch(customerNotificationsViewModelProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     if (state.isLoading) {
       return const Scaffold(
@@ -54,10 +58,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
 
     if (state.errorMessage != null && state.activeJobs.isEmpty) {
       return Scaffold(
-        body: AppErrorState(
-          message: state.errorMessage!,
-          onRetry: vm.refresh,
-        ),
+        body: AppErrorState(message: state.errorMessage!, onRetry: vm.refresh),
       );
     }
 
@@ -203,8 +204,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                 if (state.activeJobs.isEmpty)
                   const AppEmptyState(
                     title: 'No active repair jobs',
-                    message:
-                        'Your vehicles are in prime shape! Book a service or request assistance whenever needed.',
+                    message: 'Your vehicles are in prime shape! Book a service or request assistance whenever needed.',
                     icon: Icons.check_circle_outline_rounded,
                   )
                 else
@@ -235,7 +235,9 @@ class CustomerDashboardScreen extends ConsumerWidget {
                     style: AppFonts.bodyMedium(color: secondaryTextColor),
                   )
                 else
-                  ...state.upcomingReminders.take(2).map(
+                  ...state.upcomingReminders
+                      .take(2)
+                      .map(
                         (rem) => Card(
                           margin: const EdgeInsets.only(bottom: 10),
                           child: ListTile(
@@ -257,12 +259,15 @@ class CustomerDashboardScreen extends ConsumerWidget {
                             ),
                             title: Text(
                               rem.title,
-                              style: AppFonts.titleMedium(color: primaryTextColor),
+                              style: AppFonts.titleMedium(
+                                color: primaryTextColor,
+                              ),
                             ),
                             subtitle: Text(
                               '${rem.vehicleDisplay} • Due ${DateFormatter.formatDate(rem.dueDate)}',
                               style: AppFonts.labelSmall(
-                                  color: secondaryTextColor),
+                                color: secondaryTextColor,
+                              ),
                             ),
                             trailing: AppStatusBadge(status: rem.status),
                           ),

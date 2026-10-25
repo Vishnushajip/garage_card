@@ -10,14 +10,12 @@ import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
+
 import '../ViewModel/customer_jobs_view_model.dart';
 import '../Widgets/status_timeline_view.dart';
 
 class CustomerJobDetailScreen extends ConsumerStatefulWidget {
-  const CustomerJobDetailScreen({
-    super.key,
-    required this.jobId,
-  });
+  const CustomerJobDetailScreen({super.key, required this.jobId});
 
   final String jobId;
 
@@ -43,10 +41,12 @@ class _CustomerJobDetailScreenState
     final state = ref.watch(customerJobsViewModelProvider);
     final vm = ref.read(customerJobsViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     if (state.isLoadingDetail) {
@@ -85,8 +85,9 @@ class _CustomerJobDetailScreenState
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
-                      color:
-                          isDark ? AppColors.borderDark : AppColors.borderLight,
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
                     ),
                   ),
                   child: Padding(
@@ -100,8 +101,9 @@ class _CustomerJobDetailScreenState
                             Expanded(
                               child: Text(
                                 job.vehicleDisplay,
-                                style:
-                                    AppFonts.titleLarge(color: primaryTextColor),
+                                style: AppFonts.titleLarge(
+                                  color: primaryTextColor,
+                                ),
                               ),
                             ),
                             AppStatusBadge(status: job.status),
@@ -164,12 +166,16 @@ class _CustomerJobDetailScreenState
                         children: [
                           Text(
                             'Mechanic Notes for You',
-                            style: AppFonts.titleMedium(color: primaryTextColor),
+                            style: AppFonts.titleMedium(
+                              color: primaryTextColor,
+                            ),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             job.customerNotes,
-                            style: AppFonts.bodyMedium(color: secondaryTextColor),
+                            style: AppFonts.bodyMedium(
+                              color: secondaryTextColor,
+                            ),
                           ),
                         ],
                       ),
@@ -187,8 +193,9 @@ class _CustomerJobDetailScreenState
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
-                      color:
-                          isDark ? AppColors.borderDark : AppColors.borderLight,
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
                     ),
                   ),
                   child: Padding(
@@ -234,8 +241,9 @@ class _CustomerJobDetailScreenState
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
-                      color:
-                          isDark ? AppColors.borderDark : AppColors.borderLight,
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
                     ),
                   ),
                   child: Padding(
@@ -261,8 +269,7 @@ class _CustomerJobDetailScreenState
                         label: 'Chat on WhatsApp',
                         icon: const Icon(Icons.chat_rounded, size: 18),
                         variant: AppButtonVariant.primary,
-                        onPressed: () =>
-                            WhatsAppShareService.sendWhatsAppMessage(
+                        onPressed: () => WhatsAppShareService.sendWhatsAppMessage(
                           phoneNumber: '+919846012345',
                           message:
                               'Hello, I am asking about repair status for job ${job.jobNumber} (${job.vehicleDisplay}).',

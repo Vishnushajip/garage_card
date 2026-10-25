@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../colors/app_colors.dart';
 import '../fonts/app_fonts.dart';
 
@@ -92,8 +93,9 @@ class AppLogo extends StatelessWidget {
       return effectiveSymbol;
     }
 
-    final textColor =
-        isWhiteVariant ? Colors.white : AppColors.textPrimaryLight;
+    final textColor = isWhiteVariant
+        ? Colors.white
+        : AppColors.textPrimaryLight;
     final accentColor = isWhiteVariant ? Colors.white : AppColors.primaryRed;
 
     return Row(
@@ -129,15 +131,16 @@ class AppLogo extends StatelessWidget {
             SizedBox(height: size * 0.06),
             Text(
               'VEHICLE SERVICE PLATFORM',
-              style: AppFonts.labelSmall(
-                color: isWhiteVariant
-                    ? Colors.white.withValues(alpha: 0.75)
-                    : AppColors.textMutedLight,
-              ).copyWith(
-                fontSize: size * 0.15,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.8,
-              ),
+              style:
+                  AppFonts.labelSmall(
+                    color: isWhiteVariant
+                        ? Colors.white.withValues(alpha: 0.75)
+                        : AppColors.textMutedLight,
+                  ).copyWith(
+                    fontSize: size * 0.15,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.8,
+                  ),
             ),
           ],
         ),
@@ -147,10 +150,7 @@ class AppLogo extends StatelessWidget {
 }
 
 class WeFixSymbolPainter extends CustomPainter {
-  const WeFixSymbolPainter({
-    required this.color,
-    this.showAccent = true,
-  });
+  const WeFixSymbolPainter({required this.color, this.showAccent = true});
 
   final Color color;
   final bool showAccent;

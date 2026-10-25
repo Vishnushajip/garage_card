@@ -85,9 +85,13 @@ class VehicleInspectionModel {
       jobId: data['jobId'] as String? ?? '',
       vehicleId: data['vehicleId'] as String? ?? '',
       inspectorName: data['inspectorName'] as String? ?? '',
-      items: (data['items'] as List<dynamic>?)
-              ?.map((e) => InspectionItemModel.fromMap(
-                  Map<String, dynamic>.from(e as Map)))
+      items:
+          (data['items'] as List<dynamic>?)
+              ?.map(
+                (e) => InspectionItemModel.fromMap(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
               .toList() ??
           const [],
       summaryNotes: data['summaryNotes'] as String? ?? '',

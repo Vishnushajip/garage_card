@@ -75,7 +75,8 @@ class GarageModel {
       isVerified: data['isVerified'] as bool? ?? true,
       ownerUid: data['ownerUid'] as String? ?? '',
       taxNumber: data['taxNumber'] as String? ?? '',
-      servicesOffered: (data['servicesOffered'] as List<dynamic>?)
+      servicesOffered:
+          (data['servicesOffered'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const [],

@@ -1,10 +1,4 @@
-enum AnalyticsTimeRange {
-  today,
-  thisWeek,
-  thisMonth,
-  thisYear,
-  custom,
-}
+enum AnalyticsTimeRange { today, thisWeek, thisMonth, thisYear, custom }
 
 class ChartDataPoint {
   const ChartDataPoint({

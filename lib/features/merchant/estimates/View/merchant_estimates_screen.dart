@@ -15,6 +15,7 @@ import 'package:garage_card/features/customer/estimates/Widgets/estimate_line_it
 import 'package:garage_card/features/shared/documents/pdf_generator_service.dart';
 import 'package:garage_card/features/shared/models/garage_model.dart';
 import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
+
 import '../ViewModel/merchant_estimates_view_model.dart';
 import '../Widgets/estimate_form_dialog.dart';
 
@@ -26,21 +27,22 @@ class MerchantEstimatesScreen extends ConsumerWidget {
       context: context,
       builder: (dialogCtx) {
         return EstimateFormDialog(
-          onSave: ({
-            required String estimateNumber,
-            required List items,
-            required double taxRate,
-            required double discountAmount,
-          }) {
-            return ref
-                .read(merchantEstimatesViewModelProvider.notifier)
-                .createEstimate(
-                  estimateNumber: estimateNumber,
-                  items: items.cast(),
-                  taxRate: taxRate,
-                  discountAmount: discountAmount,
-                );
-          },
+          onSave:
+              ({
+                required String estimateNumber,
+                required List items,
+                required double taxRate,
+                required double discountAmount,
+              }) {
+                return ref
+                    .read(merchantEstimatesViewModelProvider.notifier)
+                    .createEstimate(
+                      estimateNumber: estimateNumber,
+                      items: items.cast(),
+                      taxRate: taxRate,
+                      discountAmount: discountAmount,
+                    );
+              },
         );
       },
     );
@@ -51,8 +53,9 @@ class MerchantEstimatesScreen extends ConsumerWidget {
     final state = ref.watch(merchantEstimatesViewModelProvider);
     final vm = ref.read(merchantEstimatesViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     return Scaffold(
@@ -79,7 +82,8 @@ class MerchantEstimatesScreen extends ConsumerWidget {
               if (state.estimates.isEmpty) {
                 return AppEmptyState(
                   title: 'No Estimates Created',
-                  message: 'Create and send quotes for customer inspection jobs.',
+                  message:
+                      'Create and send quotes for customer inspection jobs.',
                   icon: Icons.request_quote_outlined,
                   actionLabel: 'Create Estimate',
                   onAction: () => _showCreateDialog(context, ref),
@@ -145,8 +149,7 @@ class MerchantEstimatesScreen extends ConsumerWidget {
                                   final dummyGarage = GarageModel(
                                     id: estimate.garageId,
                                     name: 'Apex Precision Automotive',
-                                    address:
-                                        'Near MG Road, Ravipuram, Kochi, Kerala',
+                                    address: 'Near MG Road, Ravipuram, Kochi, Kerala',
                                     phone: '+91 98460 12345',
                                     email: 'service@apexprecision.com',
                                     ownerUid: 'merchant_1',
@@ -171,13 +174,14 @@ class MerchantEstimatesScreen extends ConsumerWidget {
                                 onPressed: () {
                                   final msg =
                                       WhatsAppShareService.composeEstimateMessage(
-                                    customerName: 'Arjun Menon',
-                                    garageName: 'Apex Precision Automotive',
-                                    vehicleDisplay: '2022 Hyundai Creta',
-                                    estimateNumber: estimate.estimateNumber,
-                                    totalAmount: CurrencyFormatter.format(
-                                        estimate.totalAmount),
-                                  );
+                                        customerName: 'Arjun Menon',
+                                        garageName: 'Apex Precision Automotive',
+                                        vehicleDisplay: '2022 Hyundai Creta',
+                                        estimateNumber: estimate.estimateNumber,
+                                        totalAmount: CurrencyFormatter.format(
+                                          estimate.totalAmount,
+                                        ),
+                                      );
                                   WhatsAppShareService.sendWhatsAppMessage(
                                     phoneNumber: '+919846077112',
                                     message: msg,
@@ -192,13 +196,17 @@ class MerchantEstimatesScreen extends ConsumerWidget {
                                   isLoading: state.isConverting,
                                   height: 40,
                                   onPressed: () async {
-                                    final success =
-                                        await vm.convertToInvoice(estimate);
+                                    final success = await vm.convertToInvoice(
+                                      estimate,
+                                    );
                                     if (success && context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         const SnackBar(
                                           content: Text(
-                                              'Estimate converted into invoice successfully!'),
+                                            'Estimate converted into invoice successfully!',
+                                          ),
                                           backgroundColor: AppColors.success,
                                         ),
                                       );

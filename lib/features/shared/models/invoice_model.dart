@@ -76,9 +76,12 @@ class InvoiceModel {
       estimateId: data['estimateId'] as String?,
       customerId: data['customerId'] as String? ?? '',
       invoiceNumber: data['invoiceNumber'] as String? ?? '',
-      items: (data['items'] as List<dynamic>?)
-              ?.map((e) => LineItemModel.fromMap(
-                  Map<String, dynamic>.from(e as Map)))
+      items:
+          (data['items'] as List<dynamic>?)
+              ?.map(
+                (e) =>
+                    LineItemModel.fromMap(Map<String, dynamic>.from(e as Map)),
+              )
               .toList() ??
           const [],
       subtotal: (data['subtotal'] as num?)?.toDouble() ?? 0.0,

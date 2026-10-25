@@ -47,8 +47,9 @@ class SplashRevealPainter extends CustomPainter {
     }
 
     final innerRect = Rect.fromLTWH(dx, dy, innerWidth, innerHeight);
-    final cornerRadius =
-        Radius.circular((32.0 * (1.0 - progress)).clamp(0.0, 32.0));
+    final cornerRadius = Radius.circular(
+      (32.0 * (1.0 - progress)).clamp(0.0, 32.0),
+    );
     final innerRRect = RRect.fromRectAndRadius(innerRect, cornerRadius);
 
     final path = Path()

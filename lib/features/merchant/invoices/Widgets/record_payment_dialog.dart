@@ -21,7 +21,8 @@ class RecordPaymentDialog extends StatefulWidget {
     required String referenceNumber,
     required String notes,
     double discountAdjustment,
-  }) onRecord;
+  })
+  onRecord;
 
   @override
   State<RecordPaymentDialog> createState() => _RecordPaymentDialogState();
@@ -40,8 +41,9 @@ class _RecordPaymentDialogState extends State<RecordPaymentDialog> {
   @override
   void initState() {
     super.initState();
-    _amountCtrl =
-        TextEditingController(text: widget.invoice.balanceDue.toStringAsFixed(2));
+    _amountCtrl = TextEditingController(
+      text: widget.invoice.balanceDue.toStringAsFixed(2),
+    );
   }
 
   @override
@@ -87,8 +89,9 @@ class _RecordPaymentDialogState extends State<RecordPaymentDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return AlertDialog(
       title: Text(
@@ -105,10 +108,14 @@ class _RecordPaymentDialogState extends State<RecordPaymentDialog> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                  color: isDark
+                      ? AppColors.surfaceDark
+                      : AppColors.surfaceLight,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                    color: isDark
+                        ? AppColors.borderDark
+                        : AppColors.borderLight,
                   ),
                 ),
                 child: Column(
@@ -161,7 +168,10 @@ class _RecordPaymentDialogState extends State<RecordPaymentDialog> {
               ),
               const SizedBox(height: 10),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: _effectiveRemaining <= 0.01
                       ? AppColors.success.withValues(alpha: 0.12)
@@ -205,10 +215,19 @@ class _RecordPaymentDialogState extends State<RecordPaymentDialog> {
                   }
                 },
                 items: const [
-                  AppDropdownItem(value: 'upi', title: 'UPI / GooglePay / PhonePe'),
+                  AppDropdownItem(
+                    value: 'upi',
+                    title: 'UPI / GooglePay / PhonePe',
+                  ),
                   AppDropdownItem(value: 'cash', title: 'Cash at Counter'),
-                  AppDropdownItem(value: 'card', title: 'Credit / Debit Card (POS)'),
-                  AppDropdownItem(value: 'bank_transfer', title: 'Bank NEFT / IMPS'),
+                  AppDropdownItem(
+                    value: 'card',
+                    title: 'Credit / Debit Card (POS)',
+                  ),
+                  AppDropdownItem(
+                    value: 'bank_transfer',
+                    title: 'Bank NEFT / IMPS',
+                  ),
                 ],
               ),
               const SizedBox(height: 14),

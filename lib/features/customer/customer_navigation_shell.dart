@@ -5,10 +5,7 @@ import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:go_router/go_router.dart';
 
 class CustomerNavigationShell extends StatelessWidget {
-  const CustomerNavigationShell({
-    super.key,
-    required this.navigationShell,
-  });
+  const CustomerNavigationShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
@@ -36,38 +33,49 @@ class CustomerNavigationShell extends StatelessWidget {
               selectedIndex: navigationShell.currentIndex,
               onDestinationSelected: _onDestinationSelected,
               labelType: NavigationRailLabelType.all,
-              backgroundColor:
-                  isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+              backgroundColor: isDark
+                  ? AppColors.surfaceDark
+                  : AppColors.surfaceLight,
               indicatorColor: AppColors.primaryRed.withValues(alpha: 0.12),
               destinations: const [
                 NavigationRailDestination(
                   icon: Icon(Icons.home_outlined),
-                  selectedIcon:
-                      Icon(Icons.home_rounded, color: AppColors.primaryRed),
+                  selectedIcon: Icon(
+                    Icons.home_rounded,
+                    color: AppColors.primaryRed,
+                  ),
                   label: Text('Home'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.explore_outlined),
-                  selectedIcon:
-                      Icon(Icons.explore_rounded, color: AppColors.primaryRed),
+                  selectedIcon: Icon(
+                    Icons.explore_rounded,
+                    color: AppColors.primaryRed,
+                  ),
                   label: Text('Garages'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.directions_car_outlined),
-                  selectedIcon: Icon(Icons.directions_car_rounded,
-                      color: AppColors.primaryRed),
+                  selectedIcon: Icon(
+                    Icons.directions_car_rounded,
+                    color: AppColors.primaryRed,
+                  ),
                   label: Text('Vehicles'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.receipt_long_outlined),
-                  selectedIcon: Icon(Icons.receipt_long_rounded,
-                      color: AppColors.primaryRed),
+                  selectedIcon: Icon(
+                    Icons.receipt_long_rounded,
+                    color: AppColors.primaryRed,
+                  ),
                   label: Text('Invoices'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.person_outline_rounded),
-                  selectedIcon:
-                      Icon(Icons.person_rounded, color: AppColors.primaryRed),
+                  selectedIcon: Icon(
+                    Icons.person_rounded,
+                    color: AppColors.primaryRed,
+                  ),
                   label: Text('Profile'),
                 ),
               ],
@@ -84,8 +92,9 @@ class CustomerNavigationShell extends StatelessWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: _onDestinationSelected,
-        backgroundColor:
-            isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        backgroundColor: isDark
+            ? AppColors.surfaceDark
+            : AppColors.surfaceLight,
         indicatorColor: AppColors.primaryRed.withValues(alpha: 0.12),
         destinations: const [
           NavigationDestination(
@@ -95,26 +104,34 @@ class CustomerNavigationShell extends StatelessWidget {
           ),
           NavigationDestination(
             icon: Icon(Icons.explore_outlined),
-            selectedIcon:
-                Icon(Icons.explore_rounded, color: AppColors.primaryRed),
+            selectedIcon: Icon(
+              Icons.explore_rounded,
+              color: AppColors.primaryRed,
+            ),
             label: 'Garages',
           ),
           NavigationDestination(
             icon: Icon(Icons.directions_car_outlined),
-            selectedIcon: Icon(Icons.directions_car_rounded,
-                color: AppColors.primaryRed),
+            selectedIcon: Icon(
+              Icons.directions_car_rounded,
+              color: AppColors.primaryRed,
+            ),
             label: 'Vehicles',
           ),
           NavigationDestination(
             icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon:
-                Icon(Icons.receipt_long_rounded, color: AppColors.primaryRed),
+            selectedIcon: Icon(
+              Icons.receipt_long_rounded,
+              color: AppColors.primaryRed,
+            ),
             label: 'Invoices',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline_rounded),
-            selectedIcon:
-                Icon(Icons.person_rounded, color: AppColors.primaryRed),
+            selectedIcon: Icon(
+              Icons.person_rounded,
+              color: AppColors.primaryRed,
+            ),
             label: 'Profile',
           ),
         ],

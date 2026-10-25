@@ -10,6 +10,7 @@ import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
+
 import '../ViewModel/customer_appointment_view_model.dart';
 import '../Widgets/appointment_card.dart';
 
@@ -36,8 +37,9 @@ class CustomerAppointmentsScreen extends ConsumerWidget {
     final state = ref.watch(customerAppointmentViewModelProvider);
     final vm = ref.read(customerAppointmentViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Scaffold(
       appBar: AppBar(
@@ -63,8 +65,7 @@ class CustomerAppointmentsScreen extends ConsumerWidget {
               if (state.appointments.isEmpty) {
                 return const AppEmptyState(
                   title: 'No Appointments Yet',
-                  message:
-                      'Find a nearby garage and tap "Request Service" to book your vehicle appointment.',
+                  message: 'Find a nearby garage and tap "Request Service" to book your vehicle appointment.',
                   icon: Icons.calendar_today_rounded,
                 );
               }
@@ -94,8 +95,7 @@ class _BookAppointmentSheet extends ConsumerStatefulWidget {
       _BookAppointmentSheetState();
 }
 
-class _BookAppointmentSheetState
-    extends ConsumerState<_BookAppointmentSheet> {
+class _BookAppointmentSheetState extends ConsumerState<_BookAppointmentSheet> {
   final _formKey = GlobalKey<FormState>();
   final _vehicleCtrl = TextEditingController(text: '2022 Hyundai Creta');
   final _issueCtrl = TextEditingController();
@@ -129,24 +129,25 @@ class _BookAppointmentSheetState
           issueDescription: _issueCtrl.text.trim(),
         )
         .then((success) {
-      if (success && mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Service request submitted to the garage!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      }
-    });
+          if (success && mounted) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Service request submitted to the garage!'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          }
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(customerAppointmentViewModelProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return Padding(
       padding: EdgeInsets.only(

@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../colors/app_colors.dart';
 import '../fonts/app_fonts.dart';
 
 class AppStatusBadge extends StatelessWidget {
-  const AppStatusBadge({
-    super.key,
-    required this.status,
-    this.customLabel,
-  });
+  const AppStatusBadge({super.key, required this.status, this.customLabel});
 
   final String status;
   final String? customLabel;
@@ -63,10 +60,8 @@ class AppStatusBadge extends StatelessWidget {
       ),
       child: Text(
         display,
-        style: AppFonts.labelSmall(color: fg).copyWith(
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.4,
-        ),
+        style: AppFonts.labelSmall(color: fg)
+            .copyWith(fontWeight: FontWeight.w700, letterSpacing: 0.4),
       ),
     );
   }

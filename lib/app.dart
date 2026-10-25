@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'core/branding/app_branding.dart';
 import 'core/localization/app_localizations.dart';
 import 'core/notifications/app_notification_host.dart';
@@ -24,10 +25,7 @@ class GarageCardApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       locale: locale,
-      supportedLocales: const [
-        Locale('en'),
-        Locale('ml'),
-      ],
+      supportedLocales: const [Locale('en'), Locale('ml')],
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -35,9 +33,8 @@ class GarageCardApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       routerConfig: router,
-      builder: (context, child) => AppNotificationHost(
-        child: child ?? const SizedBox.shrink(),
-      ),
+      builder: (context, child) =>
+          AppNotificationHost(child: child ?? const SizedBox.shrink()),
     );
   }
 }

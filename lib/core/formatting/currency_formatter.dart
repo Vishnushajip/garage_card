@@ -20,7 +20,10 @@ class CurrencyFormatter {
     return '$symbol${formatter.format(amount)}';
   }
 
-  static String formatWithoutDecimals(double amount, {String currencyCode = 'INR'}) {
+  static String formatWithoutDecimals(
+    double amount, {
+    String currencyCode = 'INR',
+  }) {
     final symbol = switch (currencyCode.toUpperCase()) {
       'INR' => '₹',
       'AED' => 'AED ',

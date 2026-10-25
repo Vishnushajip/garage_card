@@ -18,12 +18,7 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
+# Flutter/Dart/Pub related (high MB build and cache directories)
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
@@ -47,12 +42,20 @@ app.*.map.json
 # Widget Preview related
 .widget_preview/
 
-# Android Signing and Keystores
-key.properties
-android/key.properties
-*.jks
-*.keystore
-android/keystore/
+# Temporary browser testing artifacts
+.playwright-mcp/
 
 # Firebase cache
 .firebase/
+
+# Explicitly do NOT ignore configuration, signing keys, keystores, or source files
+!local.properties
+!**/local.properties
+!key.properties
+!**/key.properties
+!*.jks
+!*.keystore
+!keystore/
+!**/keystore/**
+!MainActivity.kt
+!**/MainActivity.kt

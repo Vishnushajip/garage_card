@@ -78,10 +78,12 @@ class ServicePipelineSummary extends StatelessWidget {
     required Color color,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final secondaryTextColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return Card(
       elevation: 0,
@@ -119,10 +121,7 @@ class ServicePipelineSummary extends StatelessWidget {
                 ),
               ],
             ),
-            Text(
-              value,
-              style: AppFonts.titleLarge(color: primaryTextColor),
-            ),
+            Text(value, style: AppFonts.titleLarge(color: primaryTextColor)),
             Text(
               subtitle,
               style: AppFonts.labelSmall(color: secondaryTextColor),

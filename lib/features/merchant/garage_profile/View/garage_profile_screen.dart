@@ -17,6 +17,7 @@ import 'package:garage_card/core/notifications/push_notification_service.dart';
 import 'package:garage_card/core/theme/theme_controller.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/customer/profile/Widgets/preference_tile.dart';
+
 import '../ViewModel/garage_profile_view_model.dart';
 
 class GarageProfileScreen extends ConsumerStatefulWidget {
@@ -45,7 +46,8 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
     _phoneCtrl = TextEditingController(text: '+91 98460 12345');
     _emailCtrl = TextEditingController(text: 'service@apexprecision.com');
     _addressCtrl = TextEditingController(
-        text: 'Near MG Road, Ravipuram, Kochi, Kerala');
+      text: 'Near MG Road, Ravipuram, Kochi, Kerala',
+    );
     _taxCtrl = TextEditingController(text: '32AAACH7890Q1ZS');
     _hoursCtrl = TextEditingController(text: '8:30 AM - 7:30 PM');
   }
@@ -76,15 +78,15 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
           openHours: _hoursCtrl.text.trim(),
         )
         .then((success) {
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Garage profile updated successfully!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      }
-    });
+          if (success && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Garage profile updated successfully!'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          }
+        });
   }
 
   @override
@@ -95,8 +97,9 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
     final locale = ref.watch(localeProvider);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     if (state.isLoading) {
@@ -139,8 +142,9 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                             width: 60,
                             height: 60,
                             decoration: BoxDecoration(
-                              color:
-                                  AppColors.accentBlue.withValues(alpha: 0.15),
+                              color: AppColors.accentBlue.withValues(
+                                alpha: 0.15,
+                              ),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Icon(
@@ -157,7 +161,8 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                                 Text(
                                   _nameCtrl.text,
                                   style: AppFonts.titleLarge(
-                                      color: primaryTextColor),
+                                    color: primaryTextColor,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Row(
@@ -169,7 +174,9 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                                     const SizedBox(width: 8),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 2),
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: AppColors.infoBg,
                                         borderRadius: BorderRadius.circular(12),
@@ -177,7 +184,8 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                                       child: Text(
                                         'PLAN: PRO TIER',
                                         style: AppFonts.labelSmall(
-                                            color: AppColors.info),
+                                          color: AppColors.info,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -264,10 +272,12 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                                     }
                                   },
                                   items: AppConstants.supportedCurrencies
-                                      .map((code) => AppDropdownItem(
-                                            value: code,
-                                            title: code,
-                                          ))
+                                      .map(
+                                        (code) => AppDropdownItem(
+                                          value: code,
+                                          title: code,
+                                        ),
+                                      )
                                       .toList(),
                                 ),
                               ),
@@ -319,13 +329,17 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                             value: locale.languageCode,
                             onChanged: (code) {
                               if (code != null) {
-                                ref.read(localeProvider.notifier).setLocale(code);
+                                ref
+                                    .read(localeProvider.notifier)
+                                    .setLocale(code);
                               }
                             },
                             items: const [
                               AppDropdownItem(value: 'en', title: 'English'),
                               AppDropdownItem(
-                                  value: 'ml', title: 'മലയാളം (Malayalam)'),
+                                value: 'ml',
+                                title: 'മലയാളം (Malayalam)',
+                              ),
                             ],
                           ),
                         ),
@@ -347,12 +361,17 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                             },
                             items: const [
                               AppDropdownItem(
-                                  value: ThemeMode.system,
-                                  title: 'System Default'),
+                                value: ThemeMode.system,
+                                title: 'System Default',
+                              ),
                               AppDropdownItem(
-                                  value: ThemeMode.light, title: 'Light Theme'),
+                                value: ThemeMode.light,
+                                title: 'Light Theme',
+                              ),
                               AppDropdownItem(
-                                  value: ThemeMode.dark, title: 'Dark Theme'),
+                                value: ThemeMode.dark,
+                                title: 'Dark Theme',
+                              ),
                             ],
                           ),
                         ),
@@ -380,11 +399,11 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                         PreferenceTile(
                           icon: Icons.notifications_active_rounded,
                           title: 'Enable Push Notifications',
-                          subtitle:
-                              'Receive customer bookings, status updates and approval alerts',
+                          subtitle: 'Receive customer bookings, status updates and approval alerts',
                           onTap: () async {
-                            final service =
-                                ref.read(pushNotificationServiceProvider);
+                            final service = ref.read(
+                              pushNotificationServiceProvider,
+                            );
                             final settings = await service.requestPermission();
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -404,30 +423,29 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                         PreferenceTile(
                           icon: Icons.image_rounded,
                           title: 'Send Test Alert with Image',
-                          subtitle:
-                              'Preview a rich merchant alert with estimate breakdown image',
+                          subtitle: 'Preview a rich merchant alert with estimate breakdown image',
                           onTap: () async {
-                            final service =
-                                ref.read(pushNotificationServiceProvider);
+                            final service = ref.read(
+                              pushNotificationServiceProvider,
+                            );
                             await service.triggerEventNotification(
-                              eventType:
-                                  NotificationEventType.estimateApproved,
+                              eventType: NotificationEventType.estimateApproved,
                               recipientUid: 'user_merchant_1',
                               entityId: 'est_m_1',
                               qualifier:
                                   'test_${DateTime.now().millisecondsSinceEpoch}',
                               title: 'Test: Estimate Approved by Customer',
-                              body:
-                                  'Customer approved estimate EST-2024-001 (₹4,500). Ready to begin work.',
-                              customImageUrl: NotificationEventMatrix
-                                  .fallbackEstimateImage,
+                              body: 'Customer approved estimate EST-2024-001 (₹4,500). Ready to begin work.',
+                              customImageUrl:
+                                  NotificationEventMatrix.fallbackEstimateImage,
                               customDeepLink: '/merchant/estimates',
                             );
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
-                                      'Merchant test alert dispatched with image!'),
+                                    'Merchant test alert dispatched with image!',
+                                  ),
                                   backgroundColor: AppColors.success,
                                 ),
                               );
@@ -474,13 +492,14 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                             final confirm = await AppDialog.confirm(
                               context,
                               title: 'Sign Out?',
-                              message:
-                                  'Are you sure you want to exit your merchant account?',
+                              message: 'Are you sure you want to exit your merchant account?',
                               confirmLabel: 'Sign Out',
                               isDestructive: true,
                             );
                             if (confirm == true) {
-                              ref.read(authViewModelProvider.notifier).signOut();
+                              ref
+                                  .read(authViewModelProvider.notifier)
+                                  .signOut();
                             }
                           },
                         ),

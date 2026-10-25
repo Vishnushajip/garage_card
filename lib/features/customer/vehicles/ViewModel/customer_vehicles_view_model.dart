@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/shared/models/vehicle_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+
 import '../Model/customer_vehicles_state.dart';
 
 class CustomerVehiclesViewModel extends Notifier<CustomerVehiclesState> {
@@ -13,10 +14,9 @@ class CustomerVehiclesViewModel extends Notifier<CustomerVehiclesState> {
   Future<void> _loadVehicles() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final list = await ref.read(garageRepositoryProvider).getVehicles(
-            customerId: 'cust_demo_1',
-            search: state.searchQuery,
-          );
+      final list = await ref
+          .read(garageRepositoryProvider)
+          .getVehicles(customerId: 'cust_demo_1', search: state.searchQuery);
       state = state.copyWith(isLoading: false, vehicles: list);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
@@ -48,8 +48,9 @@ class CustomerVehiclesViewModel extends Notifier<CustomerVehiclesState> {
         createdAt: DateTime.now(),
       );
 
-      final created =
-          await ref.read(garageRepositoryProvider).createVehicle(veh);
+      final created = await ref
+          .read(garageRepositoryProvider)
+          .createVehicle(veh);
       state = state.copyWith(
         isSaving: false,
         vehicles: [created, ...state.vehicles],
@@ -68,5 +69,5 @@ class CustomerVehiclesViewModel extends Notifier<CustomerVehiclesState> {
 
 final customerVehiclesViewModelProvider =
     NotifierProvider<CustomerVehiclesViewModel, CustomerVehiclesState>(
-  CustomerVehiclesViewModel.new,
-);
+      CustomerVehiclesViewModel.new,
+    );
