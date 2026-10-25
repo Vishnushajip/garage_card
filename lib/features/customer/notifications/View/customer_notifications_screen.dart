@@ -7,6 +7,7 @@ import 'package:garage_card/core/shared_widgets/app_error_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
+import 'package:go_router/go_router.dart';
 import '../ViewModel/customer_notifications_view_model.dart';
 import '../Widgets/notification_tile.dart';
 
@@ -27,6 +28,23 @@ class CustomerNotificationsScreen extends ConsumerWidget {
           'Notifications',
           style: AppFonts.titleLarge(color: primaryTextColor),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              state.filterOnlyUnread
+                  ? Icons.filter_alt_rounded
+                  : Icons.filter_alt_outlined,
+              color: state.filterOnlyUnread ? AppColors.accentBlue : null,
+            ),
+            tooltip: 'Filter Unread Only',
+            onPressed: vm.toggleFilterUnread,
+          ),
+          if (state.unreadCount > 0)
+            TextButton(
+              onPressed: vm.markAllAsRead,
+              child: const Text('Mark all read'),
+            ),
+        ],
       ),
       body: AppRefresh(
         onRefresh: vm.refresh,
@@ -42,23 +60,33 @@ class CustomerNotificationsScreen extends ConsumerWidget {
                   onRetry: vm.refresh,
                 );
               }
-              if (state.notifications.isEmpty) {
-                return const AppEmptyState(
-                  title: 'No Notifications',
-                  message:
-                      'Repair status changes, estimate approvals, and reminders will notify you here.',
+              final displayList = state.filteredNotifications;
+              if (displayList.isEmpty) {
+                return AppEmptyState(
+                  title: state.filterOnlyUnread
+                      ? 'No Unread Notifications'
+                      : 'No Notifications Yet',
+                  message: state.filterOnlyUnread
+                      ? 'You are all caught up!'
+                      : 'Repair status changes, estimate approvals, and reminders will notify you here.',
                   icon: Icons.notifications_none_rounded,
                 );
               }
 
               return ListView.separated(
-                itemCount: state.notifications.length,
+                itemCount: displayList.length,
                 separatorBuilder: (context, index) => const Divider(height: 1),
                 itemBuilder: (ctx, index) {
-                  final notif = state.notifications[index];
+                  final notif = displayList[index];
                   return NotificationTile(
                     notification: notif,
-                    onTap: () => vm.markAsRead(notif.id),
+                    onTap: () {
+                      vm.markAsRead(notif.id);
+                      if (notif.deepLink != null &&
+                          notif.deepLink!.isNotEmpty) {
+                        context.go(notif.deepLink!);
+                      }
+                    },
                   );
                 },
               );

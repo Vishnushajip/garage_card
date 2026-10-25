@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="900" height="260" viewBox="0 0 900 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="badgeGrad" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#EF4444"/>
+      <stop offset="100%" stop-color="#B91C1C"/>
+    </linearGradient>
+    <filter id="shadow" x="10" y="15" width="220" height="220" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#DC2626" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Left Emblem (200x200 at 30, 30) -->
+  <g transform="translate(30, 30)">
+    <rect width="200" height="200" rx="48" fill="url(#badgeGrad)" filter="url(#shadow)"/>
+    
+    <!-- Stylized W Inside Badge -->
+    <g transform="translate(20, 20) scale(0.3125)">
+      <!-- Left Wing -->
+      <path d="M 112 168 C 112 150 128 138 144 146 L 206 342 C 212 360 198 376 180 376 C 168 376 158 368 152 356 L 98 186 C 94 176 98 168 112 168 Z" fill="white"/>
+      
+      <!-- Center Spanner / Wrench V-Crest -->
+      <path d="M 186 362 L 232 236 C 235 228 244 222 254 222 C 255 222 257 222 258 222 C 268 222 277 228 280 236 L 326 362 C 332 378 318 392 302 392 C 290 392 280 384 276 372 L 256 312 L 236 372 C 232 384 222 392 210 392 C 194 392 180 378 186 362 Z" fill="white"/>
+      
+      <!-- Wrench Notch -->
+      <path d="M 238 180 C 238 170 246 162 256 162 C 266 162 274 170 274 180 L 274 206 C 268 202 262 200 256 200 C 250 200 244 202 238 206 Z" fill="white"/>
+      <circle cx="256" cy="180" r="16" fill="#B91C1C"/>
+      
+      <!-- Right Wing -->
+      <path d="M 306 342 L 396 142 C 402 128 418 122 430 130 C 442 138 444 154 438 168 L 332 364 C 326 376 314 382 302 380 C 292 378 286 368 290 358 L 306 342 Z" fill="white"/>
+      <circle cx="432" cy="132" r="14" fill="#FEF08A"/>
+    </g>
+  </g>
+
+  <!-- Typography / Wordmark -->
+  <text x="260" y="145" font-family="-apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Segoe UI', Roboto, sans-serif" font-size="115" font-weight="800" letter-spacing="-2" fill="#FFFFFF">We<tspan fill="#FFFFFF">Fix</tspan></text>
+  
+  <!-- Dot / Accent on Fix -->
+  <circle cx="560" cy="82" r="9" fill="#F87171"/>
+  
+  <!-- Tagline -->
+  <text x="264" y="195" font-family="-apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="700" letter-spacing="4.5" fill="#94A3B8">VEHICLE SERVICE PLATFORM</text>
+</svg>

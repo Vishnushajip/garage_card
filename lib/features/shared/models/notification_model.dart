@@ -7,6 +7,11 @@ class NotificationModel {
     this.type = 'general',
     this.referenceId,
     this.referenceType,
+    this.imageUrl,
+    this.deepLink,
+    this.garageId,
+    this.eventId,
+    this.metadata,
     this.isRead = false,
     this.createdAt,
   });
@@ -18,6 +23,11 @@ class NotificationModel {
   final String type;
   final String? referenceId;
   final String? referenceType;
+  final String? imageUrl;
+  final String? deepLink;
+  final String? garageId;
+  final String? eventId;
+  final Map<String, dynamic>? metadata;
   final bool isRead;
   final DateTime? createdAt;
 
@@ -29,6 +39,11 @@ class NotificationModel {
       'type': type,
       'referenceId': referenceId,
       'referenceType': referenceType,
+      'imageUrl': imageUrl,
+      'deepLink': deepLink,
+      'garageId': garageId,
+      'eventId': eventId,
+      'metadata': metadata,
       'isRead': isRead,
       'createdAt': createdAt?.toIso8601String(),
     };
@@ -46,6 +61,11 @@ class NotificationModel {
       type: data['type'] as String? ?? 'general',
       referenceId: data['referenceId'] as String?,
       referenceType: data['referenceType'] as String?,
+      imageUrl: data['imageUrl'] as String?,
+      deepLink: data['deepLink'] as String?,
+      garageId: data['garageId'] as String?,
+      eventId: data['eventId'] as String?,
+      metadata: data['metadata'] as Map<String, dynamic>?,
       isRead: data['isRead'] as bool? ?? false,
       createdAt: data['createdAt'] != null
           ? DateTime.tryParse(data['createdAt'] as String)
@@ -61,6 +81,11 @@ class NotificationModel {
     String? type,
     String? referenceId,
     String? referenceType,
+    String? imageUrl,
+    String? deepLink,
+    String? garageId,
+    String? eventId,
+    Map<String, dynamic>? metadata,
     bool? isRead,
     DateTime? createdAt,
   }) {
@@ -72,6 +97,11 @@ class NotificationModel {
       type: type ?? this.type,
       referenceId: referenceId ?? this.referenceId,
       referenceType: referenceType ?? this.referenceType,
+      imageUrl: imageUrl ?? this.imageUrl,
+      deepLink: deepLink ?? this.deepLink,
+      garageId: garageId ?? this.garageId,
+      eventId: eventId ?? this.eventId,
+      metadata: metadata ?? this.metadata,
       isRead: isRead ?? this.isRead,
       createdAt: createdAt ?? this.createdAt,
     );

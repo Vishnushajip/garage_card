@@ -46,3 +46,13 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Android Signing and Keystores
+key.properties
+android/key.properties
+*.jks
+*.keystore
+android/keystore/
+
+# Firebase cache
+.firebase/

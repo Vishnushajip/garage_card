@@ -173,7 +173,7 @@ class GarageCardItem extends StatelessWidget {
                         WhatsAppShareService.sendWhatsAppMessage(
                       phoneNumber: garage.phone,
                       message:
-                          'Hello ${garage.name}, I found your garage on Garage Card and would like some service information.',
+                          'Hello ${garage.name}, I found your garage on WeFix and would like some service information.',
                     ),
                   ),
                   const SizedBox(width: 8),

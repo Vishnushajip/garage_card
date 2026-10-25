@@ -13,6 +13,9 @@ import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import '../ViewModel/customer_dashboard_view_model.dart';
 import '../Widgets/customer_active_job_card.dart';
 import '../Widgets/customer_quick_action_button.dart';
+import '../../notifications/ViewModel/customer_notifications_view_model.dart';
+import 'package:garage_card/core/routing/route_paths.dart';
+import 'package:go_router/go_router.dart';
 
 class CustomerDashboardScreen extends ConsumerWidget {
   const CustomerDashboardScreen({
@@ -36,6 +39,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(customerDashboardViewModelProvider);
     final vm = ref.read(customerDashboardViewModelProvider.notifier);
+    final notifState = ref.watch(customerNotificationsViewModelProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor =
         isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
@@ -72,6 +76,17 @@ class CustomerDashboardScreen extends ConsumerWidget {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: Badge(
+              isLabelVisible: notifState.unreadCount > 0,
+              label: Text('${notifState.unreadCount}'),
+              child: const Icon(Icons.notifications_outlined),
+            ),
+            tooltip: 'Notifications',
+            onPressed: () => context.push(RoutePaths.customerNotifications),
+          ),
+        ],
       ),
       body: AppRefresh(
         onRefresh: vm.refresh,

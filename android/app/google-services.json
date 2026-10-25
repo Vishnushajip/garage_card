@@ -7,12 +7,33 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:62265849009:android:915daf797a14e885621e90",
+        "mobilesdk_app_id": "1:62265849009:android:f4ad5b2e0f39b3a3621e90",
         "android_client_info": {
           "package_name": "com.garagecard.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "62265849009-c17p7h4nupkpq25v6440ktqs38mjm0sa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.garagecard.app",
+            "certificate_hash": "5c8382c01f1c17b6be0288c53b61af7581cab82d"
+          }
+        },
+        {
+          "client_id": "62265849009-dj6g6vrfbbjhd5d65jrka54nad6tnh7b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.garagecard.app",
+            "certificate_hash": "9f155de8484339f2b52a7cb3de46bda4c5f2a5ee"
+          }
+        },
+        {
+          "client_id": "62265849009-mushlhju9uianaf4aqq4qtcj11kfiij5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAD9PjSN7lU28SkjJYI9cZqSLt4JS5OOY8"
@@ -20,7 +41,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "62265849009-mushlhju9uianaf4aqq4qtcj11kfiij5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

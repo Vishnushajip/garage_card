@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/branding/app_branding.dart';
 import 'core/localization/app_localizations.dart';
+import 'core/notifications/app_notification_host.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
@@ -34,6 +35,9 @@ class GarageCardApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       routerConfig: router,
+      builder: (context, child) => AppNotificationHost(
+        child: child ?? const SizedBox.shrink(),
+      ),
     );
   }
 }

@@ -20,6 +20,7 @@ class RecordPaymentDialog extends StatefulWidget {
     required String paymentMethod,
     required String referenceNumber,
     required String notes,
+    double discountAdjustment,
   }) onRecord;
 
   @override
@@ -29,6 +30,7 @@ class RecordPaymentDialog extends StatefulWidget {
 class _RecordPaymentDialogState extends State<RecordPaymentDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _amountCtrl;
+  final _discountCtrl = TextEditingController(text: '0');
   final _refCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
 
@@ -45,21 +47,33 @@ class _RecordPaymentDialogState extends State<RecordPaymentDialog> {
   @override
   void dispose() {
     _amountCtrl.dispose();
+    _discountCtrl.dispose();
     _refCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
+  }
+
+  double get _enteredAmount => double.tryParse(_amountCtrl.text.trim()) ?? 0.0;
+  double get _enteredDiscount =>
+      double.tryParse(_discountCtrl.text.trim()) ?? 0.0;
+  double get _effectiveRemaining {
+    final rem = widget.invoice.balanceDue - _enteredAmount - _enteredDiscount;
+    return rem < 0 ? 0 : rem;
   }
 
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
-    final amt = double.tryParse(_amountCtrl.text.trim()) ?? 0.0;
+    final amt = _enteredAmount;
+    final discount = _enteredDiscount;
+
     final success = await widget.onRecord(
       amount: amt,
       paymentMethod: _selectedMethod,
       referenceNumber: _refCtrl.text.trim(),
       notes: _notesCtrl.text.trim(),
+      discountAdjustment: discount,
     );
 
     if (mounted) {
@@ -78,7 +92,7 @@ class _RecordPaymentDialogState extends State<RecordPaymentDialog> {
 
     return AlertDialog(
       title: Text(
-        'Record Payment',
+        'Record Payment & Settlement',
         style: AppFonts.titleLarge(color: primaryTextColor),
       ),
       content: SingleChildScrollView(
@@ -88,16 +102,37 @@ class _RecordPaymentDialogState extends State<RecordPaymentDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Invoice: ${widget.invoice.invoiceNumber} • Balance Due: ${CurrencyFormatter.format(widget.invoice.balanceDue, currencyCode: widget.invoice.currencyCode)}',
-                style: AppFonts.labelSmall(color: AppColors.error),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Invoice: ${widget.invoice.invoiceNumber}',
+                      style: AppFonts.labelLarge(color: primaryTextColor),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Original Total: ${CurrencyFormatter.format(widget.invoice.totalAmount, currencyCode: widget.invoice.currencyCode)} • Balance Due: ${CurrencyFormatter.format(widget.invoice.balanceDue, currencyCode: widget.invoice.currencyCode)}',
+                      style: AppFonts.labelSmall(color: AppColors.error),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 14),
               AppTextField(
                 controller: _amountCtrl,
-                label: 'Payment Amount',
+                label: 'Payment Amount Collected',
                 keyboardType: TextInputType.number,
                 required: true,
+                onChanged: (_) => setState(() {}),
                 validator: (v) {
                   final val = double.tryParse(v ?? '');
                   if (val == null || val <= 0) return 'Enter a valid amount';
@@ -106,6 +141,59 @@ class _RecordPaymentDialogState extends State<RecordPaymentDialog> {
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 14),
+              AppTextField(
+                controller: _discountCtrl,
+                label: 'Discount / Settlement Adjustment',
+                hint: 'e.g. 200 for discount or round-off',
+                keyboardType: TextInputType.number,
+                onChanged: (_) => setState(() {}),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return null;
+                  final val = double.tryParse(v.trim());
+                  if (val == null || val < 0) return 'Enter valid discount';
+                  if (val + _enteredAmount > widget.invoice.balanceDue + 0.01) {
+                    return 'Payment + discount exceeds balance due';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: _effectiveRemaining <= 0.01
+                      ? AppColors.success.withValues(alpha: 0.12)
+                      : AppColors.accentAmber.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _effectiveRemaining <= 0.01
+                          ? Icons.check_circle_rounded
+                          : Icons.info_outline_rounded,
+                      size: 16,
+                      color: _effectiveRemaining <= 0.01
+                          ? AppColors.success
+                          : AppColors.accentAmber,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _effectiveRemaining <= 0.01
+                            ? 'Invoice will be fully settled as PAID.'
+                            : 'Remaining balance after payment: ${CurrencyFormatter.format(_effectiveRemaining, currencyCode: widget.invoice.currencyCode)}',
+                        style: AppFonts.labelSmall(
+                          color: _effectiveRemaining <= 0.01
+                              ? AppColors.success
+                              : AppColors.accentAmber,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 14),
               AppDropdown<String>(
@@ -133,7 +221,7 @@ class _RecordPaymentDialogState extends State<RecordPaymentDialog> {
               AppTextField(
                 controller: _notesCtrl,
                 label: 'Payment Notes',
-                hint: 'Optional notes...',
+                hint: 'e.g. Settled with ₹200 discount',
               ),
             ],
           ),

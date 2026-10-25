@@ -21,29 +21,24 @@ class NotificationTile extends StatelessWidget {
         isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
     final secondaryTextColor =
         isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final hasImage =
+        notification.imageUrl != null && notification.imageUrl!.isNotEmpty;
 
     return ListTile(
       onTap: onTap,
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: notification.isRead
-              ? (isDark ? AppColors.cardDark : AppColors.borderLight)
-              : AppColors.accentBlue.withValues(alpha: 0.14),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          notification.type == 'job_status'
-              ? Icons.build_circle_rounded
-              : notification.type == 'estimate'
-                  ? Icons.request_quote_rounded
-                  : Icons.notifications_active_rounded,
-          color: notification.isRead
-              ? secondaryTextColor
-              : AppColors.accentBlue,
-          size: 22,
-        ),
-      ),
+      leading: hasImage
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                notification.imageUrl!,
+                width: 48,
+                height: 48,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildFallbackIcon(isDark, secondaryTextColor),
+              ),
+            )
+          : _buildFallbackIcon(isDark, secondaryTextColor),
       title: Text(
         notification.title,
         style: AppFonts.titleMedium(color: primaryTextColor).copyWith(
@@ -76,6 +71,30 @@ class NotificationTile extends StatelessWidget {
               ),
             )
           : null,
+    );
+  }
+
+  Widget _buildFallbackIcon(bool isDark, Color secondaryTextColor) {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: notification.isRead
+            ? (isDark ? AppColors.cardDark : AppColors.borderLight)
+            : AppColors.accentBlue.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(
+        notification.type == 'job_status'
+            ? Icons.build_circle_rounded
+            : notification.type == 'estimate'
+                ? Icons.request_quote_rounded
+                : notification.type == 'invoice_issued'
+                    ? Icons.receipt_long_rounded
+                    : Icons.notifications_active_rounded,
+        color: notification.isRead ? secondaryTextColor : AppColors.accentBlue,
+        size: 22,
+      ),
     );
   }
 }

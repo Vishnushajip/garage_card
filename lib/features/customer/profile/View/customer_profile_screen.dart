@@ -6,6 +6,8 @@ import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/shared_widgets/app_dialog.dart';
 import 'package:garage_card/core/shared_widgets/app_dropdown.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
+import 'package:garage_card/core/notifications/notification_event_matrix.dart';
+import 'package:garage_card/core/notifications/push_notification_service.dart';
 import 'package:garage_card/core/theme/theme_controller.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import '../Widgets/preference_tile.dart';
@@ -188,6 +190,82 @@ class CustomerProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               Text(
+                'Push Notifications & Alerts',
+                style: AppFonts.titleLarge(color: primaryTextColor),
+              ),
+              const SizedBox(height: 12),
+              Card(
+                color: cardBg,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color:
+                        isDark ? AppColors.borderDark : AppColors.borderLight,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    PreferenceTile(
+                      icon: Icons.notifications_active_rounded,
+                      title: 'Enable Push Notifications',
+                      subtitle:
+                          'Receive instant repair status updates, estimates and photos',
+                      onTap: () async {
+                        final service =
+                            ref.read(pushNotificationServiceProvider);
+                        final settings = await service.requestPermission();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                settings != null
+                                    ? 'Notification permissions updated.'
+                                    : 'Push notification service initialized.',
+                              ),
+                              backgroundColor: AppColors.accentBlue,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    const Divider(height: 1),
+                    PreferenceTile(
+                      icon: Icons.image_rounded,
+                      title: 'Send Test Notification with Image',
+                      subtitle:
+                          'Preview a rich notification with vehicle image and deep link',
+                      onTap: () async {
+                        final service =
+                            ref.read(pushNotificationServiceProvider);
+                        await service.triggerEventNotification(
+                          eventType: NotificationEventType.readyForCollection,
+                          recipientUid: user?.uid ?? 'customer_demo_uid',
+                          entityId: 'job_demo_1',
+                          qualifier:
+                              'test_${DateTime.now().millisecondsSinceEpoch}',
+                          title: 'Test: Vehicle Ready for Pickup!',
+                          body:
+                              'This is a test alert with an automotive vehicle photo.',
+                          customImageUrl:
+                              NotificationEventMatrix.fallbackCarImage,
+                          customDeepLink: '/customer/jobs/job_demo_1',
+                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content:
+                                  Text('Test notification dispatched with image!'),
+                              backgroundColor: AppColors.success,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
                 'Account Actions',
                 style: AppFonts.titleLarge(color: primaryTextColor),
               ),
@@ -224,7 +302,7 @@ class CustomerProfileScreen extends ConsumerWidget {
                           context,
                           title: 'Sign Out?',
                           message:
-                              'Are you sure you want to sign out of your Garage Card account?',
+                              'Are you sure you want to sign out of your WeFix account?',
                           confirmLabel: 'Sign Out',
                           isDestructive: true,
                         );

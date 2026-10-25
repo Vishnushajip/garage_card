@@ -12,6 +12,8 @@ import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
+import 'package:garage_card/core/notifications/notification_event_matrix.dart';
+import 'package:garage_card/core/notifications/push_notification_service.dart';
 import 'package:garage_card/core/theme/theme_controller.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/customer/profile/Widgets/preference_tile.dart';
@@ -353,6 +355,84 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                                   value: ThemeMode.dark, title: 'Dark Theme'),
                             ],
                           ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Push Notifications & Alerts',
+                    style: AppFonts.titleLarge(color: primaryTextColor),
+                  ),
+                  const SizedBox(height: 12),
+                  Card(
+                    color: cardBg,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: isDark
+                            ? AppColors.borderDark
+                            : AppColors.borderLight,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        PreferenceTile(
+                          icon: Icons.notifications_active_rounded,
+                          title: 'Enable Push Notifications',
+                          subtitle:
+                              'Receive customer bookings, status updates and approval alerts',
+                          onTap: () async {
+                            final service =
+                                ref.read(pushNotificationServiceProvider);
+                            final settings = await service.requestPermission();
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    settings != null
+                                        ? 'Notification permissions updated.'
+                                        : 'Push notification service initialized.',
+                                  ),
+                                  backgroundColor: AppColors.accentBlue,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        const Divider(height: 1),
+                        PreferenceTile(
+                          icon: Icons.image_rounded,
+                          title: 'Send Test Alert with Image',
+                          subtitle:
+                              'Preview a rich merchant alert with estimate breakdown image',
+                          onTap: () async {
+                            final service =
+                                ref.read(pushNotificationServiceProvider);
+                            await service.triggerEventNotification(
+                              eventType:
+                                  NotificationEventType.estimateApproved,
+                              recipientUid: 'user_merchant_1',
+                              entityId: 'est_m_1',
+                              qualifier:
+                                  'test_${DateTime.now().millisecondsSinceEpoch}',
+                              title: 'Test: Estimate Approved by Customer',
+                              body:
+                                  'Customer approved estimate EST-2024-001 (₹4,500). Ready to begin work.',
+                              customImageUrl: NotificationEventMatrix
+                                  .fallbackEstimateImage,
+                              customDeepLink: '/merchant/estimates',
+                            );
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'Merchant test alert dispatched with image!'),
+                                  backgroundColor: AppColors.success,
+                                ),
+                              );
+                            }
+                          },
                         ),
                       ],
                     ),

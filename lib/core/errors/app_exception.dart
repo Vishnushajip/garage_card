@@ -44,6 +44,14 @@ class AppException implements Exception {
         message: 'You do not have permission to perform this action.',
       );
     }
+    if (str.contains('no-app') ||
+        str.contains('not initialized') ||
+        str.contains('no firebase app')) {
+      return const AppException(
+        code: 'firebase-not-initialized',
+        message: 'Firebase service is initializing. Please try again in a moment.',
+      );
+    }
     return AppException(
       code: 'firebase-error',
       message: error.toString(),

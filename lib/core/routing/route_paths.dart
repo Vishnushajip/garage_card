@@ -1,9 +1,11 @@
 class RoutePaths {
   RoutePaths._();
 
+  static const String splash = '/splash';
   static const String auth = '/auth';
 
   static const String customer = '/customer';
+  static const String customerJobs = '/customer/jobs';
   static const String customerGarages = '/customer/garages';
   static const String customerVehicles = '/customer/vehicles';
   static const String customerInvoices = '/customer/invoices';
@@ -19,5 +21,7 @@ class RoutePaths {
   static const String merchantCustomers = '/merchant/customers';
   static const String merchantEstimates = '/merchant/estimates';
   static const String merchantInvoices = '/merchant/invoices';
+  static const String merchantAnalytics = '/merchant/analytics';
+  static const String merchantNotifications = '/merchant/notifications';
   static const String merchantSettings = '/merchant/settings';
 }

@@ -57,7 +57,7 @@ class WhatsAppShareService {
         '• Job No: $jobNumber\n'
         '• Status: $status\n'
         '${notes.isNotEmpty ? '• Details: $notes\n' : ''}\n'
-        'Track repair progress in your Garage Card app.\n'
+        'Track repair progress in your WeFix app.\n'
         'Thank you,\n$garageName';
   }
 
@@ -73,7 +73,7 @@ class WhatsAppShareService {
         '• Estimate No: $estimateNumber\n'
         '• Vehicle: $vehicleDisplay\n'
         '• Estimated Total: $totalAmount\n\n'
-        'Please open your Garage Card app to review and approve the estimate.\n'
+        'Please open your WeFix app to review and approve the estimate.\n'
         'Thank you,\n$garageName';
   }
 
@@ -89,7 +89,7 @@ class WhatsAppShareService {
         '• Invoice No: $invoiceNumber\n'
         '• Vehicle: $vehicleDisplay\n'
         '• Balance Due: $balanceDue\n\n'
-        'You can view and download your PDF invoice directly in the Garage Card app.\n'
+        'You can view and download your PDF invoice directly in the WeFix app.\n'
         'Thank you,\n$garageName';
   }
 
@@ -104,7 +104,7 @@ class WhatsAppShareService {
         'This is a friendly service reminder from $garageName for your vehicle $vehicleDisplay:\n'
         '• Service: $reminderTitle\n'
         '• Due Date: $dueDate\n\n'
-        'Book your service appointment conveniently via the Garage Card app.\n'
+        'Book your service appointment conveniently via the WeFix app.\n'
         'Thank you,\n$garageName';
   }
 }

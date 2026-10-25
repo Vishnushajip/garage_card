@@ -1,11 +1,11 @@
 {
-    "name": "garage_card",
-    "short_name": "garage_card",
+    "name": "WeFix | Vehicle Service Platform",
+    "short_name": "WeFix",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFFFF",
+    "theme_color": "#DC2626",
+    "description": "WeFix is a modern vehicle service and garage management platform for motorcycles, scooters, cars, and all vehicle types.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

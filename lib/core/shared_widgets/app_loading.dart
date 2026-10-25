@@ -32,7 +32,7 @@ class AppLoading extends StatelessWidget {
             height: 32,
             child: CircularProgressIndicator(
               strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentBlue),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryRed),
             ),
           ),
           if (message != null) ...[

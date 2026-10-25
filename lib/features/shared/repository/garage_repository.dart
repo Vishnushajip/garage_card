@@ -292,7 +292,99 @@ class GarageRepository {
       updatedAt: now.subtract(const Duration(hours: 3)),
     );
 
-    _jobs.addAll([j1, j2, j3]);
+    final j4 = ServiceJobModel(
+      id: 'job_demo_4',
+      garageId: 'garage_demo_1',
+      customerId: 'cust_demo_1',
+      vehicleId: 'veh_re_350',
+      jobNumber: 'JOB-2026-004',
+      status: 'readyForCollection',
+      odometerReading: 12400,
+      complaints: const [
+        'Periodic 12,000 km service',
+        'Chain clean, lubrication, and slack adjustment',
+        'Engine oil & filter change',
+      ],
+      customerNotes: 'Service complete. Bike washed and ready for delivery today.',
+      internalNotes: 'Motul 15W50 used. Delivered in Bay 1.',
+      technicianName: 'Vineeth Roy',
+      estimatedCompletionDate: now,
+      completedDate: now,
+      vehicleDisplay: '2022 Royal Enfield Classic 350 (KL 07 CE 8821)',
+      customerName: 'Rahul Varma',
+      createdAt: now.subtract(const Duration(hours: 22)),
+      updatedAt: now.subtract(const Duration(hours: 1)),
+    );
+
+    final j5 = ServiceJobModel(
+      id: 'job_demo_5',
+      garageId: 'garage_demo_1',
+      customerId: 'cust_demo_2',
+      vehicleId: 'veh_mt_15',
+      jobNumber: 'JOB-2026-005',
+      status: 'inProgress',
+      odometerReading: 19800,
+      complaints: const [
+        'Front fork oil seal leaking',
+        'Front and rear brake disc pads replacement',
+      ],
+      customerNotes: 'Parts installed, final test ride in progress. Delivery scheduled today by 4:30 PM.',
+      internalNotes: 'Yamaha genuine oil seals fitted.',
+      technicianName: 'Suresh Kumar',
+      estimatedCompletionDate: now.add(const Duration(hours: 3)),
+      vehicleDisplay: '2023 Yamaha MT-15 V2 (KL 07 CF 3311)',
+      customerName: 'Fahad Basheer',
+      createdAt: now.subtract(const Duration(hours: 20)),
+      updatedAt: now.subtract(const Duration(hours: 2)),
+    );
+
+    final j6 = ServiceJobModel(
+      id: 'job_demo_6',
+      garageId: 'garage_demo_1',
+      customerId: 'cust_demo_3',
+      vehicleId: 'veh_activa',
+      jobNumber: 'JOB-2026-006',
+      status: 'completed',
+      odometerReading: 24500,
+      complaints: const [
+        'General service & engine oil change',
+        'CVT drive belt inspection & brake tightening',
+      ],
+      customerNotes: 'Completed yesterday. Customer collected vehicle.',
+      internalNotes: 'Belt in good condition. Adjusted play.',
+      technicianName: 'Vineeth Roy',
+      estimatedCompletionDate: now.subtract(const Duration(days: 1)),
+      completedDate: now.subtract(const Duration(days: 1)),
+      vehicleDisplay: '2021 Honda Activa 6G (KL 07 CD 9090)',
+      customerName: 'Ananya Krishnan',
+      createdAt: now.subtract(const Duration(days: 2)),
+      updatedAt: now.subtract(const Duration(days: 1)),
+    );
+
+    final j7 = ServiceJobModel(
+      id: 'job_demo_7',
+      garageId: 'garage_demo_1',
+      customerId: 'cust_demo_3',
+      vehicleId: 'veh_wagonr',
+      jobNumber: 'JOB-2026-007',
+      status: 'completed',
+      odometerReading: 62000,
+      complaints: const [
+        'Brake cleaning and fluid top-up',
+        'Coolant replacement',
+      ],
+      customerNotes: 'Completed yesterday and delivered.',
+      internalNotes: 'Brake shoes cleaned and adjusted.',
+      technicianName: 'Suresh Kumar',
+      estimatedCompletionDate: now.subtract(const Duration(days: 1)),
+      completedDate: now.subtract(const Duration(days: 1)),
+      vehicleDisplay: '2020 Maruti WagonR VXI (KL 07 BN 4411)',
+      customerName: 'Deepak Nair',
+      createdAt: now.subtract(const Duration(days: 2)),
+      updatedAt: now.subtract(const Duration(days: 1)),
+    );
+
+    _jobs.addAll([j1, j2, j3, j4, j5, j6, j7]);
 
     _jobHistory.addAll([
       JobStatusHistoryModel(
@@ -434,9 +526,213 @@ class GarageRepository {
       createdAt: now.subtract(const Duration(days: 45)),
     );
 
-    _invoices.add(inv1);
+    final inv2 = InvoiceModel(
+      id: 'inv_demo_2',
+      garageId: 'garage_demo_1',
+      jobId: 'job_demo_4',
+      customerId: 'cust_demo_1',
+      invoiceNumber: 'INV-2026-088',
+      items: const [
+        LineItemModel(
+          id: 'inv2_li_1',
+          description: 'Motul 15W50 Semi-Synthetic Engine Oil (2.5L)',
+          type: 'part',
+          quantity: 1,
+          unitPrice: 1000.0,
+        ),
+        LineItemModel(
+          id: 'inv2_li_2',
+          description: 'OEM Oil Filter & O-Ring Seal',
+          type: 'part',
+          quantity: 1,
+          unitPrice: 250.0,
+        ),
+        LineItemModel(
+          id: 'inv2_li_3',
+          description: 'General Periodic Service & Tuning Labor',
+          type: 'labor',
+          quantity: 1,
+          unitPrice: 1250.0,
+        ),
+      ],
+      subtotal: 2500.0,
+      taxRate: 0.0,
+      taxAmount: 0.0,
+      discountAmount: 200.0,
+      totalAmount: 2300.0,
+      paidAmount: 2300.0,
+      balanceDue: 0.0,
+      currencyCode: 'INR',
+      status: 'paid',
+      issuedAt: now.subtract(const Duration(hours: 3)),
+      createdAt: now.subtract(const Duration(hours: 3)),
+    );
 
-    _payments.add(
+    final inv3 = InvoiceModel(
+      id: 'inv_demo_3',
+      garageId: 'garage_demo_1',
+      jobId: 'job_demo_3',
+      customerId: 'cust_demo_2',
+      invoiceNumber: 'INV-2026-089',
+      items: const [
+        LineItemModel(
+          id: 'inv3_li_1',
+          description: 'Castrol Magnatec 5W-30 Full Synthetic (3.5L)',
+          type: 'part',
+          quantity: 1,
+          unitPrice: 2200.0,
+        ),
+        LineItemModel(
+          id: 'inv3_li_2',
+          description: 'Oil Filter & Sump Washer',
+          type: 'part',
+          quantity: 1,
+          unitPrice: 400.0,
+        ),
+        LineItemModel(
+          id: 'inv3_li_3',
+          description: '4-Wheel Computerized Alignment & Balancing',
+          type: 'labor',
+          quantity: 1,
+          unitPrice: 2000.0,
+        ),
+      ],
+      subtotal: 4600.0,
+      taxRate: 0.0,
+      taxAmount: 0.0,
+      discountAmount: 100.0,
+      totalAmount: 4500.0,
+      paidAmount: 2000.0,
+      balanceDue: 2500.0,
+      currencyCode: 'INR',
+      status: 'partially_paid',
+      dueDate: now,
+      issuedAt: now.subtract(const Duration(hours: 5)),
+      createdAt: now.subtract(const Duration(hours: 5)),
+    );
+
+    final inv4 = InvoiceModel(
+      id: 'inv_demo_4',
+      garageId: 'garage_demo_1',
+      jobId: 'job_demo_6',
+      customerId: 'cust_demo_3',
+      invoiceNumber: 'INV-2026-085',
+      items: const [
+        LineItemModel(
+          id: 'inv4_li_1',
+          description: 'Honda Genuine 10W-30 4T Scooter Engine Oil',
+          type: 'part',
+          quantity: 1,
+          unitPrice: 450.0,
+        ),
+        LineItemModel(
+          id: 'inv4_li_2',
+          description: 'Gearbox Oil & Spark Plug Replacement',
+          type: 'part',
+          quantity: 1,
+          unitPrice: 350.0,
+        ),
+        LineItemModel(
+          id: 'inv4_li_3',
+          description: 'Full Scooter Service & CVT Inspection Labor',
+          type: 'labor',
+          quantity: 1,
+          unitPrice: 1000.0,
+        ),
+      ],
+      subtotal: 1800.0,
+      taxRate: 0.0,
+      taxAmount: 0.0,
+      discountAmount: 0.0,
+      totalAmount: 1800.0,
+      paidAmount: 1800.0,
+      balanceDue: 0.0,
+      currencyCode: 'INR',
+      status: 'paid',
+      issuedAt: now.subtract(const Duration(days: 1)),
+      createdAt: now.subtract(const Duration(days: 1)),
+    );
+
+    final inv5 = InvoiceModel(
+      id: 'inv_demo_5',
+      garageId: 'garage_demo_1',
+      jobId: 'job_demo_2',
+      customerId: 'cust_demo_1',
+      invoiceNumber: 'INV-2026-081',
+      items: const [
+        LineItemModel(
+          id: 'inv5_li_1',
+          description: 'Exide Matrix 45Ah Car Battery with Exchange',
+          type: 'part',
+          quantity: 1,
+          unitPrice: 5500.0,
+        ),
+        LineItemModel(
+          id: 'inv5_li_2',
+          description: 'Electrical System Charging Test & Battery Installation',
+          type: 'labor',
+          quantity: 1,
+          unitPrice: 3000.0,
+        ),
+      ],
+      subtotal: 8500.0,
+      taxRate: 0.0,
+      taxAmount: 0.0,
+      discountAmount: 350.0,
+      totalAmount: 8150.0,
+      paidAmount: 8150.0,
+      balanceDue: 0.0,
+      currencyCode: 'INR',
+      status: 'paid',
+      issuedAt: now.subtract(const Duration(days: 3)),
+      createdAt: now.subtract(const Duration(days: 3)),
+    );
+
+    final inv6 = InvoiceModel(
+      id: 'inv_demo_6',
+      garageId: 'garage_demo_1',
+      jobId: 'job_demo_1',
+      customerId: 'cust_demo_3',
+      invoiceNumber: 'INV-2026-072',
+      items: const [
+        LineItemModel(
+          id: 'inv6_li_1',
+          description: 'Front Suspension Lower Arms (Pair)',
+          type: 'part',
+          quantity: 1,
+          unitPrice: 7200.0,
+        ),
+        LineItemModel(
+          id: 'inv6_li_2',
+          description: 'Stabilizer Link Rods & Bushing Kit',
+          type: 'part',
+          quantity: 1,
+          unitPrice: 2800.0,
+        ),
+        LineItemModel(
+          id: 'inv6_li_3',
+          description: 'Suspension Overhaul Labor & Road Testing',
+          type: 'labor',
+          quantity: 1,
+          unitPrice: 4200.0,
+        ),
+      ],
+      subtotal: 14200.0,
+      taxRate: 0.0,
+      taxAmount: 0.0,
+      discountAmount: 500.0,
+      totalAmount: 13700.0,
+      paidAmount: 13700.0,
+      balanceDue: 0.0,
+      currencyCode: 'INR',
+      status: 'paid',
+      issuedAt: now.subtract(const Duration(days: 12)),
+      createdAt: now.subtract(const Duration(days: 12)),
+    );
+
+    _invoices.addAll([inv1, inv2, inv3, inv4, inv5, inv6]);
+
+    _payments.addAll([
       PaymentModel(
         id: 'pay_demo_1',
         garageId: 'garage_demo_1',
@@ -449,7 +745,67 @@ class GarageRepository {
         notes: 'Paid via GPay at billing desk.',
         createdAt: now.subtract(const Duration(days: 45)),
       ),
-    );
+      PaymentModel(
+        id: 'pay_demo_2',
+        garageId: 'garage_demo_1',
+        invoiceId: 'inv_demo_2',
+        customerId: 'cust_demo_1',
+        amount: 2300.0,
+        paymentMethod: 'upi',
+        referenceNumber: 'UPI/202610245591/PAYTM',
+        recordedByUid: 'merchant_demo_1',
+        notes: 'Settled with ₹200 discount adjustment.',
+        createdAt: now.subtract(const Duration(hours: 3)),
+      ),
+      PaymentModel(
+        id: 'pay_demo_3',
+        garageId: 'garage_demo_1',
+        invoiceId: 'inv_demo_3',
+        customerId: 'cust_demo_2',
+        amount: 2000.0,
+        paymentMethod: 'cash',
+        referenceNumber: 'CASH/2026/044',
+        recordedByUid: 'merchant_demo_1',
+        notes: 'Advance paid in cash. ₹2,500 due on pickup.',
+        createdAt: now.subtract(const Duration(hours: 5)),
+      ),
+      PaymentModel(
+        id: 'pay_demo_4',
+        garageId: 'garage_demo_1',
+        invoiceId: 'inv_demo_4',
+        customerId: 'cust_demo_3',
+        amount: 1800.0,
+        paymentMethod: 'upi',
+        referenceNumber: 'UPI/202610239922/PHONEPE',
+        recordedByUid: 'merchant_demo_1',
+        notes: 'Full payment on vehicle delivery yesterday.',
+        createdAt: now.subtract(const Duration(days: 1)),
+      ),
+      PaymentModel(
+        id: 'pay_demo_5',
+        garageId: 'garage_demo_1',
+        invoiceId: 'inv_demo_5',
+        customerId: 'cust_demo_1',
+        amount: 8150.0,
+        paymentMethod: 'card',
+        referenceNumber: 'POS/HDFC/20261021/881',
+        recordedByUid: 'merchant_demo_1',
+        notes: 'Credit Card swipe with ₹350 seasonal discount.',
+        createdAt: now.subtract(const Duration(days: 3)),
+      ),
+      PaymentModel(
+        id: 'pay_demo_6',
+        garageId: 'garage_demo_1',
+        invoiceId: 'inv_demo_6',
+        customerId: 'cust_demo_3',
+        amount: 13700.0,
+        paymentMethod: 'bank_transfer',
+        referenceNumber: 'NEFT/SBIN004811/9011',
+        recordedByUid: 'merchant_demo_1',
+        notes: 'Direct bank transfer. ₹500 goodwill discount applied.',
+        createdAt: now.subtract(const Duration(days: 12)),
+      ),
+    ]);
 
     _reminders.addAll([
       ServiceReminderModel(
@@ -488,36 +844,99 @@ class GarageRepository {
       NotificationModel(
         id: 'notif_1',
         recipientUid: 'customer_demo_uid',
-        title: 'Repair In Progress',
+        title: 'Vehicle Ready for Collection!',
         body:
-            'Work has begun on your Hyundai Creta (JOB-2026-001). Estimated completion: tomorrow 5 PM.',
-        type: 'job_status',
+            'All service tasks completed on your Hyundai Creta (JOB-2026-001). Ready for pickup.',
+        type: 'readyForCollection',
         referenceId: 'job_demo_1',
         referenceType: 'service_job',
+        imageUrl:
+            'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80',
+        deepLink: '/customer/jobs/job_demo_1',
+        garageId: 'garage_demo_1',
+        eventId: 'job_demo_1_readyForCollection',
         isRead: false,
         createdAt: now.subtract(const Duration(hours: 2)),
       ),
       NotificationModel(
         id: 'notif_2',
         recipientUid: 'customer_demo_uid',
-        title: 'Estimate Approved',
-        body: 'Estimate EST-2026-089 for ₹8,999 has been confirmed.',
-        type: 'estimate',
+        title: 'Estimate Ready for Approval',
+        body: 'Itemized estimate EST-2026-089 for ₹8,999 is waiting for your review.',
+        type: 'estimateCreated',
         referenceId: 'est_demo_1',
         referenceType: 'estimate',
+        imageUrl:
+            'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
+        deepLink: '/customer/estimates',
+        garageId: 'garage_demo_1',
+        eventId: 'est_demo_1_created',
         isRead: true,
         createdAt: now.subtract(const Duration(hours: 8)),
       ),
       NotificationModel(
         id: 'notif_3',
         recipientUid: 'customer_demo_uid',
-        title: 'Service Reminder',
-        body: 'Honda City tyre alignment is due in 14 days.',
-        type: 'reminder',
+        title: 'Periodic Service Due',
+        body: 'Honda City scheduled maintenance and tyre alignment is due in 14 days.',
+        type: 'serviceReminderDue',
         referenceId: 'rem_2',
         referenceType: 'reminder',
+        imageUrl:
+            'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&q=80',
+        deepLink: '/customer/reminders',
+        garageId: 'garage_demo_1',
+        eventId: 'rem_2_due',
         isRead: true,
         createdAt: now.subtract(const Duration(days: 1)),
+      ),
+      NotificationModel(
+        id: 'notif_m1',
+        recipientUid: 'user_merchant_1',
+        title: 'New Service Booking Request',
+        body: 'Kiran Kumar booked General Service for Royal Enfield Himalayan.',
+        type: 'serviceRequestSubmitted',
+        referenceId: 'job_today_1',
+        referenceType: 'service_job',
+        imageUrl:
+            'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80',
+        deepLink: '/merchant/jobs',
+        garageId: 'garage_demo_1',
+        eventId: 'job_today_1_request',
+        isRead: false,
+        createdAt: now.subtract(const Duration(minutes: 30)),
+      ),
+      NotificationModel(
+        id: 'notif_m2',
+        recipientUid: 'user_merchant_1',
+        title: 'Estimate Approved by Customer',
+        body: 'Customer approved estimate EST-2024-001 (₹4,500). Ready to start work.',
+        type: 'estimateApproved',
+        referenceId: 'est_m_1',
+        referenceType: 'estimate',
+        imageUrl:
+            'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
+        deepLink: '/merchant/estimates',
+        garageId: 'garage_demo_1',
+        eventId: 'est_m_1_approved',
+        isRead: false,
+        createdAt: now.subtract(const Duration(hours: 3)),
+      ),
+      NotificationModel(
+        id: 'notif_m3',
+        recipientUid: 'user_merchant_1',
+        title: 'Vehicle Ready for Collection',
+        body: 'Yamaha MT-15 (JOB-2024-002) is ready for pickup by customer Priya.',
+        type: 'readyForCollection',
+        referenceId: 'job_today_2',
+        referenceType: 'service_job',
+        imageUrl:
+            'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80',
+        deepLink: '/merchant/jobs',
+        garageId: 'garage_demo_1',
+        eventId: 'job_today_2_ready',
+        isRead: true,
+        createdAt: now.subtract(const Duration(hours: 5)),
       ),
     ]);
 
@@ -701,6 +1120,12 @@ class GarageRepository {
           type: 'job_status',
           referenceId: jobId,
           referenceType: 'service_job',
+          imageUrl: newStatus == 'readyForCollection'
+              ? 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80'
+              : 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800&q=80',
+          deepLink: '/customer/jobs/$jobId',
+          garageId: old.garageId,
+          eventId: 'job_${jobId}_$newStatus',
           isRead: false,
           createdAt: DateTime.now(),
         ),
@@ -822,16 +1247,38 @@ class GarageRepository {
     await Future<void>.delayed(const Duration(milliseconds: 300));
     final index = _estimates.indexWhere((e) => e.id == estimateId);
     if (index >= 0) {
-      _estimates[index] = _estimates[index].copyWith(
+      final est = _estimates[index];
+      _estimates[index] = est.copyWith(
         status: 'approved',
         approvedAt: DateTime.now(),
       );
 
-      final jobId = _estimates[index].jobId;
+      final jobId = est.jobId;
       final jobIdx = _jobs.indexWhere((j) => j.id == jobId);
       if (jobIdx >= 0) {
         _jobs[jobIdx] = _jobs[jobIdx].copyWith(status: 'estimateApproved');
       }
+
+      _notifications.insert(
+        0,
+        NotificationModel(
+          id: const Uuid().v4(),
+          recipientUid: 'user_merchant_1',
+          title: 'Estimate Approved by Customer',
+          body:
+              'Customer approved estimate ${est.estimateNumber}. Ready to start work.',
+          type: 'estimateApproved',
+          referenceId: estimateId,
+          referenceType: 'estimate',
+          imageUrl:
+              'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
+          deepLink: '/merchant/estimates',
+          garageId: est.garageId,
+          eventId: 'est_${estimateId}_approved',
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
+      );
 
       return true;
     }
@@ -842,10 +1289,32 @@ class GarageRepository {
     await Future<void>.delayed(const Duration(milliseconds: 300));
     final index = _estimates.indexWhere((e) => e.id == estimateId);
     if (index >= 0) {
-      _estimates[index] = _estimates[index].copyWith(
+      final est = _estimates[index];
+      _estimates[index] = est.copyWith(
         status: 'rejected',
         rejectionReason: reason,
       );
+
+      _notifications.insert(
+        0,
+        NotificationModel(
+          id: const Uuid().v4(),
+          recipientUid: 'user_merchant_1',
+          title: 'Estimate Declined',
+          body: 'Customer declined estimate ${est.estimateNumber}: $reason',
+          type: 'estimateRejected',
+          referenceId: estimateId,
+          referenceType: 'estimate',
+          imageUrl:
+              'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80',
+          deepLink: '/merchant/estimates',
+          garageId: est.garageId,
+          eventId: 'est_${estimateId}_rejected',
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
+      );
+
       return true;
     }
     return false;
@@ -894,6 +1363,28 @@ class GarageRepository {
       createdAt: DateTime.now(),
     );
     _invoices.insert(0, inv);
+
+    _notifications.insert(
+      0,
+      NotificationModel(
+        id: const Uuid().v4(),
+        recipientUid: estimate.customerId,
+        title: 'New Service Invoice Issued',
+        body:
+            'Invoice ${inv.invoiceNumber} has been generated and is ready for payment.',
+        type: 'invoiceIssued',
+        referenceId: inv.id,
+        referenceType: 'invoice',
+        imageUrl:
+            'https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=800&q=80',
+        deepLink: '/customer/invoices',
+        garageId: estimate.garageId,
+        eventId: 'inv_${inv.id}_issued',
+        isRead: false,
+        createdAt: DateTime.now(),
+      ),
+    );
+
     return inv;
   }
 
@@ -904,6 +1395,7 @@ class GarageRepository {
     required String referenceNumber,
     required String notes,
     required String recordedByUid,
+    double discountAdjustment = 0.0,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
     final invIndex = _invoices.indexWhere((inv) => inv.id == invoiceId);
@@ -912,11 +1404,17 @@ class GarageRepository {
     }
 
     final currentInv = _invoices[invIndex];
+    final updatedDiscount = currentInv.discountAmount + discountAdjustment;
+    final updatedTotal =
+        (currentInv.totalAmount - discountAdjustment).clamp(0.0, double.infinity);
     final updatedPaid = currentInv.paidAmount + amount;
-    final updatedBalance = (currentInv.totalAmount - updatedPaid).clamp(0.0, double.infinity);
+    final updatedBalance =
+        (updatedTotal - updatedPaid).clamp(0.0, double.infinity);
     final updatedStatus = updatedBalance <= 0.0 ? 'paid' : 'partially_paid';
 
     _invoices[invIndex] = currentInv.copyWith(
+      discountAmount: updatedDiscount,
+      totalAmount: updatedTotal,
       paidAmount: updatedPaid,
       balanceDue: updatedBalance,
       status: updatedStatus,
@@ -935,6 +1433,27 @@ class GarageRepository {
       createdAt: DateTime.now(),
     );
     _payments.insert(0, payment);
+
+    _notifications.insert(
+      0,
+      NotificationModel(
+        id: const Uuid().v4(),
+        recipientUid: currentInv.customerId,
+        title: 'Payment Received',
+        body:
+            'Payment of ₹${amount.toStringAsFixed(0)} recorded for invoice ${currentInv.invoiceNumber}. Balance: ₹${updatedBalance.toStringAsFixed(0)}',
+        type: 'paymentRecorded',
+        referenceId: payment.id,
+        referenceType: 'payment',
+        imageUrl:
+            'https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=800&q=80',
+        deepLink: '/customer/invoices',
+        garageId: currentInv.garageId,
+        eventId: 'pay_${payment.id}_recorded',
+        isRead: false,
+        createdAt: DateTime.now(),
+      ),
+    );
 
     return payment;
   }
@@ -994,6 +1513,12 @@ class GarageRepository {
     return list.sublist(start, end);
   }
 
+  Future<NotificationModel> createNotification(NotificationModel notification) async {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    _notifications.insert(0, notification);
+    return notification;
+  }
+
   Future<void> markNotificationAsRead(String notificationId) async {
     final idx = _notifications.indexWhere((n) => n.id == notificationId);
     if (idx >= 0) {
@@ -1020,6 +1545,28 @@ class GarageRepository {
       createdAt: DateTime.now(),
     );
     _appointments.insert(0, newApp);
+
+    _notifications.insert(
+      0,
+      NotificationModel(
+        id: const Uuid().v4(),
+        recipientUid: 'user_merchant_1',
+        title: 'New Service Request Received',
+        body:
+            '${appointment.customerName} requested an appointment for ${appointment.vehicleInfo}.',
+        type: 'serviceRequestSubmitted',
+        referenceId: newApp.id,
+        referenceType: 'appointment',
+        imageUrl:
+            'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80',
+        deepLink: '/merchant/jobs',
+        garageId: appointment.garageId,
+        eventId: 'app_${newApp.id}_submitted',
+        isRead: false,
+        createdAt: DateTime.now(),
+      ),
+    );
+
     return newApp;
   }
 
@@ -1039,6 +1586,30 @@ class GarageRepository {
     await Future<void>.delayed(const Duration(milliseconds: 200));
     _inspections.removeWhere((i) => i.id == inspection.id);
     _inspections.add(inspection);
+
+    final job = _jobs.where((j) => j.id == inspection.jobId).firstOrNull;
+    if (job != null) {
+      _notifications.insert(
+        0,
+        NotificationModel(
+          id: const Uuid().v4(),
+          recipientUid: job.customerId,
+          title: 'Digital Inspection Completed',
+          body:
+              'Vehicle health check completed for ${job.vehicleDisplay}. Tap to view items.',
+          type: 'inspectionCompleted',
+          referenceId: inspection.id,
+          referenceType: 'inspection',
+          imageUrl:
+              'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800&q=80',
+          deepLink: '/customer/jobs/${job.id}',
+          garageId: job.garageId,
+          eventId: 'insp_${inspection.id}_saved',
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
+      );
+    }
   }
 }
 

@@ -33,6 +33,7 @@ class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
     required String paymentMethod,
     required String referenceNumber,
     required String notes,
+    double discountAdjustment = 0.0,
   }) async {
     state = state.copyWith(isRecordingPayment: true, errorMessage: null);
     try {
@@ -43,6 +44,7 @@ class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
             referenceNumber: referenceNumber,
             notes: notes,
             recordedByUid: 'merchant_1',
+            discountAdjustment: discountAdjustment,
           );
       await _loadInvoices();
       state = state.copyWith(isRecordingPayment: false);

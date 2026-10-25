@@ -24,7 +24,29 @@ class CustomerNotificationsViewModel
 
   Future<void> markAsRead(String id) async {
     await ref.read(garageRepositoryProvider).markNotificationAsRead(id);
-    await _loadNotifications();
+    final updated = state.notifications.map((n) {
+      if (n.id == id) {
+        return n.copyWith(isRead: true);
+      }
+      return n;
+    }).toList();
+    state = state.copyWith(notifications: updated);
+  }
+
+  Future<void> markAllAsRead() async {
+    final repo = ref.read(garageRepositoryProvider);
+    for (final notif in state.notifications) {
+      if (!notif.isRead) {
+        await repo.markNotificationAsRead(notif.id);
+      }
+    }
+    final updated =
+        state.notifications.map((n) => n.copyWith(isRead: true)).toList();
+    state = state.copyWith(notifications: updated);
+  }
+
+  void toggleFilterUnread() {
+    state = state.copyWith(filterOnlyUnread: !state.filterOnlyUnread);
   }
 
   Future<void> refresh() async {

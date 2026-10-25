@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../colors/app_colors.dart';
+import '../fonts/app_fonts.dart';
 
 class AppTheme {
   AppTheme._();
@@ -9,8 +10,9 @@ class AppTheme {
     return base.copyWith(
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.backgroundLight,
+      textTheme: AppFonts.textTheme(Brightness.light),
       colorScheme: const ColorScheme.light(
-        primary: AppColors.accentBlue,
+        primary: AppColors.primaryRed,
         secondary: AppColors.accentAmber,
         surface: AppColors.surfaceLight,
         error: AppColors.error,
@@ -53,8 +55,9 @@ class AppTheme {
     return base.copyWith(
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.backgroundDark,
+      textTheme: AppFonts.textTheme(Brightness.dark),
       colorScheme: const ColorScheme.dark(
-        primary: AppColors.accentBlueLight,
+        primary: AppColors.primaryRedLight,
         secondary: AppColors.accentAmberLight,
         surface: AppColors.surfaceDark,
         error: AppColors.error,

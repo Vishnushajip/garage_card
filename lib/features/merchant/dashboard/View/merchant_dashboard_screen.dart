@@ -11,6 +11,11 @@ import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import '../ViewModel/merchant_dashboard_view_model.dart';
 import '../Widgets/kpi_metric_card.dart';
 import '../Widgets/merchant_job_row.dart';
+import '../../analytics/ViewModel/merchant_analytics_view_model.dart';
+import '../../analytics/Widgets/daily_briefing_modal.dart';
+import '../../notifications/ViewModel/merchant_notifications_view_model.dart';
+import 'package:garage_card/core/routing/route_paths.dart';
+import 'package:go_router/go_router.dart';
 
 class MerchantDashboardScreen extends ConsumerWidget {
   const MerchantDashboardScreen({
@@ -20,6 +25,7 @@ class MerchantDashboardScreen extends ConsumerWidget {
     required this.onNavigateToEstimates,
     required this.onNavigateToInvoices,
     required this.onNavigateToAppointments,
+    required this.onNavigateToAnalytics,
     required this.onJobSelected,
   });
 
@@ -28,12 +34,17 @@ class MerchantDashboardScreen extends ConsumerWidget {
   final VoidCallback onNavigateToEstimates;
   final VoidCallback onNavigateToInvoices;
   final VoidCallback onNavigateToAppointments;
+  final VoidCallback onNavigateToAnalytics;
   final ValueChanged<String> onJobSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(merchantDashboardViewModelProvider);
     final vm = ref.read(merchantDashboardViewModelProvider.notifier);
+    final analyticsState = ref.watch(merchantAnalyticsViewModelProvider);
+    final analyticsVm = ref.read(merchantAnalyticsViewModelProvider.notifier);
+    final merchantNotifState =
+        ref.watch(merchantNotificationsViewModelProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor =
         isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
@@ -73,19 +84,44 @@ class MerchantDashboardScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
+            icon: Badge(
+              isLabelVisible: merchantNotifState.unreadCount > 0,
+              label: Text('${merchantNotifState.unreadCount}'),
+              child: const Icon(Icons.notifications_outlined),
+            ),
+            tooltip: 'Garage Notifications',
+            onPressed: () => context.push(RoutePaths.merchantNotifications),
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            onPressed: vm.refresh,
+            onPressed: () {
+              vm.refresh();
+              analyticsVm.refresh();
+            },
           ),
         ],
       ),
       body: AppRefresh(
-        onRefresh: vm.refresh,
+        onRefresh: () async {
+          await vm.refresh();
+          await analyticsVm.refresh();
+        },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: AppResponsiveLayout(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (analyticsState.showMorningBriefing) ...[
+                  DailyBriefingModal(
+                    todayDeliveries: analyticsState.todayDeliveriesCount,
+                    pendingDues: analyticsState.todayPendingPaymentsCount,
+                    yesterdayCompleted: analyticsState.yesterdayCompletedCount,
+                    onDismiss: analyticsVm.dismissMorningBriefing,
+                    onViewTodo: onNavigateToAnalytics,
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 GridView.count(
                   crossAxisCount: AppResponsiveLayout.isDesktop(context)
                       ? 4
@@ -149,7 +185,7 @@ class MerchantDashboardScreen extends ConsumerWidget {
                             Text(
                               'Outstanding Receivables',
                               style:
-                                  AppFonts.labelSmall(color: secondaryTextColor),
+                                   AppFonts.labelSmall(color: secondaryTextColor),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -161,7 +197,7 @@ class MerchantDashboardScreen extends ConsumerWidget {
                             Text(
                               '${state.unpaidInvoices.length} invoices awaiting payment',
                               style:
-                                  AppFonts.labelSmall(color: secondaryTextColor),
+                                   AppFonts.labelSmall(color: secondaryTextColor),
                             ),
                           ],
                         ),
@@ -170,6 +206,160 @@ class MerchantDashboardScreen extends ConsumerWidget {
                           onPressed: onNavigateToInvoices,
                           variant: AppButtonVariant.outline,
                           height: 38,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  color: cardBg,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(
+                      color:
+                          isDark ? AppColors.borderDark : AppColors.borderLight,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accentBlue
+                                        .withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.insights_rounded,
+                                    color: AppColors.accentBlue,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Daily Pipeline & Analytics',
+                                  style: AppFonts.titleMedium(
+                                      color: primaryTextColor),
+                                ),
+                              ],
+                            ),
+                            TextButton(
+                              onPressed: onNavigateToAnalytics,
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('Full Analytics'),
+                                  SizedBox(width: 4),
+                                  Icon(Icons.arrow_forward_rounded, size: 16),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.info.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color:
+                                        AppColors.info.withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Due Today',
+                                      style: AppFonts.labelSmall(
+                                          color: secondaryTextColor),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${analyticsState.todayDeliveriesCount} Vehicles',
+                                      style: AppFonts.titleMedium(
+                                          color: AppColors.info),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color:
+                                      AppColors.success.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppColors.success
+                                        .withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Completed Yesterday',
+                                      style: AppFonts.labelSmall(
+                                          color: secondaryTextColor),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${analyticsState.yesterdayCompletedCount} Jobs',
+                                      style: AppFonts.titleMedium(
+                                          color: AppColors.success),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color:
+                                      AppColors.warning.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppColors.warning
+                                        .withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Payment Dues',
+                                      style: AppFonts.labelSmall(
+                                          color: secondaryTextColor),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${analyticsState.todayPendingPaymentsCount} Invoices',
+                                      style: AppFonts.titleMedium(
+                                          color: AppColors.warning),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

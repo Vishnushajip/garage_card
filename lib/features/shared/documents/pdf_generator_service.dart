@@ -205,7 +205,7 @@ class PdfGeneratorService {
               ),
               pw.SizedBox(height: 4),
               pw.Text(
-                'Generated securely via Garage Card Management System',
+                'Generated securely via WeFix Platform',
                 style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
               ),
             ],
@@ -425,7 +425,7 @@ class PdfGeneratorService {
               ),
               pw.SizedBox(height: 4),
               pw.Text(
-                'Generated securely via Garage Card Management System',
+                'Generated securely via WeFix Platform',
                 style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
               ),
             ],

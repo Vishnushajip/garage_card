@@ -14,23 +14,31 @@ import 'package:garage_card/features/customer/profile/View/customer_profile_scre
 import 'package:garage_card/features/customer/reminders/View/customer_reminders_screen.dart';
 import 'package:garage_card/features/customer/service_jobs/View/customer_job_detail_screen.dart';
 import 'package:garage_card/features/customer/vehicles/View/customer_vehicles_screen.dart';
+import 'package:garage_card/features/merchant/analytics/View/merchant_analytics_screen.dart';
 import 'package:garage_card/features/merchant/customers/View/merchant_customers_screen.dart';
 import 'package:garage_card/features/merchant/dashboard/View/merchant_dashboard_screen.dart';
 import 'package:garage_card/features/merchant/estimates/View/merchant_estimates_screen.dart';
 import 'package:garage_card/features/merchant/garage_profile/View/garage_profile_screen.dart';
 import 'package:garage_card/features/merchant/invoices/View/merchant_invoices_screen.dart';
 import 'package:garage_card/features/merchant/merchant_navigation_shell.dart';
+import 'package:garage_card/features/merchant/notifications/View/merchant_notifications_screen.dart';
 import 'package:garage_card/features/merchant/service_jobs/View/merchant_job_detail_screen.dart';
 import 'package:garage_card/features/merchant/service_jobs/View/merchant_jobs_screen.dart';
+import 'package:garage_card/features/splash/View/splash_screen.dart';
 import 'package:go_router/go_router.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authViewModelProvider);
 
   return GoRouter(
-    initialLocation: RoutePaths.auth,
+    initialLocation: RoutePaths.splash,
     debugLogDiagnostics: false,
     redirect: (context, state) {
+      final isSplashRoute = state.matchedLocation == RoutePaths.splash;
+      if (isSplashRoute) {
+        return null;
+      }
+
       final isAuth = authState.isAuthenticated;
       final isAuthRoute = state.matchedLocation == RoutePaths.auth;
 
@@ -59,6 +67,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: RoutePaths.splash,
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: RoutePaths.auth,
         builder: (context, state) => const AuthScreen(),
@@ -132,6 +144,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(
+        path: RoutePaths.customerJobs,
+        redirect: (context, state) => RoutePaths.customer,
+      ),
+      GoRoute(
         path: RoutePaths.customerEstimates,
         builder: (context, state) => const CustomerEstimatesScreen(),
       ),
@@ -168,6 +184,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                       context.go(RoutePaths.merchantInvoices),
                   onNavigateToAppointments: () =>
                       context.go(RoutePaths.merchantJobs),
+                  onNavigateToAnalytics: () =>
+                      context.go(RoutePaths.merchantAnalytics),
                   onJobSelected: (id) => context.go('/merchant/jobs/$id'),
                 ),
               ),
@@ -178,6 +196,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RoutePaths.merchantJobs,
                 builder: (context, state) => const MerchantJobsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RoutePaths.merchantAnalytics,
+                builder: (context, state) => const MerchantAnalyticsScreen(),
               ),
             ],
           ),
@@ -210,6 +236,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.merchantEstimates,
         builder: (context, state) => const MerchantEstimatesScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.merchantNotifications,
+        builder: (context, state) => const MerchantNotificationsScreen(),
       ),
       GoRoute(
         path: RoutePaths.merchantJobDetail,

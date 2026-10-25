@@ -30,6 +30,7 @@ class MerchantInvoicesScreen extends ConsumerWidget {
             required String paymentMethod,
             required String referenceNumber,
             required String notes,
+            double discountAdjustment = 0.0,
           }) {
             return ref
                 .read(merchantInvoicesViewModelProvider.notifier)
@@ -39,6 +40,7 @@ class MerchantInvoicesScreen extends ConsumerWidget {
                   paymentMethod: paymentMethod,
                   referenceNumber: referenceNumber,
                   notes: notes,
+                  discountAdjustment: discountAdjustment,
                 );
           },
         );

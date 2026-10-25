@@ -17,7 +17,7 @@ class AppLocalizations {
 
   static final Map<String, Map<String, String>> _localizedValues = {
     'en': {
-      'appName': 'Garage Card',
+      'appName': 'WeFix',
       'login': 'Sign In',
       'register': 'Create Account',
       'email': 'Email Address',
@@ -88,7 +88,7 @@ class AppLocalizations {
       'lastServiceDate': 'Last Service Date',
     },
     'ml': {
-      'appName': 'ഗാരേജ് കാർഡ്',
+      'appName': 'വിഫിക്സ് (WeFix)',
       'login': 'ലോഗിൻ ചെയ്യുക',
       'register': 'അക്കൗണ്ട് സൃഷ്ടിക്കുക',
       'email': 'ഇമെയിൽ വിലാസം',
