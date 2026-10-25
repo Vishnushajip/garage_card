@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
 import '../Model/customer_estimates_state.dart';
@@ -10,12 +12,25 @@ class CustomerEstimatesViewModel extends Notifier<CustomerEstimatesState> {
     return const CustomerEstimatesState(isLoading: true);
   }
 
+  String? get _currentCustomerId {
+    final profile = ref.read(authViewModelProvider).userProfile;
+    if (profile != null && profile.uid.isNotEmpty) {
+      return profile.uid;
+    }
+    return FirebaseAuth.instance.currentUser?.uid;
+  }
+
   Future<void> _loadEstimates() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
+      final uid = _currentCustomerId;
+      if (uid == null) {
+        state = state.copyWith(isLoading: false, estimates: []);
+        return;
+      }
       final list = await ref
           .read(garageRepositoryProvider)
-          .getEstimates(customerId: 'cust_demo_1');
+          .getEstimates(customerId: uid);
       state = state.copyWith(isLoading: false, estimates: list);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());

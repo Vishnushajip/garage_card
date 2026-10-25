@@ -1,3 +1,5 @@
+import 'package:garage_card/core/formatting/date_formatter.dart';
+
 class UserProfileModel {
   const UserProfileModel({
     required this.uid,
@@ -50,12 +52,8 @@ class UserProfileModel {
       role: data['role'] as String? ?? 'customer',
       garageId: data['garageId'] as String?,
       preferredLanguage: data['preferredLanguage'] as String? ?? 'en',
-      createdAt: data['createdAt'] != null
-          ? DateTime.tryParse(data['createdAt'] as String)
-          : null,
-      updatedAt: data['updatedAt'] != null
-          ? DateTime.tryParse(data['updatedAt'] as String)
-          : null,
+      createdAt: DateFormatter.parse(data['createdAt']),
+      updatedAt: DateFormatter.parse(data['updatedAt']),
     );
   }
 

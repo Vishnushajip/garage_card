@@ -1,17 +1,98 @@
-# garage_card
+# WeFix — Garage Card Management Platform
 
-A new Flutter project.
+Production-ready multi-tenant vehicle service and garage management platform built with Flutter and Firebase.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 🚀 Build & Deployment Commands
 
-A few resources to get you started if this is your first Flutter project:
+### 1. WebAssembly (WASM) Web Release & Firebase Deployment
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+#### Build for Web with WebAssembly (WASM):
+```bash
+# Clean previous build artifacts (optional)
+flutter clean
+flutter pub get
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# Build production Web release with WASM compilation
+flutter build web --wasm --release
+```
+
+> **Note on WASM:** This generates both modern WebAssembly (`main.dart.wasm` + `main.dart.mjs`) and JavaScript fallback (`main.dart.js`) for older browsers. Firebase Hosting is configured in `firebase.json` with the required `application/wasm` headers and cross-origin isolation.
+
+#### Deploy to Firebase Hosting:
+```bash
+# Deploy only the web app to Firebase Hosting
+firebase deploy --only hosting
+
+# Or deploy everything (Hosting, Firestore rules, Storage rules, Functions)
+firebase deploy
+```
+
+#### Test Web Locally before deploying:
+```bash
+# Serve locally via dhttpd with proper headers
+flutter pub global activate dhttpd
+dhttpd --path build/web --headers="Cross-Origin-Opener-Policy=same-origin-allow-popups;Cross-Origin-Embedder-Policy=credentialless"
+
+# Or use Firebase emulator
+firebase emulators:start --only hosting
+```
+
+---
+
+### 2. Android APK Build Commands
+
+#### Build Release APK:
+```bash
+# Universal release APK (works on all Android device architectures)
+flutter build apk --release
+```
+*Output artifact:* `build/app/outputs/flutter-apk/app-release.apk`
+
+#### Build Optimized Split APKs (smaller file size per architecture):
+```bash
+# Generates separate APKs for armeabi-v7a, arm64-v8a, and x86_64
+flutter build apk --release --split-per-abi
+```
+*Output artifacts:* `build/app/outputs/flutter-apk/app-*-release.apk`
+
+#### Build Android App Bundle (for Google Play Store):
+```bash
+flutter build appbundle --release
+```
+*Output artifact:* `build/app/outputs/bundle/release/app-release.aab`
+
+#### Build Debug APK (for quick local testing):
+```bash
+flutter build apk --debug
+```
+*Output artifact:* `build/app/outputs/flutter-apk/app-debug.apk`
+
+---
+
+### 3. Running Locally in Development
+
+```bash
+# Run on connected Android device / emulator
+flutter run -d android
+
+# Run on Chrome (Web)
+flutter run -d chrome
+
+# Run on Chrome with WebAssembly enabled
+flutter run -d chrome --wasm
+```
+
+---
+
+### 4. Code Quality & Verification
+
+```bash
+# Run static analysis
+flutter analyze
+
+# Run unit tests
+flutter test
+```
+

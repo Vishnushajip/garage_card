@@ -10,6 +10,7 @@ import 'package:garage_card/core/shared_widgets/app_pagination_loader.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
+import 'package:garage_card/core/utils/debouncer.dart';
 
 import '../ViewModel/nearby_garages_view_model.dart';
 import '../Widgets/garage_card_item.dart';
@@ -31,6 +32,7 @@ class NearbyGaragesScreen extends ConsumerStatefulWidget {
 
 class _NearbyGaragesScreenState extends ConsumerState<NearbyGaragesScreen> {
   final TextEditingController _searchCtrl = TextEditingController();
+  final Debouncer _debouncer = Debouncer();
   late final ProactiveScrollListener _scrollListener;
 
   @override
@@ -45,6 +47,7 @@ class _NearbyGaragesScreenState extends ConsumerState<NearbyGaragesScreen> {
 
   @override
   void dispose() {
+    _debouncer.dispose();
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -86,7 +89,7 @@ class _NearbyGaragesScreenState extends ConsumerState<NearbyGaragesScreen> {
                         )
                       : null,
                   onChanged: (val) {
-                    vm.search(val);
+                    _debouncer.run(() => vm.search(val));
                   },
                 ),
                 const SizedBox(height: 16),

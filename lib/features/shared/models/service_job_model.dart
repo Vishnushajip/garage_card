@@ -1,3 +1,5 @@
+import 'package:garage_card/core/formatting/date_formatter.dart';
+
 class ServiceJobModel {
   const ServiceJobModel({
     required this.id,
@@ -75,20 +77,14 @@ class ServiceJobModel {
       customerNotes: data['customerNotes'] as String? ?? '',
       internalNotes: data['internalNotes'] as String? ?? '',
       technicianName: data['technicianName'] as String? ?? '',
-      estimatedCompletionDate: data['estimatedCompletionDate'] != null
-          ? DateTime.tryParse(data['estimatedCompletionDate'] as String)
-          : null,
-      completedDate: data['completedDate'] != null
-          ? DateTime.tryParse(data['completedDate'] as String)
-          : null,
+      estimatedCompletionDate: DateFormatter.parse(
+        data['estimatedCompletionDate'],
+      ),
+      completedDate: DateFormatter.parse(data['completedDate']),
       vehicleDisplay: data['vehicleDisplay'] as String? ?? '',
       customerName: data['customerName'] as String? ?? '',
-      createdAt: data['createdAt'] != null
-          ? DateTime.tryParse(data['createdAt'] as String)
-          : null,
-      updatedAt: data['updatedAt'] != null
-          ? DateTime.tryParse(data['updatedAt'] as String)
-          : null,
+      createdAt: DateFormatter.parse(data['createdAt']),
+      updatedAt: DateFormatter.parse(data['updatedAt']),
     );
   }
 

@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/models/appointment_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
@@ -11,12 +13,25 @@ class CustomerAppointmentViewModel extends Notifier<CustomerAppointmentState> {
     return const CustomerAppointmentState(isLoading: true);
   }
 
+  String? get _currentCustomerId {
+    final profile = ref.read(authViewModelProvider).userProfile;
+    if (profile != null && profile.uid.isNotEmpty) {
+      return profile.uid;
+    }
+    return FirebaseAuth.instance.currentUser?.uid;
+  }
+
   Future<void> _loadAppointments() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
+      final uid = _currentCustomerId;
+      if (uid == null) {
+        state = state.copyWith(isLoading: false, appointments: []);
+        return;
+      }
       final list = await ref
           .read(garageRepositoryProvider)
-          .getAppointments(customerId: 'cust_demo_1');
+          .getAppointments(customerId: uid);
       state = state.copyWith(isLoading: false, appointments: list);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
@@ -34,10 +49,11 @@ class CustomerAppointmentViewModel extends Notifier<CustomerAppointmentState> {
   }) async {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
     try {
+      final uid = _currentCustomerId ?? '';
       final appt = AppointmentModel(
         id: '',
         garageId: garageId,
-        customerId: 'cust_demo_1',
+        customerId: uid,
         customerName: customerName,
         customerPhone: customerPhone,
         vehicleInfo: vehicleInfo,

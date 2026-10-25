@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/models/service_reminder_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
@@ -11,12 +13,25 @@ class CustomerRemindersViewModel extends Notifier<CustomerRemindersState> {
     return const CustomerRemindersState(isLoading: true);
   }
 
+  String? get _currentCustomerId {
+    final profile = ref.read(authViewModelProvider).userProfile;
+    if (profile != null && profile.uid.isNotEmpty) {
+      return profile.uid;
+    }
+    return FirebaseAuth.instance.currentUser?.uid;
+  }
+
   Future<void> _loadReminders() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
+      final uid = _currentCustomerId;
+      if (uid == null) {
+        state = state.copyWith(isLoading: false, reminders: []);
+        return;
+      }
       final list = await ref
           .read(garageRepositoryProvider)
-          .getReminders(customerId: 'cust_demo_1');
+          .getReminders(customerId: uid);
       state = state.copyWith(isLoading: false, reminders: list);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
@@ -33,13 +48,14 @@ class CustomerRemindersViewModel extends Notifier<CustomerRemindersState> {
   }) async {
     state = state.copyWith(isSaving: true, errorMessage: null);
     try {
+      final uid = _currentCustomerId ?? '';
       final nextDueDate = serviceDate.add(const Duration(days: 180));
       final nextDueMileage = odometerReading + 10000;
 
       final reminder = ServiceReminderModel(
         id: '',
         garageId: 'garage_demo_1',
-        customerId: 'cust_demo_1',
+        customerId: uid,
         vehicleId: vehicleId,
         vehicleDisplay: vehicleDisplay,
         title: '$serviceType Next Interval',

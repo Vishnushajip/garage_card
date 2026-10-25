@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 
@@ -20,66 +22,52 @@ class SplashRevealPainter extends CustomPainter {
 
     final width = size.width;
     final height = size.height;
+    final center = Offset(width / 2.0, height / 2.0);
+    final maxRadius = math.sqrt(width * width + height * height) / 2.0 * 1.15;
+    final currentRadius = maxRadius * progress;
 
-    final fillPaint = Paint()
+    if (progress >= 1.0) {
+      final fillPaint = Paint()
+        ..shader = RadialGradient(
+          center: Alignment.center,
+          radius: 1.2,
+          colors: [revealColor, deepColor],
+        ).createShader(Rect.fromLTWH(0, 0, width, height))
+        ..style = PaintingStyle.fill
+        ..isAntiAlias = true;
+      canvas.drawRect(Rect.fromLTWH(0, 0, width, height), fillPaint);
+      return;
+    }
+
+    final circleRect = Rect.fromCircle(center: center, radius: currentRadius);
+    final circlePaint = Paint()
       ..shader = RadialGradient(
         center: Alignment.center,
-        radius: 1.25,
-        colors: [revealColor, deepColor],
-      ).createShader(Rect.fromLTWH(0, 0, width, height))
+        radius: 0.95,
+        colors: [glowColor, revealColor, deepColor],
+        stops: const [0.0, 0.45, 1.0],
+      ).createShader(circleRect)
       ..style = PaintingStyle.fill
       ..isAntiAlias = true;
 
-    if (progress >= 1.0) {
-      canvas.drawRect(Rect.fromLTWH(0, 0, width, height), fillPaint);
-      return;
-    }
+    canvas.drawCircle(center, currentRadius, circlePaint);
 
-    final dx = (width / 2.0) * progress;
-    final dy = (height / 2.0) * progress;
-
-    final innerWidth = (width - 2 * dx).clamp(0.0, width);
-    final innerHeight = (height - 2 * dy).clamp(0.0, height);
-
-    if (innerWidth <= 0.0 || innerHeight <= 0.0) {
-      canvas.drawRect(Rect.fromLTWH(0, 0, width, height), fillPaint);
-      return;
-    }
-
-    final innerRect = Rect.fromLTWH(dx, dy, innerWidth, innerHeight);
-    final cornerRadius = Radius.circular(
-      (32.0 * (1.0 - progress)).clamp(0.0, 32.0),
-    );
-    final innerRRect = RRect.fromRectAndRadius(innerRect, cornerRadius);
-
-    final path = Path()
-      ..fillType = PathFillType.evenOdd
-      ..addRect(Rect.fromLTWH(0, 0, width, height))
-      ..addRRect(innerRRect);
-
-    canvas.drawPath(path, fillPaint);
-
-    final innerShadowPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.28 * (1.0 - progress))
+    final ringAlpha = (0.75 * (1.0 - progress * 0.4)).clamp(0.0, 1.0);
+    final ringPaint = Paint()
+      ..color = glowColor.withValues(alpha: ringAlpha)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 6.0
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0)
+      ..strokeWidth = 4.0
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0)
       ..isAntiAlias = true;
-    canvas.drawRRect(innerRRect, innerShadowPaint);
+    canvas.drawCircle(center, currentRadius, ringPaint);
 
-    final glowBorderPaint = Paint()
-      ..color = glowColor.withValues(alpha: 0.85)
+    final crestAlpha = (0.65 * (1.0 - progress * 0.5)).clamp(0.0, 1.0);
+    final crestPaint = Paint()
+      ..color = Colors.white.withValues(alpha: crestAlpha)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
+      ..strokeWidth = 1.4
       ..isAntiAlias = true;
-    canvas.drawRRect(innerRRect, glowBorderPaint);
-
-    final accentLinePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.45 * (1.0 - progress))
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
-      ..isAntiAlias = true;
-    canvas.drawRRect(innerRRect.deflate(1.5), accentLinePaint);
+    canvas.drawCircle(center, currentRadius, crestPaint);
   }
 
   @override

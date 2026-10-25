@@ -13,6 +13,7 @@ import 'package:garage_card/features/customer/notifications/View/customer_notifi
 import 'package:garage_card/features/customer/profile/View/customer_profile_screen.dart';
 import 'package:garage_card/features/customer/reminders/View/customer_reminders_screen.dart';
 import 'package:garage_card/features/customer/service_jobs/View/customer_job_detail_screen.dart';
+import 'package:garage_card/features/customer/service_jobs/View/customer_jobs_screen.dart';
 import 'package:garage_card/features/customer/vehicles/View/customer_vehicles_screen.dart';
 import 'package:garage_card/features/merchant/analytics/View/merchant_analytics_screen.dart';
 import 'package:garage_card/features/merchant/customers/View/merchant_customers_screen.dart';
@@ -96,6 +97,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                       context.go(RoutePaths.customerReminders),
                   onNavigateToJobDetail: (id) =>
                       context.go('/customer/jobs/$id'),
+                  onNavigateToJobs: () => context.go(RoutePaths.customerJobs),
                 ),
               ),
             ],
@@ -148,7 +150,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RoutePaths.customerJobs,
-        redirect: (context, state) => RoutePaths.customer,
+        builder: (context, state) => const CustomerJobsScreen(),
       ),
       GoRoute(
         path: RoutePaths.customerEstimates,

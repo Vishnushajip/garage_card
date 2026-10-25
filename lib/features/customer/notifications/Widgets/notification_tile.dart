@@ -9,10 +9,20 @@ class NotificationTile extends StatelessWidget {
     super.key,
     required this.notification,
     required this.onTap,
+    this.isSelectionMode = false,
+    this.isSelected = false,
+    this.onSelectChanged,
+    this.onLongPress,
+    this.onDelete,
   });
 
   final NotificationModel notification;
   final VoidCallback onTap;
+  final bool isSelectionMode;
+  final bool isSelected;
+  final ValueChanged<bool?>? onSelectChanged;
+  final VoidCallback? onLongPress;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -26,52 +36,80 @@ class NotificationTile extends StatelessWidget {
     final hasImage =
         notification.imageUrl != null && notification.imageUrl!.isNotEmpty;
 
-    return ListTile(
-      onTap: onTap,
-      leading: hasImage
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                notification.imageUrl!,
-                width: 48,
-                height: 48,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    _buildFallbackIcon(isDark, secondaryTextColor),
+    return Container(
+      color: isSelected
+          ? AppColors.primaryRed.withValues(alpha: 0.08)
+          : Colors.transparent,
+      child: ListTile(
+        onTap: isSelectionMode
+            ? () => onSelectChanged?.call(!isSelected)
+            : onTap,
+        onLongPress: onLongPress,
+        leading: isSelectionMode
+            ? Checkbox(
+                value: isSelected,
+                activeColor: AppColors.primaryRed,
+                onChanged: onSelectChanged,
+              )
+            : hasImage
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  notification.imageUrl!,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      _buildFallbackIcon(isDark, secondaryTextColor),
+                ),
+              )
+            : _buildFallbackIcon(isDark, secondaryTextColor),
+        title: Text(
+          notification.title,
+          style: AppFonts.titleMedium(color: primaryTextColor).copyWith(
+            fontWeight: notification.isRead
+                ? FontWeight.normal
+                : FontWeight.bold,
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 2),
+            Text(
+              notification.body,
+              style: AppFonts.bodyMedium(color: secondaryTextColor),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              DateFormatter.formatRelative(notification.createdAt),
+              style: AppFonts.labelSmall(color: secondaryTextColor),
+            ),
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!notification.isRead && !isSelectionMode)
+              Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.only(right: 8),
+                decoration: const BoxDecoration(
+                  color: AppColors.accentBlue,
+                  shape: BoxShape.circle,
+                ),
               ),
-            )
-          : _buildFallbackIcon(isDark, secondaryTextColor),
-      title: Text(
-        notification.title,
-        style: AppFonts.titleMedium(color: primaryTextColor).copyWith(
-          fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+            if (!isSelectionMode && onDelete != null)
+              IconButton(
+                icon: const Icon(Icons.delete_outline_rounded, size: 20),
+                color: secondaryTextColor,
+                onPressed: onDelete,
+                tooltip: 'Delete',
+              ),
+          ],
         ),
       ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 2),
-          Text(
-            notification.body,
-            style: AppFonts.bodyMedium(color: secondaryTextColor),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            DateFormatter.formatRelative(notification.createdAt),
-            style: AppFonts.labelSmall(color: secondaryTextColor),
-          ),
-        ],
-      ),
-      trailing: !notification.isRead
-          ? Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: AppColors.accentBlue,
-                shape: BoxShape.circle,
-              ),
-            )
-          : null,
     );
   }
 

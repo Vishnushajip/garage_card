@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/constants/app_constants.dart';
+import 'package:garage_card/core/firebase/firebase_config.dart';
 import 'package:garage_card/core/location/geohash_helper.dart';
+import 'package:garage_card/core/pagination/paginated_result.dart';
 
 import '../models/appointment_model.dart';
 import '../models/customer_model.dart';
@@ -959,9 +962,27 @@ class GarageRepository {
     String? searchQuery,
     int limit = 20,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
+    List<GarageModel> source = _garages;
 
-    final list = _garages.where((g) {
+    if (FirebaseConfig.isInitialized) {
+      try {
+        final collection = FirebaseFirestore.instance.collection('garages');
+        final snapshot = await collection.limit(50).get();
+        if (snapshot.docs.isNotEmpty) {
+          source = snapshot.docs
+              .map((d) => GarageModel.fromFirestore(d.data(), d.id))
+              .toList();
+        } else {
+          final batch = FirebaseFirestore.instance.batch();
+          for (final g in _garages) {
+            batch.set(collection.doc(g.id), g.toFirestore());
+          }
+          await batch.commit();
+        }
+      } catch (_) {}
+    }
+
+    final list = source.where((g) {
       if (searchQuery != null && searchQuery.isNotEmpty) {
         final query = searchQuery.toLowerCase();
         final matchName = g.name.toLowerCase().contains(query);
@@ -998,7 +1019,18 @@ class GarageRepository {
   }
 
   Future<GarageModel?> getGarageDetails(String garageId) async {
-    await Future<void>.delayed(const Duration(milliseconds: 150));
+    if (FirebaseConfig.isInitialized) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .get();
+        if (doc.exists && doc.data() != null) {
+          return GarageModel.fromFirestore(doc.data()!, doc.id);
+        }
+      } catch (_) {}
+    }
+
     return _garages.cast<GarageModel?>().firstWhere(
       (g) => g?.id == garageId,
       orElse: () => null,
@@ -1006,6 +1038,15 @@ class GarageRepository {
   }
 
   Future<void> updateGarageProfile(GarageModel updated) async {
+    if (FirebaseConfig.isInitialized) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(updated.id)
+            .set(updated.toFirestore(), SetOptions(merge: true));
+      } catch (_) {}
+    }
+
     final index = _garages.indexWhere((g) => g.id == updated.id);
     if (index >= 0) {
       _garages[index] = updated;
@@ -1022,6 +1063,58 @@ class GarageRepository {
     int page = 0,
     int limit = 20,
   }) async {
+    if (FirebaseConfig.isInitialized) {
+      try {
+        Query<Map<String, dynamic>> query;
+        if (garageId != null && garageId.isNotEmpty) {
+          query = FirebaseFirestore.instance
+              .collection('garages')
+              .doc(garageId)
+              .collection('serviceJobs');
+        } else {
+          query = FirebaseFirestore.instance.collectionGroup('serviceJobs');
+        }
+
+        if (customerId != null && customerId.isNotEmpty) {
+          query = query.where('customerId', isEqualTo: customerId);
+        }
+        if (status != null && status.isNotEmpty) {
+          query = query.where('status', isEqualTo: status);
+        }
+
+        query = query.limit(limit);
+        final snapshot = await query.get();
+        var items = snapshot.docs
+            .map((d) => ServiceJobModel.fromFirestore(d.data(), d.id))
+            .toList();
+
+        if (search != null && search.isNotEmpty) {
+          final q = search.toLowerCase();
+          items = items.where((j) {
+            return j.jobNumber.toLowerCase().contains(q) ||
+                j.vehicleDisplay.toLowerCase().contains(q) ||
+                j.customerName.toLowerCase().contains(q);
+          }).toList();
+        }
+
+        items.sort(
+          (a, b) => (b.createdAt ?? DateTime.now()).compareTo(
+            a.createdAt ?? DateTime.now(),
+          ),
+        );
+
+        return items;
+      } catch (_) {
+        if (customerId != null) {
+          return [];
+        }
+      }
+    }
+
+    if (customerId != null) {
+      return [];
+    }
+
     await Future<void>.delayed(const Duration(milliseconds: 250));
 
     var query = _jobs.where((j) {
@@ -1052,13 +1145,125 @@ class GarageRepository {
     return query.sublist(start, end);
   }
 
+  Future<PaginatedResult<ServiceJobModel>> getServiceJobsPaginated({
+    String? garageId,
+    String? customerId,
+    String? status,
+    String? search,
+    int limit = 10,
+    Object? lastDocument,
+  }) async {
+    if (FirebaseConfig.isInitialized) {
+      try {
+        Query<Map<String, dynamic>> query;
+        if (garageId != null && garageId.isNotEmpty) {
+          query = FirebaseFirestore.instance
+              .collection('garages')
+              .doc(garageId)
+              .collection('serviceJobs');
+        } else {
+          query = FirebaseFirestore.instance.collectionGroup('serviceJobs');
+        }
+
+        if (customerId != null && customerId.isNotEmpty) {
+          query = query.where('customerId', isEqualTo: customerId);
+        }
+        if (status != null && status.isNotEmpty) {
+          query = query.where('status', isEqualTo: status);
+        }
+
+        query = query.limit(limit);
+
+        if (lastDocument is DocumentSnapshot<Map<String, dynamic>>) {
+          query = query.startAfterDocument(lastDocument);
+        }
+
+        final snapshot = await query.get();
+        var items = snapshot.docs
+            .map((d) => ServiceJobModel.fromFirestore(d.data(), d.id))
+            .toList();
+
+        if (search != null && search.isNotEmpty) {
+          final q = search.toLowerCase();
+          items = items.where((j) {
+            return j.jobNumber.toLowerCase().contains(q) ||
+                j.vehicleDisplay.toLowerCase().contains(q) ||
+                j.customerName.toLowerCase().contains(q);
+          }).toList();
+        }
+
+        final lastDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+        final hasMore = snapshot.docs.length >= limit;
+
+        return PaginatedResult<ServiceJobModel>(
+          items: items,
+          lastDocument: lastDoc,
+          hasMore: hasMore,
+        );
+      } catch (_) {
+        if (customerId != null) {
+          return const PaginatedResult<ServiceJobModel>(
+            items: [],
+            lastDocument: null,
+            hasMore: false,
+          );
+        }
+      }
+    }
+
+    if (customerId != null) {
+      return const PaginatedResult<ServiceJobModel>(
+        items: [],
+        lastDocument: null,
+        hasMore: false,
+      );
+    }
+
+    return const PaginatedResult<ServiceJobModel>(
+      items: [],
+      lastDocument: null,
+      hasMore: false,
+    );
+  }
+
   Future<ServiceJobModel> createServiceJob(ServiceJobModel job) async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
+    final id = job.id.isNotEmpty ? job.id : const Uuid().v4();
     final newJob = job.copyWith(
-      id: const Uuid().v4(),
-      createdAt: DateTime.now(),
+      id: id,
+      createdAt: job.createdAt ?? DateTime.now(),
       updatedAt: DateTime.now(),
     );
+
+    if (FirebaseConfig.isInitialized && newJob.garageId.isNotEmpty) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(newJob.garageId)
+            .collection('serviceJobs')
+            .doc(newJob.id)
+            .set(newJob.toFirestore(), SetOptions(merge: true));
+
+        final history = JobStatusHistoryModel(
+          id: const Uuid().v4(),
+          jobId: newJob.id,
+          fromStatus: 'none',
+          toStatus: newJob.status,
+          notes: 'Job created',
+          updatedBy: 'Staff',
+          timestamp: DateTime.now(),
+        );
+
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(newJob.garageId)
+            .collection('serviceJobs')
+            .doc(newJob.id)
+            .collection('history')
+            .doc(history.id)
+            .set(history.toFirestore());
+      } catch (_) {}
+    }
+
     _jobs.insert(0, newJob);
 
     _jobHistory.insert(
@@ -1083,15 +1288,16 @@ class GarageRepository {
     required String notes,
     required String updatedBy,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
     final index = _jobs.indexWhere((j) => j.id == jobId);
+    ServiceJobModel? targetJob;
     if (index >= 0) {
       final old = _jobs[index];
-      _jobs[index] = old.copyWith(
+      targetJob = old.copyWith(
         status: newStatus,
         customerNotes: notes.isNotEmpty ? notes : old.customerNotes,
         updatedAt: DateTime.now(),
       );
+      _jobs[index] = targetJob;
 
       _jobHistory.insert(
         0,
@@ -1129,10 +1335,57 @@ class GarageRepository {
         ),
       );
     }
+
+    if (FirebaseConfig.isInitialized && targetJob != null) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(targetJob.garageId)
+            .collection('serviceJobs')
+            .doc(jobId)
+            .update({
+              'status': newStatus,
+              if (notes.isNotEmpty) 'customerNotes': notes,
+              'updatedAt': DateTime.now().toIso8601String(),
+            });
+
+        final historyId = const Uuid().v4();
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(targetJob.garageId)
+            .collection('serviceJobs')
+            .doc(jobId)
+            .collection('history')
+            .doc(historyId)
+            .set({
+              'id': historyId,
+              'jobId': jobId,
+              'fromStatus': targetJob.status,
+              'toStatus': newStatus,
+              'notes': notes,
+              'updatedBy': updatedBy,
+              'timestamp': DateTime.now().toIso8601String(),
+            });
+      } catch (_) {}
+    }
   }
 
   Future<List<JobStatusHistoryModel>> getJobHistory(String jobId) async {
-    await Future<void>.delayed(const Duration(milliseconds: 150));
+    if (FirebaseConfig.isInitialized) {
+      try {
+        final snapshot = await FirebaseFirestore.instance
+            .collectionGroup('history')
+            .where('jobId', isEqualTo: jobId)
+            .get();
+        if (snapshot.docs.isNotEmpty) {
+          final list = snapshot.docs
+              .map((d) => JobStatusHistoryModel.fromFirestore(d.data(), d.id))
+              .toList();
+          list.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+          return list;
+        }
+      } catch (_) {}
+    }
     return _jobHistory.where((h) => h.jobId == jobId).toList()
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
   }
@@ -1180,6 +1433,39 @@ class GarageRepository {
     int page = 0,
     int limit = 20,
   }) async {
+    if (FirebaseConfig.isInitialized && customerId != null) {
+      try {
+        final snapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(customerId)
+            .collection('vehicles')
+            .limit(limit)
+            .get();
+
+        if (snapshot.docs.isNotEmpty) {
+          return snapshot.docs
+              .map((d) => VehicleModel.fromFirestore(d.data(), d.id))
+              .toList();
+        }
+
+        final groupSnap = await FirebaseFirestore.instance
+            .collectionGroup('vehicles')
+            .where('customerId', isEqualTo: customerId)
+            .limit(limit)
+            .get();
+
+        return groupSnap.docs
+            .map((d) => VehicleModel.fromFirestore(d.data(), d.id))
+            .toList();
+      } catch (_) {
+        return [];
+      }
+    }
+
+    if (customerId != null) {
+      return [];
+    }
+
     await Future<void>.delayed(const Duration(milliseconds: 200));
 
     var query = _vehicles.where((v) {
@@ -1202,11 +1488,33 @@ class GarageRepository {
   }
 
   Future<VehicleModel> createVehicle(VehicleModel vehicle) async {
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    final id = vehicle.id.isNotEmpty ? vehicle.id : const Uuid().v4();
     final newVeh = vehicle.copyWith(
-      id: const Uuid().v4(),
-      createdAt: DateTime.now(),
+      id: id,
+      createdAt: vehicle.createdAt ?? DateTime.now(),
     );
+
+    if (FirebaseConfig.isInitialized) {
+      try {
+        if (newVeh.garageId.isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('garages')
+              .doc(newVeh.garageId)
+              .collection('vehicles')
+              .doc(newVeh.id)
+              .set(newVeh.toFirestore(), SetOptions(merge: true));
+        }
+        if (newVeh.customerId.isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(newVeh.customerId)
+              .collection('vehicles')
+              .doc(newVeh.id)
+              .set(newVeh.toFirestore(), SetOptions(merge: true));
+        }
+      } catch (_) {}
+    }
+
     _vehicles.insert(0, newVeh);
     return newVeh;
   }
@@ -1217,6 +1525,26 @@ class GarageRepository {
     int page = 0,
     int limit = 20,
   }) async {
+    if (FirebaseConfig.isInitialized && customerId != null) {
+      try {
+        final snapshot = await FirebaseFirestore.instance
+            .collectionGroup('estimates')
+            .where('customerId', isEqualTo: customerId)
+            .limit(limit)
+            .get();
+
+        return snapshot.docs
+            .map((d) => EstimateModel.fromFirestore(d.data(), d.id))
+            .toList();
+      } catch (_) {
+        return [];
+      }
+    }
+
+    if (customerId != null) {
+      return [];
+    }
+
     await Future<void>.delayed(const Duration(milliseconds: 200));
 
     var query = _estimates.where((e) {
@@ -1322,6 +1650,26 @@ class GarageRepository {
     int page = 0,
     int limit = 20,
   }) async {
+    if (FirebaseConfig.isInitialized && customerId != null) {
+      try {
+        final snapshot = await FirebaseFirestore.instance
+            .collectionGroup('invoices')
+            .where('customerId', isEqualTo: customerId)
+            .limit(limit)
+            .get();
+
+        return snapshot.docs
+            .map((d) => InvoiceModel.fromFirestore(d.data(), d.id))
+            .toList();
+      } catch (_) {
+        return [];
+      }
+    }
+
+    if (customerId != null) {
+      return [];
+    }
+
     await Future<void>.delayed(const Duration(milliseconds: 200));
 
     var query = _invoices.where((inv) {
@@ -1480,6 +1828,25 @@ class GarageRepository {
     String? garageId,
     String? customerId,
   }) async {
+    if (FirebaseConfig.isInitialized && customerId != null) {
+      try {
+        final snapshot = await FirebaseFirestore.instance
+            .collectionGroup('reminders')
+            .where('customerId', isEqualTo: customerId)
+            .get();
+
+        return snapshot.docs
+            .map((d) => ServiceReminderModel.fromFirestore(d.data(), d.id))
+            .toList();
+      } catch (_) {
+        return [];
+      }
+    }
+
+    if (customerId != null) {
+      return [];
+    }
+
     await Future<void>.delayed(const Duration(milliseconds: 200));
     return _reminders.where((r) {
       if (garageId != null && r.garageId != garageId) return false;
@@ -1491,11 +1858,25 @@ class GarageRepository {
   Future<ServiceReminderModel> createReminder(
     ServiceReminderModel reminder,
   ) async {
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    final id = reminder.id.isNotEmpty ? reminder.id : const Uuid().v4();
     final newRem = reminder.copyWith(
-      id: const Uuid().v4(),
-      createdAt: DateTime.now(),
+      id: id,
+      createdAt: reminder.createdAt ?? DateTime.now(),
     );
+
+    if (FirebaseConfig.isInitialized) {
+      try {
+        if (newRem.garageId.isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('garages')
+              .doc(newRem.garageId)
+              .collection('reminders')
+              .doc(newRem.id)
+              .set(newRem.toFirestore(), SetOptions(merge: true));
+        }
+      } catch (_) {}
+    }
+
     _reminders.insert(0, newRem);
     return newRem;
   }
@@ -1505,7 +1886,22 @@ class GarageRepository {
     int page = 0,
     int limit = 20,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 200));
+    if (FirebaseConfig.isInitialized) {
+      try {
+        final snapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(recipientUid)
+            .collection('notifications')
+            .orderBy('createdAt', descending: true)
+            .limit(limit)
+            .get();
+
+        return snapshot.docs
+            .map((d) => NotificationModel.fromFirestore(d.data(), d.id))
+            .toList();
+      } catch (_) {}
+    }
+
     final list = _notifications
         .where((n) => n.recipientUid == recipientUid)
         .toList();
@@ -1515,25 +1911,165 @@ class GarageRepository {
     return list.sublist(start, end);
   }
 
+  Future<PaginatedResult<NotificationModel>> getNotificationsPaginated({
+    required String recipientUid,
+    Object? lastDocument,
+    int limit = 20,
+  }) async {
+    if (FirebaseConfig.isInitialized && recipientUid.isNotEmpty) {
+      try {
+        Query query = FirebaseFirestore.instance
+            .collection('users')
+            .doc(recipientUid)
+            .collection('notifications')
+            .orderBy('createdAt', descending: true)
+            .limit(limit);
+
+        if (lastDocument is DocumentSnapshot) {
+          query = query.startAfterDocument(lastDocument);
+        }
+
+        final snapshot = await query.get();
+        final items = snapshot.docs
+            .map(
+              (d) => NotificationModel.fromFirestore(
+                d.data() as Map<String, dynamic>,
+                d.id,
+              ),
+            )
+            .toList();
+
+        final hasMore = snapshot.docs.length >= limit;
+        final nextLastDoc = snapshot.docs.isNotEmpty
+            ? snapshot.docs.last
+            : null;
+
+        return PaginatedResult(
+          items: items,
+          hasMore: hasMore,
+          lastDocument: nextLastDoc,
+        );
+      } catch (_) {}
+    }
+
+    final local = _notifications
+        .where((n) => n.recipientUid == recipientUid)
+        .toList();
+    return PaginatedResult(
+      items: local.take(limit).toList(),
+      hasMore: local.length > limit,
+      lastDocument: null,
+    );
+  }
+
   Future<NotificationModel> createNotification(
     NotificationModel notification,
   ) async {
-    await Future<void>.delayed(const Duration(milliseconds: 100));
-    _notifications.insert(0, notification);
-    return notification;
+    final id = notification.id.isNotEmpty ? notification.id : const Uuid().v4();
+    final newNotif = notification.copyWith(id: id);
+
+    if (FirebaseConfig.isInitialized) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(newNotif.recipientUid)
+            .collection('notifications')
+            .doc(newNotif.id)
+            .set(newNotif.toFirestore(), SetOptions(merge: true));
+      } catch (_) {}
+    }
+
+    _notifications.insert(0, newNotif);
+    return newNotif;
   }
 
-  Future<void> markNotificationAsRead(String notificationId) async {
+  Future<void> markNotificationAsRead(
+    String notificationId, {
+    String? recipientUid,
+  }) async {
+    if (FirebaseConfig.isInitialized &&
+        recipientUid != null &&
+        recipientUid.isNotEmpty) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(recipientUid)
+            .collection('notifications')
+            .doc(notificationId)
+            .update({'isRead': true});
+      } catch (_) {}
+    }
+
     final idx = _notifications.indexWhere((n) => n.id == notificationId);
     if (idx >= 0) {
       _notifications[idx] = _notifications[idx].copyWith(isRead: true);
     }
   }
 
+  Future<void> deleteNotification({
+    required String notificationId,
+    required String recipientUid,
+  }) async {
+    if (FirebaseConfig.isInitialized && recipientUid.isNotEmpty) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(recipientUid)
+            .collection('notifications')
+            .doc(notificationId)
+            .delete();
+      } catch (_) {}
+    }
+
+    _notifications.removeWhere((n) => n.id == notificationId);
+  }
+
+  Future<void> deleteNotifications({
+    required List<String> notificationIds,
+    required String recipientUid,
+  }) async {
+    if (FirebaseConfig.isInitialized &&
+        recipientUid.isNotEmpty &&
+        notificationIds.isNotEmpty) {
+      try {
+        final batch = FirebaseFirestore.instance.batch();
+        final col = FirebaseFirestore.instance
+            .collection('users')
+            .doc(recipientUid)
+            .collection('notifications');
+        for (final id in notificationIds) {
+          batch.delete(col.doc(id));
+        }
+        await batch.commit();
+      } catch (_) {}
+    }
+
+    _notifications.removeWhere((n) => notificationIds.contains(n.id));
+  }
+
   Future<List<AppointmentModel>> getAppointments({
     String? garageId,
     String? customerId,
   }) async {
+    if (FirebaseConfig.isInitialized && customerId != null) {
+      try {
+        final snapshot = await FirebaseFirestore.instance
+            .collectionGroup('appointments')
+            .where('customerId', isEqualTo: customerId)
+            .get();
+
+        return snapshot.docs
+            .map((d) => AppointmentModel.fromFirestore(d.data(), d.id))
+            .toList();
+      } catch (_) {
+        return [];
+      }
+    }
+
+    if (customerId != null) {
+      return [];
+    }
+
     await Future<void>.delayed(const Duration(milliseconds: 200));
     return _appointments.where((a) {
       if (garageId != null && a.garageId != garageId) return false;

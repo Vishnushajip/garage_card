@@ -67,6 +67,12 @@ class AppException implements Exception {
         message: 'The sign-in popup was blocked or closed. Please allow popups and try again.',
       );
     }
+    if (str.contains('apiexception: 10') || str.contains('sign_in_failed')) {
+      return const AppException(
+        code: 'google-sign-in-config-error',
+        message: 'Google Sign-In configuration error. Please ensure SHA-1 fingerprint is registered in Firebase Console.',
+      );
+    }
     return AppException(
       code: 'firebase-error',
       message: error.toString(),

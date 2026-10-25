@@ -214,11 +214,18 @@ class AuthViewModel extends Notifier<AuthState> {
       UserCredential credential;
       if (kIsWeb) {
         final googleProvider = GoogleAuthProvider();
+        googleProvider.addScope('email');
+        googleProvider.addScope('profile');
         credential = await FirebaseAuth.instance.signInWithPopup(
           googleProvider,
         );
       } else {
-        final googleSignIn = GoogleSignIn();
+        const webClientId =
+            '62265849009-mushlhju9uianaf4aqq4qtcj11kfiij5.apps.googleusercontent.com';
+        final googleSignIn = GoogleSignIn(
+          serverClientId: webClientId,
+          scopes: const ['email', 'profile'],
+        );
         final googleUser = await googleSignIn.signIn();
         if (googleUser == null) {
           state = state.copyWith(isLoading: false);
@@ -325,6 +332,10 @@ class AuthViewModel extends Notifier<AuthState> {
       return;
     }
     state = state.copyWith(activeExperience: targetExperience);
+  }
+
+  void updateUserProfile(UserProfileModel profile) {
+    state = state.copyWith(userProfile: profile);
   }
 
   Future<void> signOut() async {

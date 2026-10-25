@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
+import 'package:garage_card/features/shared/models/invoice_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
 import '../Model/customer_invoices_state.dart';
@@ -10,11 +13,22 @@ class CustomerInvoicesViewModel extends Notifier<CustomerInvoicesState> {
     return const CustomerInvoicesState(isLoading: true);
   }
 
+  String? get _currentCustomerId {
+    final profile = ref.read(authViewModelProvider).userProfile;
+    if (profile != null && profile.uid.isNotEmpty) {
+      return profile.uid;
+    }
+    return FirebaseAuth.instance.currentUser?.uid;
+  }
+
   Future<void> _loadData() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final repo = ref.read(garageRepositoryProvider);
-      final invoices = await repo.getInvoices(customerId: 'cust_demo_1');
+      final uid = _currentCustomerId;
+      final invoices = uid != null
+          ? await repo.getInvoices(customerId: uid)
+          : <InvoiceModel>[];
       final payments = await repo.getPayments(garageId: 'garage_demo_1');
 
       state = state.copyWith(

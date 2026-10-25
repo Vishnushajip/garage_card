@@ -1,3 +1,5 @@
+import 'package:garage_card/core/formatting/date_formatter.dart';
+
 class NotificationModel {
   const NotificationModel({
     required this.id,
@@ -67,9 +69,7 @@ class NotificationModel {
       eventId: data['eventId'] as String?,
       metadata: data['metadata'] as Map<String, dynamic>?,
       isRead: data['isRead'] as bool? ?? false,
-      createdAt: data['createdAt'] != null
-          ? DateTime.tryParse(data['createdAt'] as String)
-          : null,
+      createdAt: DateFormatter.parse(data['createdAt']),
     );
   }
 

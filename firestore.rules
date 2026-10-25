@@ -1,22 +1,25 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
-    
+
     function isGarageMember(garageId) {
-      return isAuthenticated() && 
-        exists(/databases/$(database)/documents/garages/$(garageId)/members/$(request.auth.uid));
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/garages/$(garageId)/members/$(request.auth.uid)) ||
+        (exists(/databases/$(database)/documents/garages/$(garageId)) &&
+         get(/databases/$(database)/documents/garages/$(garageId)).data.ownerUid == request.auth.uid)
+      );
     }
 
     match /users/{userId} {
-      allow read: if isOwner(userId);
+      allow read: if isAuthenticated();
       allow write: if isOwner(userId);
 
       match /deviceTokens/{tokenId} {
@@ -28,7 +31,7 @@ service cloud.firestore {
       }
 
       match /notifications/{notificationId} {
-        allow read, update: if isOwner(userId);
+        allow read, update, delete: if isOwner(userId);
         allow create: if isAuthenticated();
       }
     }
@@ -38,7 +41,7 @@ service cloud.firestore {
     }
 
     match /garages/{garageId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow create: if isAuthenticated();
       allow update, delete: if isGarageMember(garageId);
 
@@ -61,25 +64,26 @@ service cloud.firestore {
         allow write: if isGarageMember(garageId);
 
         match /history/{historyId} {
-          allow read: if isGarageMember(garageId) || (isAuthenticated() && get(/databases/$(database)/documents/garages/$(garageId)/serviceJobs/$(jobId)).data.customerId == request.auth.uid);
+          allow read: if isAuthenticated();
           allow write: if isGarageMember(garageId);
         }
       }
 
       match /inspections/{inspectionId} {
-        allow read: if isGarageMember(garageId) || (isAuthenticated() && get(/databases/$(database)/documents/garages/$(garageId)/serviceJobs/$(resource.data.jobId)).data.customerId == request.auth.uid);
+        allow read: if isAuthenticated();
         allow write: if isGarageMember(garageId);
       }
 
       match /serviceCatalog/{serviceId} {
-        allow read: if isAuthenticated();
+        allow read: if true;
         allow write: if isGarageMember(garageId);
       }
 
       match /estimates/{estimateId} {
         allow read: if isGarageMember(garageId) || (isAuthenticated() && resource.data.customerId == request.auth.uid);
         allow write: if isGarageMember(garageId);
-        allow update: if isAuthenticated() && resource.data.customerId == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'rejectionReason', 'approvedAt']);
+        allow update: if isAuthenticated() && resource.data.customerId == request.auth.uid &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'rejectionReason', 'approvedAt']);
       }
 
       match /invoices/{invoiceId} {
@@ -95,7 +99,7 @@ service cloud.firestore {
       match /appointments/{appointmentId} {
         allow read: if isGarageMember(garageId) || (isAuthenticated() && resource.data.customerId == request.auth.uid);
         allow create: if isAuthenticated();
-        allow update, delete: if isGarageMember(garageId);
+        allow update, delete: if isGarageMember(garageId) || (isAuthenticated() && resource.data.customerId == request.auth.uid);
       }
 
       match /serviceRequests/{requestId} {
@@ -106,7 +110,12 @@ service cloud.firestore {
 
       match /reminders/{reminderId} {
         allow read: if isGarageMember(garageId) || (isAuthenticated() && resource.data.customerId == request.auth.uid);
-        allow write: if isGarageMember(garageId);
+        allow write: if isGarageMember(garageId) || (isAuthenticated() && resource.data.customerId == request.auth.uid);
+      }
+
+      match /notifications/{notificationId} {
+        allow read, update, delete: if isGarageMember(garageId);
+        allow create: if isAuthenticated();
       }
 
       match /subscriptions/{subId} {
@@ -118,6 +127,65 @@ service cloud.firestore {
         allow read: if isGarageMember(garageId);
         allow write: if isGarageMember(garageId);
       }
+    }
+
+    match /{path=**}/serviceJobs/{jobId} {
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        isGarageMember(resource.data.garageId)
+      );
+      allow write: if isAuthenticated() && isGarageMember(resource.data.garageId);
+    }
+
+    match /{path=**}/vehicles/{vehicleId} {
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        isGarageMember(resource.data.garageId)
+      );
+      allow write: if isAuthenticated() && isGarageMember(resource.data.garageId);
+    }
+
+    match /{path=**}/estimates/{estimateId} {
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        isGarageMember(resource.data.garageId)
+      );
+      allow write: if isAuthenticated() && isGarageMember(resource.data.garageId);
+    }
+
+    match /{path=**}/invoices/{invoiceId} {
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        isGarageMember(resource.data.garageId)
+      );
+      allow write: if isAuthenticated() && isGarageMember(resource.data.garageId);
+    }
+
+    match /{path=**}/reminders/{reminderId} {
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        isGarageMember(resource.data.garageId)
+      );
+      allow write: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        isGarageMember(resource.data.garageId)
+      );
+    }
+
+    match /{path=**}/appointments/{appointmentId} {
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        isGarageMember(resource.data.garageId)
+      );
+      allow write: if isAuthenticated() && (
+        request.resource.data.customerId == request.auth.uid ||
+        isGarageMember(resource.data.garageId)
+      );
+    }
+
+    match /{path=**}/history/{historyId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
     }
   }
 }

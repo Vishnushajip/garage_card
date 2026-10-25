@@ -8,6 +8,9 @@ class CustomerJobsState {
     this.history = const [],
     this.isLoading = false,
     this.isLoadingDetail = false,
+    this.isFetchingNextPage = false,
+    this.hasMore = true,
+    this.lastDocument,
     this.errorMessage,
     this.filterStatus,
   });
@@ -17,6 +20,9 @@ class CustomerJobsState {
   final List<JobStatusHistoryModel> history;
   final bool isLoading;
   final bool isLoadingDetail;
+  final bool isFetchingNextPage;
+  final bool hasMore;
+  final Object? lastDocument;
   final String? errorMessage;
   final String? filterStatus;
 
@@ -26,6 +32,9 @@ class CustomerJobsState {
     List<JobStatusHistoryModel>? history,
     bool? isLoading,
     bool? isLoadingDetail,
+    bool? isFetchingNextPage,
+    bool? hasMore,
+    Object? lastDocument,
     String? errorMessage,
     String? filterStatus,
   }) {
@@ -35,6 +44,9 @@ class CustomerJobsState {
       history: history ?? this.history,
       isLoading: isLoading ?? this.isLoading,
       isLoadingDetail: isLoadingDetail ?? this.isLoadingDetail,
+      isFetchingNextPage: isFetchingNextPage ?? this.isFetchingNextPage,
+      hasMore: hasMore ?? this.hasMore,
+      lastDocument: lastDocument ?? this.lastDocument,
       errorMessage: errorMessage,
       filterStatus: filterStatus ?? this.filterStatus,
     );

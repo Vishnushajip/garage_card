@@ -9,6 +9,9 @@ class MerchantJobsState {
     this.isLoading = false,
     this.isUpdatingStatus = false,
     this.isCreatingJob = false,
+    this.isFetchingNextPage = false,
+    this.hasMore = true,
+    this.lastDocument,
     this.errorMessage,
     this.searchQuery = '',
     this.filterStatus,
@@ -20,6 +23,9 @@ class MerchantJobsState {
   final bool isLoading;
   final bool isUpdatingStatus;
   final bool isCreatingJob;
+  final bool isFetchingNextPage;
+  final bool hasMore;
+  final Object? lastDocument;
   final String? errorMessage;
   final String searchQuery;
   final String? filterStatus;
@@ -31,6 +37,9 @@ class MerchantJobsState {
     bool? isLoading,
     bool? isUpdatingStatus,
     bool? isCreatingJob,
+    bool? isFetchingNextPage,
+    bool? hasMore,
+    Object? lastDocument,
     String? errorMessage,
     String? searchQuery,
     String? filterStatus,
@@ -42,6 +51,9 @@ class MerchantJobsState {
       isLoading: isLoading ?? this.isLoading,
       isUpdatingStatus: isUpdatingStatus ?? this.isUpdatingStatus,
       isCreatingJob: isCreatingJob ?? this.isCreatingJob,
+      isFetchingNextPage: isFetchingNextPage ?? this.isFetchingNextPage,
+      hasMore: hasMore ?? this.hasMore,
+      lastDocument: lastDocument ?? this.lastDocument,
       errorMessage: errorMessage,
       searchQuery: searchQuery ?? this.searchQuery,
       filterStatus: filterStatus ?? this.filterStatus,

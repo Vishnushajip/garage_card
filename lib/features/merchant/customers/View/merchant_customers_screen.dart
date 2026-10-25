@@ -9,6 +9,7 @@ import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
+import 'package:garage_card/core/utils/debouncer.dart';
 
 import '../ViewModel/merchant_customers_view_model.dart';
 import '../Widgets/merchant_customer_card.dart';
@@ -24,9 +25,11 @@ class MerchantCustomersScreen extends ConsumerStatefulWidget {
 class _MerchantCustomersScreenState
     extends ConsumerState<MerchantCustomersScreen> {
   final TextEditingController _searchCtrl = TextEditingController();
+  final Debouncer _debouncer = Debouncer();
 
   @override
   void dispose() {
+    _debouncer.dispose();
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -77,7 +80,9 @@ class _MerchantCustomersScreenState
                         },
                       )
                     : null,
-                onChanged: vm.search,
+                onChanged: (val) {
+                  _debouncer.run(() => vm.search(val));
+                },
               ),
               const SizedBox(height: 16),
               Expanded(

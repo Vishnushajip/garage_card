@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class WhatsAppShareService {
@@ -9,13 +10,36 @@ class WhatsAppShareService {
   }) async {
     final cleanPhone = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
     final encodedMessage = Uri.encodeComponent(message);
-    final url = Uri.parse('https://wa.me/$cleanPhone?text=$encodedMessage');
 
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-      return true;
+    final waUrl = Uri.parse('https://wa.me/$cleanPhone?text=$encodedMessage');
+
+    if (kIsWeb) {
+      if (await canLaunchUrl(waUrl)) {
+        await launchUrl(waUrl, mode: LaunchMode.externalApplication);
+        return true;
+      }
+      return false;
     }
-    return false;
+
+    final nativeUrl = Uri.parse(
+      'whatsapp://send?phone=$cleanPhone&text=$encodedMessage',
+    );
+    try {
+      if (await canLaunchUrl(nativeUrl)) {
+        await launchUrl(nativeUrl, mode: LaunchMode.externalApplication);
+        return true;
+      }
+    } catch (_) {}
+
+    try {
+      if (await canLaunchUrl(waUrl)) {
+        await launchUrl(waUrl, mode: LaunchMode.externalApplication);
+        return true;
+      }
+      return await launchUrl(waUrl);
+    } catch (_) {
+      return false;
+    }
   }
 
   static Future<bool> makePhoneCall(String phoneNumber) async {
@@ -59,6 +83,61 @@ class WhatsAppShareService {
         '${notes.isNotEmpty ? '• Details: $notes\n' : ''}\n'
         'Track repair progress in your WeFix app.\n'
         'Thank you,\n$garageName';
+  }
+
+  static String composeJobStatusMessageWithDetails({
+    required String customerName,
+    required String garageName,
+    required String vehicleDisplay,
+    required String jobNumber,
+    required String status,
+    required String statusMalayalam,
+    required String notes,
+    String? partsNeeded,
+    String language = 'bilingual',
+  }) {
+    final partsEng = partsNeeded != null && partsNeeded.isNotEmpty
+        ? '• Parts Needed: $partsNeeded\n'
+        : '';
+    final partsMl = partsNeeded != null && partsNeeded.isNotEmpty
+        ? '• ആവശ്യമായ പാർട്സുകൾ: $partsNeeded\n'
+        : '';
+    final notesEng = notes.isNotEmpty ? '• Notes: $notes\n' : '';
+    final notesMl = notes.isNotEmpty ? '• വിവരണം: $notes\n' : '';
+
+    if (language == 'malayalam') {
+      return 'നമസ്കാരം $customerName,\n\n'
+          '$garageName-ൽ നൽകിയിട്ടുള്ള താങ്കളുടെ വാഹനത്തിന്റെ റിപ്പയർ വിവരങ്ങൾ:\n'
+          '• വാഹനം: $vehicleDisplay\n'
+          '• ജോബ് നമ്പർ: $jobNumber\n'
+          '• നിലവിലെ അവസ്ഥ: $statusMalayalam\n'
+          '$partsMl'
+          '$notesMl\n'
+          'കൂടുതൽ വിവരങ്ങൾക്ക് WeFix ആപ്പ് സന്ദർശിക്കുക.\n'
+          'നന്ദി,\n$garageName';
+    }
+
+    if (language == 'english') {
+      return 'Hello $customerName,\n\n'
+          'Here is an update on your vehicle service at $garageName:\n'
+          '• Vehicle: $vehicleDisplay\n'
+          '• Job No: $jobNumber\n'
+          '• Status: $status\n'
+          '$partsEng'
+          '$notesEng\n'
+          'Track live repair status in the WeFix app.\n'
+          'Thank you,\n$garageName';
+    }
+
+    return 'Hello $customerName / നമസ്കാരം,\n\n'
+        'Vehicle Service Update from $garageName:\n'
+        '• Vehicle / വാഹനം: $vehicleDisplay\n'
+        '• Job No / ജോബ് നമ്പർ: $jobNumber\n'
+        '• Status / അവസ്ഥ: $status ($statusMalayalam)\n'
+        '${partsNeeded != null && partsNeeded.isNotEmpty ? '• Parts Needed / പാർട്സുകൾ: $partsNeeded\n' : ''}'
+        '${notes.isNotEmpty ? '• Details / വിവരണം: $notes\n' : ''}\n'
+        'Track live progress in your WeFix app / കൂടുതൽ വിവരങ്ങൾക്ക് WeFix ആപ്പ് കാണുക.\n\n'
+        'Thank you / നന്ദി,\n$garageName';
   }
 
   static String composeEstimateMessage({

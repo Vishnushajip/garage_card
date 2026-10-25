@@ -9,7 +9,7 @@ import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/features/customer/service_jobs/Widgets/status_timeline_view.dart';
-import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
+import 'package:garage_card/features/shared/models/service_job_model.dart';
 
 import '../ViewModel/merchant_jobs_view_model.dart';
 import '../Widgets/job_status_dialog.dart';
@@ -34,12 +34,18 @@ class _MerchantJobDetailScreenState
     });
   }
 
-  void _openStatusDialog(BuildContext context, String currentStatus) {
+  void _openStatusDialog(BuildContext context, ServiceJobModel job) {
     showDialog(
       context: context,
       builder: (dialogCtx) {
         return JobStatusDialog(
-          currentStatus: currentStatus,
+          currentStatus: job.status,
+          customerName: job.customerName.isNotEmpty
+              ? job.customerName
+              : 'Customer',
+          vehicleDisplay: job.vehicleDisplay,
+          jobNumber: job.jobNumber,
+          garageName: 'Apex Precision Automotive',
           onUpdateStatus: (newStatus, notes) {
             return ref
                 .read(merchantJobsViewModelProvider.notifier)
@@ -90,22 +96,9 @@ class _MerchantJobDetailScreenState
         ),
         actions: [
           IconButton(
-            tooltip: 'Send WhatsApp Update',
+            tooltip: 'Inform Customer via WhatsApp',
             icon: const Icon(Icons.chat_rounded, color: AppColors.success),
-            onPressed: () {
-              final msg = WhatsAppShareService.composeJobStatusMessage(
-                customerName: job.customerName,
-                garageName: 'Apex Precision Automotive',
-                vehicleDisplay: job.vehicleDisplay,
-                jobNumber: job.jobNumber,
-                status: job.status.toUpperCase(),
-                notes: job.customerNotes,
-              );
-              WhatsAppShareService.sendWhatsAppMessage(
-                phoneNumber: '+919846077112',
-                message: msg,
-              );
-            },
+            onPressed: () => _openStatusDialog(context, job),
           ),
         ],
       ),
@@ -155,8 +148,7 @@ class _MerchantJobDetailScreenState
                         const SizedBox(height: 16),
                         AppButton(
                           label: 'Update Status & Notify Customer',
-                          onPressed: () =>
-                              _openStatusDialog(context, job.status),
+                          onPressed: () => _openStatusDialog(context, job),
                           variant: AppButtonVariant.primary,
                           isFullWidth: true,
                           height: 44,

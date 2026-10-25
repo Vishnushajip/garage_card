@@ -34,4 +34,16 @@ class DateFormatter {
     if (difference.inDays < 7) return '${difference.inDays}d ago';
     return DateFormat('dd MMM yyyy').format(date);
   }
+
+  static DateTime? parse(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    try {
+      final dyn = value as dynamic;
+      final converted = dyn.toDate();
+      if (converted is DateTime) return converted;
+    } catch (_) {}
+    if (value is String) return DateTime.tryParse(value);
+    return null;
+  }
 }

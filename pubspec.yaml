@@ -56,7 +56,10 @@ dependencies:
   http: ^1.6.0
   google_fonts: ^6.2.1
   flutter_svg: ^2.3.0
-  phosphor_flutter: ^2.1.0
+  phosphor_flutter:
+    git:
+      url: https://github.com/Niural/phosphor_flutter.git
+      ref: main
 
 dev_dependencies:
   flutter_test:

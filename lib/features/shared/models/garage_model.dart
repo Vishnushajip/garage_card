@@ -1,3 +1,5 @@
+import 'package:garage_card/core/formatting/date_formatter.dart';
+
 class GarageModel {
   const GarageModel({
     required this.id,
@@ -80,9 +82,7 @@ class GarageModel {
               ?.map((e) => e.toString())
               .toList() ??
           const [],
-      createdAt: data['createdAt'] != null
-          ? DateTime.tryParse(data['createdAt'] as String)
-          : null,
+      createdAt: DateFormatter.parse(data['createdAt']),
     );
   }
 

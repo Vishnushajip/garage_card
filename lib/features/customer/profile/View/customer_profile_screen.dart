@@ -3,14 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/localization/app_localizations.dart';
+import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_dialog.dart';
 import 'package:garage_card/core/shared_widgets/app_dropdown.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
+import 'package:garage_card/core/shared_widgets/app_text_field.dart';
 import 'package:garage_card/core/notifications/notification_event_matrix.dart';
 import 'package:garage_card/core/notifications/push_notification_service.dart';
 import 'package:garage_card/core/theme/theme_controller.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 
+import '../ViewModel/customer_profile_view_model.dart';
 import '../Widgets/preference_tile.dart';
 
 class CustomerProfileScreen extends ConsumerWidget {
@@ -20,6 +23,8 @@ class CustomerProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authViewModelProvider);
     final user = authState.userProfile;
+    final profileState = ref.watch(customerProfileViewModelProvider);
+    final profileVm = ref.read(customerProfileViewModelProvider.notifier);
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
 
@@ -103,6 +108,164 @@ class CustomerProfileScreen extends ConsumerWidget {
                             ),
                           ],
                         ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                color: cardBg,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(
+                    color: profileState.isProfileComplete
+                        ? (isDark
+                              ? AppColors.borderDark
+                              : AppColors.borderLight)
+                        : AppColors.accentBlue.withValues(alpha: 0.5),
+                    width: profileState.isProfileComplete ? 1 : 1.5,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: profileState.isProfileComplete
+                                      ? AppColors.successBg
+                                      : AppColors.accentBlue.withValues(
+                                          alpha: 0.12,
+                                        ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  profileState.isProfileComplete
+                                      ? Icons.verified_user_rounded
+                                      : Icons.contact_page_rounded,
+                                  color: profileState.isProfileComplete
+                                      ? AppColors.success
+                                      : AppColors.accentBlue,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Complete Your Profile',
+                                style: AppFonts.titleMedium(
+                                  color: primaryTextColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: profileState.isProfileComplete
+                                  ? AppColors.successBg
+                                  : AppColors.warningBg,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              profileState.isProfileComplete
+                                  ? '100% Complete'
+                                  : '${(profileState.completionPercentage * 100).toInt()}% Complete',
+                              style: AppFonts.labelSmall(
+                                color: profileState.isProfileComplete
+                                    ? AppColors.success
+                                    : AppColors.warning,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: profileState.completionPercentage,
+                          backgroundColor: isDark
+                              ? AppColors.borderDark.withValues(alpha: 0.3)
+                              : AppColors.borderLight,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            profileState.isProfileComplete
+                                ? AppColors.success
+                                : AppColors.accentBlue,
+                          ),
+                          minHeight: 6,
+                        ),
+                      ),
+                      if (!profileState.isProfileComplete) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          'Enter your name and phone number to receive repair updates, digital job sheets, and invoices directly.',
+                          style: AppFonts.labelSmall(color: secondaryTextColor),
+                        ),
+                      ],
+                      const SizedBox(height: 20),
+                      AppTextField(
+                        label: 'Full Name',
+                        hint: 'Enter your full name',
+                        initialValue: profileState.nameInput,
+                        prefixIcon: const Icon(
+                          Icons.person_outline_rounded,
+                          size: 20,
+                        ),
+                        onChanged: profileVm.setName,
+                      ),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        label: 'Phone Number',
+                        hint: '+91 98765 43210',
+                        initialValue: profileState.phoneInput,
+                        keyboardType: TextInputType.phone,
+                        prefixIcon: const Icon(Icons.phone_outlined, size: 20),
+                        onChanged: profileVm.setPhone,
+                      ),
+                      if (profileState.errorMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          profileState.errorMessage!,
+                          style: AppFonts.labelSmall(color: AppColors.error),
+                        ),
+                      ],
+                      if (profileState.successMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              color: AppColors.success,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              profileState.successMessage!,
+                              style: AppFonts.labelSmall(
+                                color: AppColors.success,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 20),
+                      AppButton(
+                        label: 'Save Profile Details',
+                        icon: const Icon(Icons.save_rounded, size: 18),
+                        isLoading: profileState.isSaving,
+                        isFullWidth: true,
+                        onPressed: profileVm.saveProfile,
                       ),
                     ],
                   ),

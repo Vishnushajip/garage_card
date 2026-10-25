@@ -1,5 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/location/location_service.dart';
+import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
+import 'package:garage_card/features/shared/models/estimate_model.dart';
+import 'package:garage_card/features/shared/models/invoice_model.dart';
+import 'package:garage_card/features/shared/models/service_job_model.dart';
+import 'package:garage_card/features/shared/models/service_reminder_model.dart';
+import 'package:garage_card/features/shared/models/vehicle_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
 import '../Model/customer_dashboard_state.dart';
@@ -11,18 +18,37 @@ class CustomerDashboardViewModel extends Notifier<CustomerDashboardState> {
     return const CustomerDashboardState(isLoading: true);
   }
 
+  String? get _currentCustomerId {
+    final profile = ref.read(authViewModelProvider).userProfile;
+    if (profile != null && profile.uid.isNotEmpty) {
+      return profile.uid;
+    }
+    return FirebaseAuth.instance.currentUser?.uid;
+  }
+
   Future<void> _loadDashboardData() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final repo = ref.read(garageRepositoryProvider);
       final locService = ref.read(locationServiceProvider);
       final location = await locService.getCurrentLocation();
+      final customerId = _currentCustomerId;
 
-      final jobs = await repo.getServiceJobs(customerId: 'cust_demo_1');
-      final vehicles = await repo.getVehicles(customerId: 'cust_demo_1');
-      final estimates = await repo.getEstimates(customerId: 'cust_demo_1');
-      final invoices = await repo.getInvoices(customerId: 'cust_demo_1');
-      final reminders = await repo.getReminders(customerId: 'cust_demo_1');
+      final jobs = customerId != null
+          ? await repo.getServiceJobs(customerId: customerId, limit: 10)
+          : <ServiceJobModel>[];
+      final vehicles = customerId != null
+          ? await repo.getVehicles(customerId: customerId, limit: 10)
+          : <VehicleModel>[];
+      final estimates = customerId != null
+          ? await repo.getEstimates(customerId: customerId, limit: 10)
+          : <EstimateModel>[];
+      final invoices = customerId != null
+          ? await repo.getInvoices(customerId: customerId, limit: 10)
+          : <InvoiceModel>[];
+      final reminders = customerId != null
+          ? await repo.getReminders(customerId: customerId)
+          : <ServiceReminderModel>[];
 
       final nearby = await repo.getNearbyGarages(
         latitude: location?.latitude ?? 9.9312,

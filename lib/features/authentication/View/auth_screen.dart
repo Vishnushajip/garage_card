@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:garage_card/core/branding/app_branding.dart';
 import 'package:garage_card/core/branding/app_logo.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
-import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
-import 'package:garage_card/core/shared_widgets/app_text_field.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../ViewModel/auth_view_model.dart';
-
-enum AuthMode { signIn, signUp, forgotPassword }
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -21,23 +17,55 @@ class AuthScreen extends ConsumerStatefulWidget {
   ConsumerState<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends ConsumerState<AuthScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailCtrl = TextEditingController();
-  final _passwordCtrl = TextEditingController();
-  final _nameCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
-
-  AuthMode _mode = AuthMode.signIn;
+class _AuthScreenState extends ConsumerState<AuthScreen>
+    with SingleTickerProviderStateMixin {
   String _selectedRole = 'customer';
-  bool _showEmailAuth = false;
+  late final AnimationController _animController;
+  late final Animation<double> _headerFadeAnimation;
+  late final Animation<Offset> _headerSlideAnimation;
+  late final Animation<double> _contentFadeAnimation;
+  late final Animation<Offset> _contentSlideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+
+    _headerFadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.0, 0.65, curve: Curves.easeOut),
+    );
+
+    _headerSlideAnimation =
+        Tween<Offset>(begin: const Offset(0, -0.06), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animController,
+            curve: const Interval(0.0, 0.7, curve: Curves.easeOutCubic),
+          ),
+        );
+
+    _contentFadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.25, 0.95, curve: Curves.easeOut),
+    );
+
+    _contentSlideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animController,
+            curve: const Interval(0.25, 1.0, curve: Curves.easeOutCubic),
+          ),
+        );
+
+    _animController.forward();
+  }
 
   @override
   void dispose() {
-    _emailCtrl.dispose();
-    _passwordCtrl.dispose();
-    _nameCtrl.dispose();
-    _phoneCtrl.dispose();
+    _animController.dispose();
     super.dispose();
   }
 
@@ -45,42 +73,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     ref
         .read(authViewModelProvider.notifier)
         .signInWithGoogle(intendedRole: _selectedRole);
-  }
-
-  void _submit() {
-    if (!_formKey.currentState!.validate()) return;
-
-    final vm = ref.read(authViewModelProvider.notifier);
-
-    if (_mode == AuthMode.signIn) {
-      vm.signIn(
-        email: _emailCtrl.text.trim(),
-        password: _passwordCtrl.text.trim(),
-        intendedRole: _selectedRole,
-      );
-    } else if (_mode == AuthMode.signUp) {
-      vm.signUp(
-        email: _emailCtrl.text.trim(),
-        password: _passwordCtrl.text.trim(),
-        fullName: _nameCtrl.text.trim(),
-        phoneNumber: _phoneCtrl.text.trim(),
-        intendedRole: _selectedRole,
-      );
-    } else {
-      vm.resetPassword(_emailCtrl.text.trim()).then((success) {
-        if (success && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Password reset instructions sent to your email.'),
-              backgroundColor: AppColors.success,
-            ),
-          );
-          setState(() {
-            _mode = AuthMode.signIn;
-          });
-        }
-      });
-    }
   }
 
   @override
@@ -94,9 +86,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
     final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final sheetBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
+    final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
     final isCustomer = _selectedRole == 'customer';
-    final deepRed = Color.lerp(AppColors.primaryRed, Colors.black, 0.4)!;
+    final deepRed = Color.lerp(AppColors.primaryRed, Colors.black, 0.38)!;
 
     return Scaffold(
       backgroundColor: isDark
@@ -105,614 +97,399 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: AppResponsiveLayout(
-              maxWidth: 480,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              maxWidth: 460,
+              padding: EdgeInsets.zero,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 56),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [AppColors.primaryRed, deepRed],
-                      ),
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primaryRed.withValues(alpha: 0.35),
-                          blurRadius: 30,
-                          offset: const Offset(0, 14),
+                  FadeTransition(
+                    opacity: _headerFadeAnimation,
+                    child: SlideTransition(
+                      position: _headerSlideAnimation,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 28,
                         ),
-                      ],
-                    ),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          right: -30,
-                          top: -20,
-                          child: PhosphorIcon(
-                            PhosphorIcons.gear(PhosphorIconsStyle.duotone),
-                            size: 120,
-                            color: Colors.white.withValues(alpha: 0.08),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [AppColors.primaryRed, deepRed],
                           ),
-                        ),
-                        Positioned(
-                          right: 40,
-                          bottom: -30,
-                          child: PhosphorIcon(
-                            PhosphorIcons.wrench(PhosphorIconsStyle.duotone),
-                            size: 90,
-                            color: Colors.white.withValues(alpha: 0.07),
-                          ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 64,
-                                  height: 64,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.22,
-                                        ),
-                                        blurRadius: 16,
-                                        offset: const Offset(0, 6),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(20),
-                                    child: Image.asset(
-                                      'assets/branding/wefix_app_icon.png',
-                                      width: 64,
-                                      height: 64,
-                                      fit: BoxFit.contain,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              const AppLogo(
-                                                size: 64,
-                                                showBadge: true,
-                                              ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Welcome to',
-                                        style: AppFonts.labelSmall(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.8,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        AppBranding.appName,
-                                        style: AppFonts.displayLarge(
-                                          color: Colors.white,
-                                        ).copyWith(fontSize: 28),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryRed.withValues(
+                                alpha: 0.35,
+                              ),
+                              blurRadius: 28,
+                              offset: const Offset(0, 12),
                             ),
-                            const SizedBox(height: 18),
-                            Text(
-                              'Vehicle service & smart garage management platform',
-                              style: AppFonts.bodyMedium(
-                                color: Colors.white.withValues(alpha: 0.88),
+                          ],
+                        ),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Positioned(
+                              right: -24,
+                              top: -20,
+                              child: PhosphorIcon(
+                                PhosphorIcons.gear(PhosphorIconsStyle.duotone),
+                                size: 110,
+                                color: Colors.white.withValues(alpha: 0.08),
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
+                            Positioned(
+                              right: 48,
+                              bottom: -28,
+                              child: PhosphorIcon(
+                                PhosphorIcons.wrench(
+                                  PhosphorIconsStyle.duotone,
+                                ),
+                                size: 84,
+                                color: Colors.white.withValues(alpha: 0.07),
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _FeatureChip(
-                                  icon: PhosphorIcons.wrench(
-                                    PhosphorIconsStyle.fill,
-                                  ),
-                                  label: 'Book Services',
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 58,
+                                      height: 58,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(18),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.2,
+                                            ),
+                                            blurRadius: 14,
+                                            offset: const Offset(0, 6),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(18),
+                                        child: Image.asset(
+                                          'assets/branding/wefix_app_icon.png',
+                                          width: 58,
+                                          height: 58,
+                                          fit: BoxFit.contain,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const AppLogo(
+                                                    size: 58,
+                                                    showBadge: true,
+                                                  ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Welcome to',
+                                            style:
+                                                AppFonts.labelSmall(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.85),
+                                                ).copyWith(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  letterSpacing: 0.4,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            AppBranding.appName,
+                                            style:
+                                                AppFonts.displayLarge(
+                                                  color: Colors.white,
+                                                ).copyWith(
+                                                  fontSize: 28,
+                                                  fontWeight: FontWeight.w800,
+                                                  letterSpacing: -0.6,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                _FeatureChip(
-                                  icon: PhosphorIcons.shieldCheck(
-                                    PhosphorIconsStyle.fill,
-                                  ),
-                                  label: 'Trusted Garages',
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Automotive service & smart garage management platform',
+                                  style: AppFonts.bodyMedium(
+                                    color: Colors.white.withValues(alpha: 0.92),
+                                  ).copyWith(fontSize: 13.5, height: 1.35),
                                 ),
-                                _FeatureChip(
-                                  icon: PhosphorIcons.lightning(
-                                    PhosphorIconsStyle.fill,
-                                  ),
-                                  label: 'Fast Updates',
+                                const SizedBox(height: 18),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _FeatureCard(
+                                        icon: PhosphorIcons.wrench(
+                                          PhosphorIconsStyle.fill,
+                                        ),
+                                        title: 'Book Service',
+                                        subtitle: 'Fast check-in',
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _FeatureCard(
+                                        icon: PhosphorIcons.shieldCheck(
+                                          PhosphorIconsStyle.fill,
+                                        ),
+                                        title: 'Verified Hubs',
+                                        subtitle: 'Top garages',
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _FeatureCard(
+                                        icon: PhosphorIcons.lightning(
+                                          PhosphorIconsStyle.fill,
+                                        ),
+                                        title: 'Live Tracking',
+                                        subtitle: 'Realtime info',
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                  Transform.translate(
-                    offset: const Offset(0, -32),
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 12),
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: sheetBg,
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: borderColor, width: 1.2),
-                        boxShadow: isDark
-                            ? null
-                            : [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                  blurRadius: 28,
-                                  offset: const Offset(0, 12),
-                                ),
-                              ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'I am a',
-                            style: AppFonts.labelLarge(color: primaryTextColor),
-                          ),
-                          const SizedBox(height: 10),
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? AppColors.cardDark
-                                  : AppColors.primaryRed.withValues(
-                                      alpha: 0.06,
-                                    ),
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: Row(
+                  const SizedBox(height: 20),
+                  FadeTransition(
+                    opacity: _contentFadeAnimation,
+                    child: SlideTransition(
+                      position: _contentSlideAnimation,
+                      child: Container(
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          color: cardBg,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: borderColor, width: 1.2),
+                          boxShadow: isDark
+                              ? null
+                              : [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.06),
+                                    blurRadius: 24,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
-                                  child: _RoleTab(
-                                    title: 'Customer',
-                                    subtitle: 'Vehicle owner',
-                                    icon: PhosphorIcons.carProfile(
-                                      isCustomer
-                                          ? PhosphorIconsStyle.fill
-                                          : PhosphorIconsStyle.duotone,
-                                    ),
-                                    isSelected: isCustomer,
-                                    onTap: state.isLoading
-                                        ? null
-                                        : () {
-                                            setState(() {
-                                              _selectedRole = 'customer';
-                                            });
-                                          },
+                                  child: Text(
+                                    'Select your account type',
+                                    style:
+                                        AppFonts.labelLarge(
+                                          color: primaryTextColor,
+                                        ).copyWith(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                   ),
                                 ),
-                                Expanded(
-                                  child: _RoleTab(
-                                    title: 'Garage Owner',
-                                    subtitle: 'Merchant / Shop',
-                                    icon: PhosphorIcons.storefront(
-                                      !isCustomer
-                                          ? PhosphorIconsStyle.fill
-                                          : PhosphorIconsStyle.duotone,
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryRed.withValues(
+                                      alpha: 0.08,
                                     ),
-                                    isSelected: !isCustomer,
-                                    onTap: state.isLoading
-                                        ? null
-                                        : () {
-                                            setState(() {
-                                              _selectedRole = 'merchant';
-                                            });
-                                          },
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    isCustomer ? 'Personal' : 'Business',
+                                    style:
+                                        AppFonts.labelSmall(
+                                          color: AppColors.primaryRed,
+                                        ).copyWith(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          AnimatedSize(
-                            duration: const Duration(milliseconds: 220),
-                            curve: Curves.easeOut,
-                            child: state.errorMessage != null
-                                ? Padding(
-                                    padding: const EdgeInsets.only(top: 16),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 14,
-                                        vertical: 12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.errorBg,
-                                        borderRadius: BorderRadius.circular(14),
-                                        border: Border(
-                                          left: const BorderSide(
-                                            color: AppColors.error,
-                                            width: 4,
+                            const SizedBox(height: 12),
+                            _RoleTab(
+                              title: 'Vehicle Owner',
+                              subtitle: 'Book services, approve estimates & track live repairs',
+                              icon: PhosphorIcons.carProfile(
+                                isCustomer
+                                    ? PhosphorIconsStyle.fill
+                                    : PhosphorIconsStyle.duotone,
+                              ),
+                              isSelected: isCustomer,
+                              onTap: state.isLoading
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        _selectedRole = 'customer';
+                                      });
+                                    },
+                            ),
+                            const SizedBox(height: 10),
+                            _RoleTab(
+                              title: 'Garage Owner & Merchant',
+                              subtitle: 'Manage workshop jobs, inspections, invoices & staff',
+                              icon: PhosphorIcons.storefront(
+                                !isCustomer
+                                    ? PhosphorIconsStyle.fill
+                                    : PhosphorIconsStyle.duotone,
+                              ),
+                              isSelected: !isCustomer,
+                              onTap: state.isLoading
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        _selectedRole = 'merchant';
+                                      });
+                                    },
+                            ),
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 220),
+                              curve: Curves.easeOut,
+                              child: state.errorMessage != null
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(top: 16),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 12,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.errorBg,
+                                          borderRadius: BorderRadius.circular(
+                                            14,
                                           ),
-                                          top: BorderSide(
+                                          border: Border.all(
                                             color: AppColors.error.withValues(
-                                              alpha: 0.2,
-                                            ),
-                                          ),
-                                          right: BorderSide(
-                                            color: AppColors.error.withValues(
-                                              alpha: 0.2,
-                                            ),
-                                          ),
-                                          bottom: BorderSide(
-                                            color: AppColors.error.withValues(
-                                              alpha: 0.2,
+                                              alpha: 0.35,
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          PhosphorIcon(
-                                            PhosphorIcons.warningCircle(
-                                              PhosphorIconsStyle.fill,
-                                            ),
-                                            color: AppColors.error,
-                                            size: 22,
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Text(
-                                              state.errorMessage!,
-                                              style: AppFonts.labelSmall(
-                                                color: AppColors.error,
+                                        child: Row(
+                                          children: [
+                                            PhosphorIcon(
+                                              PhosphorIcons.warningCircle(
+                                                PhosphorIconsStyle.fill,
                                               ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                : const SizedBox(width: double.infinity),
-                          ),
-                          const SizedBox(height: 18),
-                          ElevatedButton(
-                            onPressed: state.isLoading ? null : _onGoogleSignIn,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isDark
-                                  ? AppColors.cardDark
-                                  : Colors.white,
-                              foregroundColor: primaryTextColor,
-                              elevation: 0,
-                              side: BorderSide(color: borderColor, width: 1.5),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              minimumSize: const Size.fromHeight(56),
-                            ),
-                            child: state.isLoading
-                                ? const SizedBox(
-                                    height: 22,
-                                    width: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        AppColors.primaryRed,
-                                      ),
-                                    ),
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const _GoogleGLogo(size: 22),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        'Continue with Google',
-                                        style:
-                                            AppFonts.labelLarge(
-                                              color: primaryTextColor,
-                                            ).copyWith(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                          ),
-                          const SizedBox(height: 14),
-                          InkWell(
-                            onTap: () {
-                              setState(() {
-                                _showEmailAuth = !_showEmailAuth;
-                              });
-                            },
-                            borderRadius: BorderRadius.circular(14),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 14,
-                              ),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: _showEmailAuth
-                                      ? AppColors.primaryRed.withValues(
-                                          alpha: 0.5,
-                                        )
-                                      : borderColor,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  PhosphorIcon(
-                                    PhosphorIcons.envelopeSimple(
-                                      PhosphorIconsStyle.duotone,
-                                    ),
-                                    size: 22,
-                                    color: AppColors.primaryRed,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      _showEmailAuth
-                                          ? 'Hide Email Sign-In'
-                                          : 'Or sign in with email',
-                                      style: AppFonts.labelLarge(
-                                        color: primaryTextColor,
-                                      ),
-                                    ),
-                                  ),
-                                  AnimatedRotation(
-                                    turns: _showEmailAuth ? 0.5 : 0,
-                                    duration: const Duration(milliseconds: 200),
-                                    child: PhosphorIcon(
-                                      PhosphorIcons.caretDown(
-                                        PhosphorIconsStyle.bold,
-                                      ),
-                                      size: 16,
-                                      color: secondaryTextColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          AnimatedSize(
-                            duration: const Duration(milliseconds: 260),
-                            curve: Curves.easeOutCubic,
-                            alignment: Alignment.topCenter,
-                            child: !_showEmailAuth
-                                ? const SizedBox(width: double.infinity)
-                                : Padding(
-                                    padding: const EdgeInsets.only(top: 18),
-                                    child: Form(
-                                      key: _formKey,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: [
-                                          if (_mode !=
-                                              AuthMode.forgotPassword) ...[
-                                            _ModeSwitch(
-                                              isSignIn:
-                                                  _mode == AuthMode.signIn,
-                                              enabled: !state.isLoading,
-                                              onChanged: (signIn) {
-                                                setState(() {
-                                                  _mode = signIn
-                                                      ? AuthMode.signIn
-                                                      : AuthMode.signUp;
-                                                });
-                                              },
-                                            ),
-                                            const SizedBox(height: 18),
-                                          ] else ...[
-                                            Row(
-                                              children: [
-                                                PhosphorIcon(
-                                                  PhosphorIcons.lockKeyOpen(
-                                                    PhosphorIconsStyle.duotone,
-                                                  ),
-                                                  size: 24,
-                                                  color: AppColors.primaryRed,
-                                                ),
-                                                const SizedBox(width: 10),
-                                                Expanded(
-                                                  child: Text(
-                                                    'Reset your password',
-                                                    style: AppFonts.labelLarge(
-                                                      color: primaryTextColor,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 16),
-                                          ],
-                                          if (_mode == AuthMode.signUp) ...[
-                                            AppTextField(
-                                              controller: _nameCtrl,
-                                              label: 'Full Name',
-                                              hint: 'John Doe',
-                                              prefixIcon: PhosphorIcon(
-                                                PhosphorIcons.user(
-                                                  PhosphorIconsStyle.duotone,
-                                                ),
-                                                size: 20,
-                                              ),
-                                              required: true,
-                                              enabled: !state.isLoading,
-                                              validator: (v) {
-                                                if (v == null ||
-                                                    v.trim().isEmpty) {
-                                                  return 'Please enter your full name';
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                            const SizedBox(height: 14),
-                                            AppTextField(
-                                              controller: _phoneCtrl,
-                                              label: 'Phone Number',
-                                              hint: '+91 98765 43210',
-                                              prefixIcon: PhosphorIcon(
-                                                PhosphorIcons.phone(
-                                                  PhosphorIconsStyle.duotone,
-                                                ),
-                                                size: 20,
-                                              ),
-                                              keyboardType: TextInputType.phone,
-                                              required: true,
-                                              enabled: !state.isLoading,
-                                              validator: (v) {
-                                                if (v == null ||
-                                                    v.trim().isEmpty) {
-                                                  return 'Please enter your phone number';
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                            const SizedBox(height: 14),
-                                          ],
-                                          AppTextField(
-                                            controller: _emailCtrl,
-                                            label: 'Email Address',
-                                            hint: 'user@example.com',
-                                            prefixIcon: PhosphorIcon(
-                                              PhosphorIcons.envelopeSimple(
-                                                PhosphorIconsStyle.duotone,
-                                              ),
+                                              color: AppColors.error,
                                               size: 20,
                                             ),
-                                            keyboardType:
-                                                TextInputType.emailAddress,
-                                            required: true,
-                                            enabled: !state.isLoading,
-                                            validator: (v) {
-                                              if (v == null ||
-                                                  !v.contains('@')) {
-                                                return 'Please enter a valid email address';
-                                              }
-                                              return null;
-                                            },
-                                          ),
-                                          const SizedBox(height: 14),
-                                          if (_mode !=
-                                              AuthMode.forgotPassword) ...[
-                                            AppTextField(
-                                              controller: _passwordCtrl,
-                                              label: 'Password',
-                                              hint: '••••••••',
-                                              prefixIcon: PhosphorIcon(
-                                                PhosphorIcons.lockSimple(
-                                                  PhosphorIconsStyle.duotone,
-                                                ),
-                                                size: 20,
-                                              ),
-                                              isPassword: true,
-                                              required: true,
-                                              enabled: !state.isLoading,
-                                              validator: (v) {
-                                                if (v == null ||
-                                                    v.length < 6) {
-                                                  return 'Password must be at least 6 characters';
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Align(
-                                              alignment: Alignment.centerRight,
-                                              child: TextButton(
-                                                onPressed: state.isLoading
-                                                    ? null
-                                                    : () {
-                                                        setState(() {
-                                                          _mode = AuthMode
-                                                              .forgotPassword;
-                                                        });
-                                                      },
-                                                child: Text(
-                                                  'Forgot Password?',
-                                                  style: AppFonts.labelSmall(
-                                                    color: AppColors.primaryRed,
-                                                  ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Text(
+                                                state.errorMessage!,
+                                                style: AppFonts.labelSmall(
+                                                  color: AppColors.error,
                                                 ),
                                               ),
                                             ),
                                           ],
-                                          const SizedBox(height: 12),
-                                          AppButton(
-                                            label: _mode == AuthMode.signIn
-                                                ? 'Sign In to Account'
-                                                : _mode == AuthMode.signUp
-                                                ? 'Create Account'
-                                                : 'Send Reset Link',
-                                            isLoading: state.isLoading,
-                                            isFullWidth: true,
-                                            onPressed: _submit,
-                                            height: 52,
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Center(
-                                            child: TextButton.icon(
-                                              onPressed: state.isLoading
-                                                  ? null
-                                                  : () {
-                                                      setState(() {
-                                                        _mode =
-                                                            _mode ==
-                                                                AuthMode.signIn
-                                                            ? AuthMode.signUp
-                                                            : AuthMode.signIn;
-                                                      });
-                                                    },
-                                              icon: PhosphorIcon(
-                                                _mode == AuthMode.signIn
-                                                    ? PhosphorIcons.userPlus(
-                                                        PhosphorIconsStyle
-                                                            .bold,
-                                                      )
-                                                    : PhosphorIcons
-                                                          .arrowLeft(
-                                                            PhosphorIconsStyle
-                                                                .bold,
-                                                          ),
-                                                size: 16,
-                                                color: AppColors.primaryRed,
-                                              ),
-                                              label: Text(
-                                                _mode == AuthMode.signIn
-                                                    ? "Don't have an account? Register Now"
-                                                    : 'Already have an account? Sign In',
-                                                style: AppFonts.labelSmall(
-                                                  color: AppColors.primaryRed,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                        ),
                                       ),
+                                    )
+                                  : const SizedBox(width: double.infinity),
+                            ),
+                            const SizedBox(height: 20),
+                            ElevatedButton(
+                              onPressed: state.isLoading
+                                  ? null
+                                  : _onGoogleSignIn,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isDark
+                                    ? AppColors.cardDark
+                                    : Colors.white,
+                                foregroundColor: primaryTextColor,
+                                elevation: 0,
+                                side: BorderSide(
+                                  color: borderColor,
+                                  width: 1.4,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 15,
+                                ),
+                                minimumSize: const Size.fromHeight(54),
+                              ),
+                              child: state.isLoading
+                                  ? const SizedBox(
+                                      height: 22,
+                                      width: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              AppColors.primaryRed,
+                                            ),
+                                      ),
+                                    )
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const _GoogleGLogo(size: 22),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          'Continue with Google',
+                                          style:
+                                              AppFonts.labelLarge(
+                                                color: primaryTextColor,
+                                              ).copyWith(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: 0.2,
+                                              ),
+                                        ),
+                                      ],
                                     ),
+                            ),
+                            const SizedBox(height: 18),
+                            Center(
+                              child: Text(
+                                'By continuing, you agree to WeFix Terms & Privacy Policy',
+                                textAlign: TextAlign.center,
+                                style: AppFonts.labelSmall(
+                                  color: secondaryTextColor.withValues(
+                                    alpha: 0.8,
                                   ),
-                          ),
-                        ],
+                                ).copyWith(fontSize: 11),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -726,106 +503,59 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 }
 
-class _FeatureChip extends StatelessWidget {
-  const _FeatureChip({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          PhosphorIcon(icon, size: 14, color: Colors.white),
-          const SizedBox(width: 6),
-          Text(label, style: AppFonts.labelSmall(color: Colors.white)),
-        ],
-      ),
-    );
-  }
-}
-
-class _ModeSwitch extends StatelessWidget {
-  const _ModeSwitch({
-    required this.isSignIn,
-    required this.onChanged,
-    required this.enabled,
+class _FeatureCard extends StatelessWidget {
+  const _FeatureCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
   });
 
-  final bool isSignIn;
-  final ValueChanged<bool> onChanged;
-  final bool enabled;
+  final IconData icon;
+  final String title;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final secondaryTextColor = isDark
-        ? AppColors.textSecondaryDark
-        : AppColors.textSecondaryLight;
-
-    Widget item(String label, IconData icon, bool selected, bool value) {
-      return Expanded(
-        child: GestureDetector(
-          onTap: enabled ? () => onChanged(value) : null,
-          behavior: HitTestBehavior.opaque,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              color: selected ? AppColors.primaryRed : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PhosphorIcon(
-                  icon,
-                  size: 16,
-                  color: selected ? Colors.white : secondaryTextColor,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: AppFonts.labelSmall(
-                    color: selected ? Colors.white : secondaryTextColor,
-                  ).copyWith(fontWeight: FontWeight.w700),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.cardDark
-            : AppColors.primaryRed.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1.0,
+        ),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          item(
-            'Sign In',
-            PhosphorIcons.signIn(PhosphorIconsStyle.bold),
-            isSignIn,
-            true,
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: PhosphorIcon(icon, size: 15, color: Colors.white),
           ),
-          item(
-            'Register',
-            PhosphorIcons.userPlus(PhosphorIconsStyle.bold),
-            !isSignIn,
-            false,
+          const SizedBox(height: 6),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppFonts.labelSmall(color: Colors.white)
+                .copyWith(fontSize: 11.5, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 1),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppFonts.labelSmall(
+              color: Colors.white.withValues(alpha: 0.8),
+            ).copyWith(fontSize: 9.5, fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -857,6 +587,13 @@ class _RoleTab extends StatelessWidget {
     final secondaryTextColor = isDark
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
+    final surfaceColor = isDark ? AppColors.surfaceDark : Colors.white;
+    final unselectedBg = isDark
+        ? AppColors.cardDark.withValues(alpha: 0.4)
+        : AppColors.backgroundLight;
+    final unselectedBorder = isDark
+        ? AppColors.borderDark
+        : AppColors.borderLight;
 
     return GestureDetector(
       onTap: onTap,
@@ -864,22 +601,20 @@ class _RoleTab extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected
-              ? (isDark ? AppColors.surfaceDark : Colors.white)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
+          color: isSelected ? surfaceColor : unselectedBg,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.primaryRed : Colors.transparent,
-            width: 1.6,
+            color: isSelected ? AppColors.primaryRed : unselectedBorder,
+            width: isSelected ? 1.8 : 1.2,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.primaryRed.withValues(alpha: 0.18),
-                    blurRadius: 14,
-                    offset: const Offset(0, 5),
+                    color: AppColors.primaryRed.withValues(alpha: 0.12),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ]
               : null,
@@ -887,47 +622,65 @@ class _RoleTab extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 color: isSelected
                     ? AppColors.primaryRed.withValues(alpha: 0.12)
-                    : secondaryTextColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                    : secondaryTextColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
                 child: PhosphorIcon(
                   icon,
-                  size: 22,
+                  size: 24,
                   color: isSelected ? AppColors.primaryRed : secondaryTextColor,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppFonts.labelSmall(
+                    style: AppFonts.bodyMedium(
                       color: isSelected
                           ? AppColors.primaryRed
                           : primaryTextColor,
                     ).copyWith(fontWeight: FontWeight.w700),
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppFonts.labelSmall(
-                      color: secondaryTextColor,
-                    ).copyWith(fontSize: 10),
+                    style: AppFonts.labelSmall(color: secondaryTextColor)
+                        .copyWith(fontSize: 12),
                   ),
                 ],
               ),
+            ),
+            const SizedBox(width: 10),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected ? AppColors.primaryRed : Colors.transparent,
+                border: Border.all(
+                  color: isSelected
+                      ? AppColors.primaryRed
+                      : secondaryTextColor.withValues(alpha: 0.35),
+                  width: 2,
+                ),
+              ),
+              child: isSelected
+                  ? const Center(
+                      child: Icon(Icons.check, size: 13, color: Colors.white),
+                    )
+                  : null,
             ),
           ],
         ),
@@ -952,10 +705,6 @@ class _GoogleGLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: SvgPicture.string(_svg),
-    );
+    return SizedBox(width: size, height: size, child: SvgPicture.string(_svg));
   }
 }

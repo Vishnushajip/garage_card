@@ -12,18 +12,55 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
   }
 
   Future<void> _loadJobs() async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      lastDocument: null,
+      hasMore: true,
+    );
     try {
-      final list = await ref
+      final res = await ref
           .read(garageRepositoryProvider)
-          .getServiceJobs(
+          .getServiceJobsPaginated(
             garageId: 'garage_demo_1',
             status: state.filterStatus,
             search: state.searchQuery,
+            limit: 15,
           );
-      state = state.copyWith(isLoading: false, jobs: list);
+      state = state.copyWith(
+        isLoading: false,
+        jobs: res.items,
+        hasMore: res.hasMore,
+        lastDocument: res.lastDocument,
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    }
+  }
+
+  Future<void> fetchNextPage() async {
+    if (state.isFetchingNextPage || !state.hasMore || state.isLoading) {
+      return;
+    }
+    state = state.copyWith(isFetchingNextPage: true);
+    try {
+      final res = await ref
+          .read(garageRepositoryProvider)
+          .getServiceJobsPaginated(
+            garageId: 'garage_demo_1',
+            status: state.filterStatus,
+            search: state.searchQuery,
+            limit: 15,
+            lastDocument: state.lastDocument,
+          );
+      state = state.copyWith(
+        isFetchingNextPage: false,
+        jobs: [...state.jobs, ...res.items],
+        hasMore: res.hasMore,
+        lastDocument: res.lastDocument,
+      );
+    } catch (_) {
+      state = state.copyWith(isFetchingNextPage: false);
     }
   }
 

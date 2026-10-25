@@ -28,6 +28,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
     required this.onNavigateToInvoices,
     required this.onNavigateToReminders,
     required this.onNavigateToJobDetail,
+    this.onNavigateToJobs,
   });
 
   final VoidCallback onNavigateToNearbyGarages;
@@ -36,6 +37,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
   final VoidCallback onNavigateToInvoices;
   final VoidCallback onNavigateToReminders;
   final ValueChanged<String> onNavigateToJobDetail;
+  final VoidCallback? onNavigateToJobs;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -190,13 +192,40 @@ class CustomerDashboardScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Active Repairs',
-                      style: AppFonts.titleLarge(color: primaryTextColor),
+                    Row(
+                      children: [
+                        Text(
+                          'Active Repairs',
+                          style: AppFonts.titleLarge(color: primaryTextColor),
+                        ),
+                        if (state.activeJobs.isNotEmpty) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentBlue.withValues(
+                                alpha: 0.12,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '${state.activeJobs.length}',
+                              style: AppFonts.labelSmall(
+                                color: AppColors.accentBlue,
+                              ).copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                    Text(
-                      '${state.activeJobs.length} active',
-                      style: AppFonts.labelSmall(color: secondaryTextColor),
+                    TextButton(
+                      onPressed:
+                          onNavigateToJobs ??
+                          () => context.go(RoutePaths.customerJobs),
+                      child: const Text('View All'),
                     ),
                   ],
                 ),
