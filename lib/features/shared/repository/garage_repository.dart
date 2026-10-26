@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/constants/app_constants.dart';
@@ -12,9 +13,13 @@ import '../models/estimate_model.dart';
 import '../models/garage_model.dart';
 import '../models/invoice_model.dart';
 import '../models/job_status_history_model.dart';
+import '../models/chat_message_model.dart';
+import '../models/conversation_model.dart';
+import '../models/garage_service_model.dart';
 import '../models/line_item_model.dart';
 import '../models/notification_model.dart';
 import '../models/payment_model.dart';
+import '../models/review_model.dart';
 import '../models/service_job_model.dart';
 import '../models/service_reminder_model.dart';
 import '../models/vehicle_inspection_model.dart';
@@ -37,6 +42,10 @@ class GarageRepository {
   final List<ServiceReminderModel> _reminders = [];
   final List<NotificationModel> _notifications = [];
   final List<AppointmentModel> _appointments = [];
+  final List<GarageServiceModel> _services = [];
+  final List<ReviewModel> _reviews = [];
+  final List<ConversationModel> _conversations = [];
+  final List<ChatMessageModel> _messages = [];
 
   void _initData() {
     final now = DateTime.now();
@@ -953,6 +962,134 @@ class GarageRepository {
         createdAt: now.subtract(const Duration(days: 1)),
       ),
     );
+
+    _services.addAll([
+      GarageServiceModel(
+        id: 'srv_1',
+        garageId: 'garage_demo_1',
+        name: 'Engine Oil & Filter Service',
+        description: 'Complete engine flush, grade-specific oil change and OEM filter replacement.',
+        category: 'Maintenance',
+        pricingMethod: 'attribute',
+        estimatedDuration: '1 hour',
+        terms: 'Includes 10-point fluid level inspection.',
+        attributeRules: const [
+          PricingAttributeRule(
+            label: 'Motorcycle up to 150cc',
+            vehicleType: 'motorcycle',
+            minCc: 0,
+            maxCc: 150,
+            price: 350.0,
+          ),
+          PricingAttributeRule(
+            label: 'Motorcycle 151cc - 350cc',
+            vehicleType: 'motorcycle',
+            minCc: 151,
+            maxCc: 350,
+            price: 550.0,
+          ),
+          PricingAttributeRule(
+            label: 'Motorcycle 351cc & above',
+            vehicleType: 'motorcycle',
+            minCc: 351,
+            maxCc: 2000,
+            price: 850.0,
+          ),
+          PricingAttributeRule(
+            label: 'Car (Hatchback/Sedan)',
+            vehicleType: 'car',
+            price: 1500.0,
+          ),
+        ],
+        createdAt: now.subtract(const Duration(days: 30)),
+      ),
+      GarageServiceModel(
+        id: 'srv_2',
+        garageId: 'garage_demo_1',
+        name: 'Periodic Comprehensive Service',
+        description: 'Full inspection, spark plug clean/replace, brake adjustment, lubrication and throttle tuning.',
+        category: 'General',
+        pricingMethod: 'category',
+        estimatedDuration: '3-4 hours',
+        categoryPrices: const {
+          'scooter': 350.0,
+          'motorcycle': 450.0,
+          'car': 1200.0,
+          'commercial': 2200.0,
+        },
+        createdAt: now.subtract(const Duration(days: 30)),
+      ),
+      GarageServiceModel(
+        id: 'srv_3',
+        garageId: 'garage_demo_1',
+        name: 'Foam Wash & Polish',
+        description: 'High pressure underbody wash, active foam bath, tyre shine and dashboard polishing.',
+        category: 'Washing',
+        pricingMethod: 'fixed',
+        fixedPrice: 250.0,
+        estimatedDuration: '45 mins',
+        createdAt: now.subtract(const Duration(days: 30)),
+      ),
+      GarageServiceModel(
+        id: 'srv_4',
+        garageId: 'garage_demo_1',
+        name: 'Brake Disc Resurfacing & Pad Fitting',
+        description: 'Precision lathe turning of warped rotors, calliper grease and anti-squeal pad fitting.',
+        category: 'Mechanical',
+        pricingMethod: 'startingPrice',
+        startingPrice: 450.0,
+        estimatedDuration: '2 hours',
+        createdAt: now.subtract(const Duration(days: 30)),
+      ),
+      GarageServiceModel(
+        id: 'srv_5',
+        garageId: 'garage_demo_1',
+        name: 'Dent Removal & Panel Painting',
+        description: 'Computerized shade matching, spot putty repair and infrared heated booth curing.',
+        category: 'Bodywork',
+        pricingMethod: 'quotation',
+        estimatedDuration: '1-2 days',
+        terms: 'Exact estimate prepared upon physical inspection.',
+        createdAt: now.subtract(const Duration(days: 30)),
+      ),
+    ]);
+
+    _reviews.addAll([
+      ReviewModel(
+        id: 'rev_1',
+        garageId: 'garage_demo_1',
+        customerId: 'cust_demo_1',
+        customerName: 'Arjun Menon',
+        customerPhotoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80',
+        rating: 5.0,
+        reviewText: 'Superb turnaround time! Fixed front brake vibration smoothly and charges were exactly as per estimate.',
+        consentShareName: true,
+        consentSharePhoto: true,
+        createdAt: now.subtract(const Duration(days: 5)),
+      ),
+      ReviewModel(
+        id: 'rev_2',
+        garageId: 'garage_demo_1',
+        customerId: 'cust_demo_2',
+        customerName: 'Sneha Nambiar',
+        rating: 5.0,
+        reviewText: 'Very transparent pricing and courteous staff. Highly recommended in Kochi.',
+        consentShareName: true,
+        consentSharePhoto: false,
+        createdAt: now.subtract(const Duration(days: 12)),
+      ),
+      ReviewModel(
+        id: 'rev_3',
+        garageId: 'garage_demo_1',
+        customerId: 'cust_demo_3',
+        customerName: 'Anonymous Driver',
+        rating: 4.5,
+        reviewText: 'Clean work on my vehicle. WhatsApp status updates kept me updated throughout.',
+        consentShareName: false,
+        consentSharePhoto: false,
+        createdAt: now.subtract(const Duration(days: 20)),
+      ),
+    ]);
   }
 
   Future<List<GarageModel>> getNearbyGarages({
@@ -967,7 +1104,10 @@ class GarageRepository {
     if (FirebaseConfig.isInitialized) {
       try {
         final collection = FirebaseFirestore.instance.collection('garages');
-        final snapshot = await collection.limit(50).get();
+        final snapshot = await collection
+            .limit(50)
+            .get()
+            .timeout(const Duration(seconds: 3));
         if (snapshot.docs.isNotEmpty) {
           source = snapshot.docs
               .map((d) => GarageModel.fromFirestore(d.data(), d.id))
@@ -977,9 +1117,11 @@ class GarageRepository {
           for (final g in _garages) {
             batch.set(collection.doc(g.id), g.toFirestore());
           }
-          await batch.commit();
+          batch.commit();
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('GARAGE_REPO_GET_NEARBY_GARAGES_ERROR: $e');
+      }
     }
 
     final list = source.where((g) {
@@ -1024,7 +1166,8 @@ class GarageRepository {
         final doc = await FirebaseFirestore.instance
             .collection('garages')
             .doc(garageId)
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 3));
         if (doc.exists && doc.data() != null) {
           return GarageModel.fromFirestore(doc.data()!, doc.id);
         }
@@ -1083,7 +1226,7 @@ class GarageRepository {
         }
 
         query = query.limit(limit);
-        final snapshot = await query.get();
+        final snapshot = await query.get().timeout(const Duration(seconds: 3));
         var items = snapshot.docs
             .map((d) => ServiceJobModel.fromFirestore(d.data(), d.id))
             .toList();
@@ -1104,7 +1247,8 @@ class GarageRepository {
         );
 
         return items;
-      } catch (_) {
+      } catch (e) {
+        debugPrint('GARAGE_REPO_GET_SERVICE_JOBS_ERROR: $e');
         if (customerId != null) {
           return [];
         }
@@ -1114,8 +1258,6 @@ class GarageRepository {
     if (customerId != null) {
       return [];
     }
-
-    await Future<void>.delayed(const Duration(milliseconds: 250));
 
     var query = _jobs.where((j) {
       if (garageId != null && j.garageId != garageId) return false;
@@ -1178,7 +1320,7 @@ class GarageRepository {
           query = query.startAfterDocument(lastDocument);
         }
 
-        final snapshot = await query.get();
+        final snapshot = await query.get().timeout(const Duration(seconds: 3));
         var items = snapshot.docs
             .map((d) => ServiceJobModel.fromFirestore(d.data(), d.id))
             .toList();
@@ -1312,22 +1454,35 @@ class GarageRepository {
         ),
       );
 
+      final isCompletion = newStatus == 'completed';
+      final deepLink = isCompletion
+          ? '/customer/garages/${old.garageId}?action=review&jobId=$jobId'
+          : '/customer/jobs/$jobId';
+      final notifTitle = isCompletion
+          ? 'Service Completed: ${old.vehicleDisplay}'
+          : 'Status Updated: ${old.vehicleDisplay}';
+      final notifBody = isCompletion
+          ? (notes.isNotEmpty
+                ? notes
+                : 'Your vehicle service is complete! Tap to rate your experience.')
+          : (notes.isNotEmpty
+                ? notes
+                : 'Your vehicle repair status is now $newStatus.');
+
       _notifications.insert(
         0,
         NotificationModel(
           id: const Uuid().v4(),
           recipientUid: old.customerId,
-          title: 'Status Updated: ${old.vehicleDisplay}',
-          body: notes.isNotEmpty
-              ? notes
-              : 'Your vehicle repair status is now $newStatus.',
+          title: notifTitle,
+          body: notifBody,
           type: 'job_status',
           referenceId: jobId,
           referenceType: 'service_job',
-          imageUrl: newStatus == 'readyForCollection'
+          imageUrl: isCompletion
               ? 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80'
               : 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800&q=80',
-          deepLink: '/customer/jobs/$jobId',
+          deepLink: deepLink,
           garageId: old.garageId,
           eventId: 'job_${jobId}_$newStatus',
           isRead: false,
@@ -1366,6 +1521,44 @@ class GarageRepository {
               'updatedBy': updatedBy,
               'timestamp': DateTime.now().toIso8601String(),
             });
+
+        final isCompletion = newStatus == 'completed';
+        final deepLink = isCompletion
+            ? '/customer/garages/${targetJob.garageId}?action=review&jobId=$jobId'
+            : '/customer/jobs/$jobId';
+        final notifTitle = isCompletion
+            ? 'Service Completed: ${targetJob.vehicleDisplay}'
+            : 'Status Updated: ${targetJob.vehicleDisplay}';
+        final notifBody = isCompletion
+            ? (notes.isNotEmpty
+                  ? notes
+                  : 'Your vehicle service is complete! Tap to rate your experience.')
+            : (notes.isNotEmpty
+                  ? notes
+                  : 'Your vehicle repair status is now $newStatus.');
+
+        final notifId = 'job_${jobId}_$newStatus';
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(targetJob.customerId)
+            .collection('notifications')
+            .doc(notifId)
+            .set({
+              'recipientUid': targetJob.customerId,
+              'title': notifTitle,
+              'body': notifBody,
+              'type': 'job_status',
+              'referenceId': jobId,
+              'referenceType': 'service_job',
+              'imageUrl': isCompletion
+                  ? 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80'
+                  : 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800&q=80',
+              'deepLink': deepLink,
+              'garageId': targetJob.garageId,
+              'eventId': notifId,
+              'isRead': false,
+              'createdAt': DateTime.now().toIso8601String(),
+            }, SetOptions(merge: true));
       } catch (_) {}
     }
   }
@@ -1376,7 +1569,8 @@ class GarageRepository {
         final snapshot = await FirebaseFirestore.instance
             .collectionGroup('history')
             .where('jobId', isEqualTo: jobId)
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 3));
         if (snapshot.docs.isNotEmpty) {
           final list = snapshot.docs
               .map((d) => JobStatusHistoryModel.fromFirestore(d.data(), d.id))
@@ -1396,8 +1590,6 @@ class GarageRepository {
     int page = 0,
     int limit = 20,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 200));
-
     var query = _customers.where((c) {
       if (c.garageId != garageId) return false;
       if (search != null && search.isNotEmpty) {
@@ -1417,7 +1609,6 @@ class GarageRepository {
   }
 
   Future<CustomerModel> createCustomer(CustomerModel customer) async {
-    await Future<void>.delayed(const Duration(milliseconds: 250));
     final newCust = customer.copyWith(
       id: const Uuid().v4(),
       createdAt: DateTime.now(),
@@ -1440,7 +1631,8 @@ class GarageRepository {
             .doc(customerId)
             .collection('vehicles')
             .limit(limit)
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 3));
 
         if (snapshot.docs.isNotEmpty) {
           return snapshot.docs
@@ -1452,7 +1644,8 @@ class GarageRepository {
             .collectionGroup('vehicles')
             .where('customerId', isEqualTo: customerId)
             .limit(limit)
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 3));
 
         return groupSnap.docs
             .map((d) => VehicleModel.fromFirestore(d.data(), d.id))
@@ -1465,8 +1658,6 @@ class GarageRepository {
     if (customerId != null) {
       return [];
     }
-
-    await Future<void>.delayed(const Duration(milliseconds: 200));
 
     var query = _vehicles.where((v) {
       if (garageId != null && v.garageId != garageId) return false;
@@ -1531,7 +1722,8 @@ class GarageRepository {
             .collectionGroup('estimates')
             .where('customerId', isEqualTo: customerId)
             .limit(limit)
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 3));
 
         return snapshot.docs
             .map((d) => EstimateModel.fromFirestore(d.data(), d.id))
@@ -1544,8 +1736,6 @@ class GarageRepository {
     if (customerId != null) {
       return [];
     }
-
-    await Future<void>.delayed(const Duration(milliseconds: 200));
 
     var query = _estimates.where((e) {
       if (garageId != null && e.garageId != garageId) return false;
@@ -1560,7 +1750,6 @@ class GarageRepository {
   }
 
   Future<EstimateModel> createEstimate(EstimateModel estimate) async {
-    await Future<void>.delayed(const Duration(milliseconds: 250));
     final newEst = estimate.copyWith(
       id: const Uuid().v4(),
       createdAt: DateTime.now(),
@@ -1570,7 +1759,6 @@ class GarageRepository {
   }
 
   Future<bool> approveEstimate(String estimateId) async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
     final index = _estimates.indexWhere((e) => e.id == estimateId);
     if (index >= 0) {
       final est = _estimates[index];
@@ -1611,7 +1799,6 @@ class GarageRepository {
   }
 
   Future<bool> rejectEstimate(String estimateId, String reason) async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
     final index = _estimates.indexWhere((e) => e.id == estimateId);
     if (index >= 0) {
       final est = _estimates[index];
@@ -1656,7 +1843,8 @@ class GarageRepository {
             .collectionGroup('invoices')
             .where('customerId', isEqualTo: customerId)
             .limit(limit)
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 3));
 
         return snapshot.docs
             .map((d) => InvoiceModel.fromFirestore(d.data(), d.id))
@@ -1669,8 +1857,6 @@ class GarageRepository {
     if (customerId != null) {
       return [];
     }
-
-    await Future<void>.delayed(const Duration(milliseconds: 200));
 
     var query = _invoices.where((inv) {
       if (garageId != null && inv.garageId != garageId) return false;
@@ -1685,7 +1871,6 @@ class GarageRepository {
   }
 
   Future<InvoiceModel> createInvoiceFromEstimate(EstimateModel estimate) async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
     final inv = InvoiceModel(
       id: const Uuid().v4(),
       garageId: estimate.garageId,
@@ -1740,7 +1925,6 @@ class GarageRepository {
     required String recordedByUid,
     double discountAdjustment = 0.0,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
     final invIndex = _invoices.indexWhere((inv) => inv.id == invoiceId);
     if (invIndex < 0) {
       throw Exception('Invoice not found');
@@ -1810,8 +1994,6 @@ class GarageRepository {
     int page = 0,
     int limit = 20,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 200));
-
     var query = _payments.where((p) {
       if (garageId != null && p.garageId != garageId) return false;
       if (invoiceId != null && p.invoiceId != invoiceId) return false;
@@ -1833,7 +2015,8 @@ class GarageRepository {
         final snapshot = await FirebaseFirestore.instance
             .collectionGroup('reminders')
             .where('customerId', isEqualTo: customerId)
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 3));
 
         return snapshot.docs
             .map((d) => ServiceReminderModel.fromFirestore(d.data(), d.id))
@@ -1847,7 +2030,6 @@ class GarageRepository {
       return [];
     }
 
-    await Future<void>.delayed(const Duration(milliseconds: 200));
     return _reminders.where((r) {
       if (garageId != null && r.garageId != garageId) return false;
       if (customerId != null && r.customerId != customerId) return false;
@@ -1894,7 +2076,8 @@ class GarageRepository {
             .collection('notifications')
             .orderBy('createdAt', descending: true)
             .limit(limit)
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 3));
 
         return snapshot.docs
             .map((d) => NotificationModel.fromFirestore(d.data(), d.id))
@@ -1929,7 +2112,7 @@ class GarageRepository {
           query = query.startAfterDocument(lastDocument);
         }
 
-        final snapshot = await query.get();
+        final snapshot = await query.get().timeout(const Duration(seconds: 3));
         final items = snapshot.docs
             .map(
               (d) => NotificationModel.fromFirestore(
@@ -2056,7 +2239,8 @@ class GarageRepository {
         final snapshot = await FirebaseFirestore.instance
             .collectionGroup('appointments')
             .where('customerId', isEqualTo: customerId)
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 3));
 
         return snapshot.docs
             .map((d) => AppointmentModel.fromFirestore(d.data(), d.id))
@@ -2070,7 +2254,6 @@ class GarageRepository {
       return [];
     }
 
-    await Future<void>.delayed(const Duration(milliseconds: 200));
     return _appointments.where((a) {
       if (garageId != null && a.garageId != garageId) return false;
       if (customerId != null && a.customerId != customerId) return false;
@@ -2081,7 +2264,6 @@ class GarageRepository {
   Future<AppointmentModel> createAppointment(
     AppointmentModel appointment,
   ) async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
     final newApp = appointment.copyWith(
       id: const Uuid().v4(),
       createdAt: DateTime.now(),
@@ -2122,12 +2304,10 @@ class GarageRepository {
   }
 
   Future<List<VehicleInspectionModel>> getInspections(String jobId) async {
-    await Future<void>.delayed(const Duration(milliseconds: 150));
     return _inspections.where((i) => i.jobId == jobId).toList();
   }
 
   Future<void> saveInspection(VehicleInspectionModel inspection) async {
-    await Future<void>.delayed(const Duration(milliseconds: 200));
     _inspections.removeWhere((i) => i.id == inspection.id);
     _inspections.add(inspection);
 
@@ -2152,6 +2332,406 @@ class GarageRepository {
           createdAt: DateTime.now(),
         ),
       );
+    }
+  }
+
+  Future<List<GarageServiceModel>> getGarageServices(String garageId) async {
+    if (FirebaseConfig.isInitialized) {
+      try {
+        final snap = await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('serviceCatalog')
+            .get()
+            .timeout(const Duration(seconds: 3));
+        if (snap.docs.isNotEmpty) {
+          return snap.docs
+              .map((d) => GarageServiceModel.fromFirestore(d.data(), d.id))
+              .toList();
+        } else {
+          final defaults = _services
+              .where((s) => s.garageId == garageId)
+              .toList();
+          final batch = FirebaseFirestore.instance.batch();
+          for (final s in defaults) {
+            final doc = FirebaseFirestore.instance
+                .collection('garages')
+                .doc(garageId)
+                .collection('serviceCatalog')
+                .doc(s.id);
+            batch.set(doc, s.toFirestore());
+          }
+          batch.commit();
+          return defaults;
+        }
+      } catch (_) {}
+    }
+    return _services.where((s) => s.garageId == garageId).toList();
+  }
+
+  Future<void> saveGarageService(
+    String garageId,
+    GarageServiceModel service,
+  ) async {
+    final idx = _services.indexWhere((s) => s.id == service.id);
+    if (idx >= 0) {
+      _services[idx] = service;
+    } else {
+      _services.add(service);
+    }
+    if (FirebaseConfig.isInitialized) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('serviceCatalog')
+            .doc(service.id)
+            .set(service.toFirestore(), SetOptions(merge: true));
+      } catch (_) {}
+    }
+  }
+
+  Future<void> toggleServiceActive(
+    String garageId,
+    String serviceId,
+    bool isActive,
+  ) async {
+    final idx = _services.indexWhere((s) => s.id == serviceId);
+    if (idx >= 0) {
+      _services[idx] = _services[idx].copyWith(isActive: isActive);
+    }
+    if (FirebaseConfig.isInitialized) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('serviceCatalog')
+            .doc(serviceId)
+            .update({'isActive': isActive});
+      } catch (_) {}
+    }
+  }
+
+  Future<void> deleteGarageService(String garageId, String serviceId) async {
+    _services.removeWhere((s) => s.id == serviceId);
+    if (FirebaseConfig.isInitialized) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('serviceCatalog')
+            .doc(serviceId)
+            .delete();
+      } catch (_) {}
+    }
+  }
+
+  Future<void> submitGarageReview(ReviewModel review) async {
+    _reviews.insert(0, review);
+    final garageIdx = _garages.indexWhere((g) => g.id == review.garageId);
+    if (garageIdx >= 0) {
+      final g = _garages[garageIdx];
+      final newCount = g.reviewCount + 1;
+      final newRating = ((g.rating * g.reviewCount) + review.rating) / newCount;
+      _garages[garageIdx] = g.copyWith(
+        rating: double.parse(newRating.toStringAsFixed(1)),
+        reviewCount: newCount,
+      );
+    }
+
+    if (FirebaseConfig.isInitialized) {
+      try {
+        final garageRef = FirebaseFirestore.instance
+            .collection('garages')
+            .doc(review.garageId);
+        final reviewRef = garageRef.collection('reviews').doc(review.id);
+
+        await FirebaseFirestore.instance.runTransaction((tx) async {
+          final gSnap = await tx.get(garageRef);
+          if (gSnap.exists) {
+            final data = gSnap.data()!;
+            final currentCount = (data['reviewCount'] as num?)?.toInt() ?? 0;
+            final currentRating = (data['rating'] as num?)?.toDouble() ?? 4.8;
+            final newCount = currentCount + 1;
+            final newRating =
+                ((currentRating * currentCount) + review.rating) / newCount;
+
+            tx.set(reviewRef, review.toFirestore());
+            tx.update(garageRef, {
+              'rating': double.parse(newRating.toStringAsFixed(1)),
+              'reviewCount': newCount,
+            });
+          } else {
+            tx.set(reviewRef, review.toFirestore());
+          }
+        });
+      } catch (_) {}
+    }
+  }
+
+  Future<PaginatedResult<ReviewModel>> getGarageReviewsPaginated(
+    String garageId, {
+    int limit = 10,
+    Object? lastDocument,
+  }) async {
+    if (FirebaseConfig.isInitialized) {
+      try {
+        var query = FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('reviews')
+            .orderBy('createdAt', descending: true)
+            .limit(limit);
+
+        if (lastDocument is DocumentSnapshot) {
+          query = query.startAfterDocument(lastDocument);
+        }
+
+        final snap = await query.get();
+        if (snap.docs.isNotEmpty) {
+          final items = snap.docs
+              .map((d) => ReviewModel.fromFirestore(d.data(), d.id))
+              .toList();
+          return PaginatedResult(
+            items: items,
+            lastDocument: snap.docs.last,
+            hasMore: snap.docs.length >= limit,
+          );
+        }
+      } catch (_) {}
+    }
+
+    final local = _reviews.where((r) => r.garageId == garageId).toList();
+    return PaginatedResult(items: local, hasMore: false);
+  }
+
+  Future<ConversationModel> getOrCreateConversation({
+    required String customerId,
+    required String customerName,
+    required String garageId,
+    required String garageName,
+    String? serviceJobId,
+    String? serviceJobTitle,
+  }) async {
+    final existingLocal = _conversations
+        .where((c) => c.customerId == customerId && c.garageId == garageId)
+        .firstOrNull;
+    if (existingLocal != null) return existingLocal;
+
+    if (FirebaseConfig.isInitialized) {
+      try {
+        final query = await FirebaseFirestore.instance
+            .collection('conversations')
+            .where('customerId', isEqualTo: customerId)
+            .where('garageId', isEqualTo: garageId)
+            .limit(1)
+            .get();
+
+        if (query.docs.isNotEmpty) {
+          final d = query.docs.first;
+          return ConversationModel.fromFirestore(d.data(), d.id);
+        }
+
+        final docRef = FirebaseFirestore.instance
+            .collection('conversations')
+            .doc();
+        final newConv = ConversationModel(
+          id: docRef.id,
+          customerId: customerId,
+          customerName: customerName,
+          garageId: garageId,
+          garageName: garageName,
+          serviceJobId: serviceJobId,
+          serviceJobTitle: serviceJobTitle,
+          createdAt: DateTime.now(),
+        );
+        await docRef.set(newConv.toFirestore());
+        _conversations.insert(0, newConv);
+        return newConv;
+      } catch (_) {}
+    }
+
+    final newConv = ConversationModel(
+      id: const Uuid().v4(),
+      customerId: customerId,
+      customerName: customerName,
+      garageId: garageId,
+      garageName: garageName,
+      serviceJobId: serviceJobId,
+      serviceJobTitle: serviceJobTitle,
+      createdAt: DateTime.now(),
+    );
+    _conversations.insert(0, newConv);
+    return newConv;
+  }
+
+  Stream<List<ConversationModel>> streamUserConversations(
+    String userId, {
+    required bool isMerchant,
+    int limit = 25,
+  }) {
+    if (FirebaseConfig.isInitialized) {
+      final field = isMerchant ? 'garageId' : 'customerId';
+      return FirebaseFirestore.instance
+          .collection('conversations')
+          .where(field, isEqualTo: userId)
+          .orderBy('lastMessageTime', descending: true)
+          .limit(limit)
+          .snapshots()
+          .map(
+            (snap) => snap.docs
+                .map((d) => ConversationModel.fromFirestore(d.data(), d.id))
+                .toList(),
+          );
+    }
+    final fieldFilter = isMerchant
+        ? (ConversationModel c) => c.garageId == userId
+        : (ConversationModel c) => c.customerId == userId;
+    return Stream.value(_conversations.where(fieldFilter).toList());
+  }
+
+  Stream<List<ChatMessageModel>> streamConversationMessages(
+    String conversationId, {
+    int limit = 40,
+  }) {
+    if (FirebaseConfig.isInitialized) {
+      return FirebaseFirestore.instance
+          .collection('conversations')
+          .doc(conversationId)
+          .collection('messages')
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .snapshots()
+          .map(
+            (snap) => snap.docs
+                .map((d) => ChatMessageModel.fromFirestore(d.data(), d.id))
+                .toList(),
+          );
+    }
+    return Stream.value(
+      _messages.where((m) => m.conversationId == conversationId).toList()..sort(
+        (a, b) => (b.createdAt ?? DateTime.now()).compareTo(
+          a.createdAt ?? DateTime.now(),
+        ),
+      ),
+    );
+  }
+
+  Future<void> sendChatMessage({
+    required String conversationId,
+    required String senderId,
+    required String senderRole,
+    required String text,
+    String? attachmentUrl,
+  }) async {
+    final now = DateTime.now();
+    final messageId = const Uuid().v4();
+    final msg = ChatMessageModel(
+      id: messageId,
+      conversationId: conversationId,
+      senderId: senderId,
+      senderRole: senderRole,
+      text: text,
+      attachmentUrl: attachmentUrl,
+      createdAt: now,
+      isRead: false,
+    );
+    _messages.insert(0, msg);
+
+    final convIdx = _conversations.indexWhere((c) => c.id == conversationId);
+    if (convIdx >= 0) {
+      final c = _conversations[convIdx];
+      _conversations[convIdx] = c.copyWith(
+        lastMessage: text,
+        lastMessageTime: now,
+        lastSenderId: senderId,
+        unreadCountCustomer: senderRole == 'merchant'
+            ? c.unreadCountCustomer + 1
+            : c.unreadCountCustomer,
+        unreadCountMerchant: senderRole == 'customer'
+            ? c.unreadCountMerchant + 1
+            : c.unreadCountMerchant,
+      );
+    }
+
+    if (FirebaseConfig.isInitialized) {
+      try {
+        final convRef = FirebaseFirestore.instance
+            .collection('conversations')
+            .doc(conversationId);
+        final msgRef = convRef.collection('messages').doc(messageId);
+
+        final batch = FirebaseFirestore.instance.batch();
+        batch.set(msgRef, msg.toFirestore());
+
+        final isCustomer = senderRole == 'customer';
+        batch.update(convRef, {
+          'lastMessage': text,
+          'lastMessageTime': now.toIso8601String(),
+          'lastSenderId': senderId,
+          if (isCustomer)
+            'unreadCountMerchant': FieldValue.increment(1)
+          else
+            'unreadCountCustomer': FieldValue.increment(1),
+        });
+
+        await batch.commit();
+
+        final convSnap = await convRef.get();
+        if (convSnap.exists && convSnap.data() != null) {
+          final data = convSnap.data()!;
+          final recipientUid = isCustomer
+              ? (data['garageId'] as String? ?? '')
+              : (data['customerId'] as String? ?? '');
+          final senderTitle = isCustomer
+              ? (data['customerName'] as String? ?? 'Customer')
+              : (data['garageName'] as String? ?? 'Garage');
+          if (recipientUid.isNotEmpty) {
+            final notifId =
+                'chat_${conversationId}_${now.millisecondsSinceEpoch}';
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(recipientUid)
+                .collection('notifications')
+                .doc(notifId)
+                .set({
+                  'recipientUid': recipientUid,
+                  'title': 'New message from $senderTitle',
+                  'body': text,
+                  'type': 'chat',
+                  'referenceId': conversationId,
+                  'deepLink': '/chat/$conversationId',
+                  'eventId': notifId,
+                  'isRead': false,
+                  'createdAt': now.toIso8601String(),
+                }, SetOptions(merge: true));
+          }
+        }
+      } catch (_) {}
+    }
+  }
+
+  Future<void> markConversationRead(
+    String conversationId, {
+    required bool isMerchant,
+  }) async {
+    final convIdx = _conversations.indexWhere((c) => c.id == conversationId);
+    if (convIdx >= 0) {
+      final c = _conversations[convIdx];
+      _conversations[convIdx] = isMerchant
+          ? c.copyWith(unreadCountMerchant: 0)
+          : c.copyWith(unreadCountCustomer: 0);
+    }
+
+    if (FirebaseConfig.isInitialized) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('conversations')
+            .doc(conversationId)
+            .update({
+              isMerchant ? 'unreadCountMerchant' : 'unreadCountCustomer': 0,
+            });
+      } catch (_) {}
     }
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/branding/app_branding.dart';
 import 'core/localization/app_localizations.dart';
+import 'core/network/app_connectivity_wrapper.dart';
 import 'core/notifications/app_notification_host.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -33,8 +34,9 @@ class GarageCardApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       routerConfig: router,
-      builder: (context, child) =>
-          AppNotificationHost(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => AppConnectivityWrapper(
+        child: AppNotificationHost(child: child ?? const SizedBox.shrink()),
+      ),
     );
   }
 }

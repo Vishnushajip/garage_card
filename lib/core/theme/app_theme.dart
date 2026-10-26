@@ -49,46 +49,5 @@ class AppTheme {
     );
   }
 
-  static ThemeData get darkTheme {
-    final base = ThemeData.dark();
-    return base.copyWith(
-      brightness: Brightness.dark,
-      scaffoldBackgroundColor: AppColors.backgroundDark,
-      textTheme: AppFonts.textTheme(Brightness.dark),
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.primaryRedLight,
-        secondary: AppColors.accentAmberLight,
-        surface: AppColors.surfaceDark,
-        error: AppColors.error,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: AppColors.textPrimaryDark,
-        onError: Colors.white,
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.surfaceDark,
-        foregroundColor: AppColors.textPrimaryDark,
-        elevation: 0,
-        centerTitle: false,
-        iconTheme: IconThemeData(color: AppColors.textPrimaryDark),
-      ),
-      cardTheme: CardThemeData(
-        color: AppColors.surfaceDark,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.borderDark, width: 1),
-        ),
-      ),
-      dividerTheme: const DividerThemeData(
-        color: AppColors.dividerDark,
-        thickness: 1,
-        space: 1,
-      ),
-      dialogTheme: DialogThemeData(
-        backgroundColor: AppColors.surfaceDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      ),
-    );
-  }
+  static ThemeData get darkTheme => lightTheme;
 }

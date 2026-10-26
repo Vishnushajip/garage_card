@@ -45,6 +45,8 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
     required String taxNumber,
     required String currencyCode,
     required String openHours,
+    bool? isDoorstepRepairAvailable,
+    bool? isRoadsideAssistanceAvailable,
   }) async {
     state = state.copyWith(isSaving: true, errorMessage: null);
     try {
@@ -58,6 +60,11 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
           taxNumber: taxNumber,
           currencyCode: currencyCode,
           openHours: openHours,
+          isDoorstepRepairAvailable:
+              isDoorstepRepairAvailable ?? current.isDoorstepRepairAvailable,
+          isRoadsideAssistanceAvailable:
+              isRoadsideAssistanceAvailable ??
+              current.isRoadsideAssistanceAvailable,
         );
         await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
         state = state.copyWith(isSaving: false, garage: updated);
@@ -69,6 +76,22 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
       state = state.copyWith(isSaving: false, errorMessage: e.toString());
       return false;
     }
+  }
+
+  Future<void> setDoorstepRepair(bool value) async {
+    final current = state.garage;
+    if (current == null) return;
+    final updated = current.copyWith(isDoorstepRepairAvailable: value);
+    state = state.copyWith(garage: updated);
+    await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
+  }
+
+  Future<void> setRoadsideAssistance(bool value) async {
+    final current = state.garage;
+    if (current == null) return;
+    final updated = current.copyWith(isRoadsideAssistanceAvailable: value);
+    state = state.copyWith(garage: updated);
+    await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
   }
 
   Future<void> refresh() async {

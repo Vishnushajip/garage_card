@@ -40,10 +40,10 @@ class DailyOperationsTodoCard extends StatelessWidget {
       msg =
           'Hello ${item.customerName}, service update for your vehicle ${item.vehicleDisplay}.';
     }
-    WhatsAppShareService.sendWhatsAppMessage(
-      phoneNumber: item.customerPhone,
-      message: msg,
-    );
+    final phone = item.customerWhatsApp.isNotEmpty
+        ? item.customerWhatsApp
+        : item.customerPhone;
+    WhatsAppShareService.sendWhatsAppMessage(phoneNumber: phone, message: msg);
   }
 
   @override

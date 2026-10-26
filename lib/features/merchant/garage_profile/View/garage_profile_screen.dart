@@ -14,7 +14,6 @@ import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
 import 'package:garage_card/core/notifications/notification_event_matrix.dart';
 import 'package:garage_card/core/notifications/push_notification_service.dart';
-import 'package:garage_card/core/theme/theme_controller.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/customer/profile/Widgets/preference_tile.dart';
 
@@ -93,7 +92,6 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(garageProfileViewModelProvider);
     final vm = ref.read(garageProfileViewModelProvider.notifier);
-    final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -344,36 +342,49 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                           ),
                         ),
                         const Divider(height: 1),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
+                        SwitchListTile(
+                          contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
-                            vertical: 12,
+                            vertical: 4,
                           ),
-                          child: AppDropdown<ThemeMode>(
-                            label: 'Display Theme',
-                            value: themeMode,
-                            onChanged: (mode) {
-                              if (mode != null) {
-                                ref
-                                    .read(themeModeProvider.notifier)
-                                    .setThemeMode(mode);
-                              }
-                            },
-                            items: const [
-                              AppDropdownItem(
-                                value: ThemeMode.system,
-                                title: 'System Default',
-                              ),
-                              AppDropdownItem(
-                                value: ThemeMode.light,
-                                title: 'Light Theme',
-                              ),
-                              AppDropdownItem(
-                                value: ThemeMode.dark,
-                                title: 'Dark Theme',
-                              ),
-                            ],
+                          title: Text(
+                            'Doorstep Repair / Pickup',
+                            style: AppFonts.bodyMedium(color: primaryTextColor)
+                                .copyWith(fontWeight: FontWeight.w600),
                           ),
+                          subtitle: Text(
+                            'Mechanics travel to customer home or pickup vehicle',
+                            style: AppFonts.bodySmall(
+                              color: AppColors.textSecondaryLight,
+                            ),
+                          ),
+                          value:
+                              state.garage?.isDoorstepRepairAvailable ?? true,
+                          activeColor: AppColors.primaryRed,
+                          onChanged: (val) => vm.setDoorstepRepair(val),
+                        ),
+                        const Divider(height: 1),
+                        SwitchListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          title: Text(
+                            'On-Road Breakdown Assistance',
+                            style: AppFonts.bodyMedium(color: primaryTextColor)
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: Text(
+                            'Mechanics reach stranded vehicles on the road for emergency fixes',
+                            style: AppFonts.bodySmall(
+                              color: AppColors.textSecondaryLight,
+                            ),
+                          ),
+                          value:
+                              state.garage?.isRoadsideAssistanceAvailable ??
+                              true,
+                          activeColor: AppColors.primaryRed,
+                          onChanged: (val) => vm.setRoadsideAssistance(val),
                         ),
                       ],
                     ),

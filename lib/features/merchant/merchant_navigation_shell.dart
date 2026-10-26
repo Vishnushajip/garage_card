@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garage_card/core/branding/app_logo.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
+import 'package:garage_card/core/shared_widgets/app_modern_nav_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:go_router/go_router.dart';
 
@@ -97,60 +98,38 @@ class MerchantNavigationShell extends StatelessWidget {
 
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
+      bottomNavigationBar: AppModernNavigationBar(
+        currentIndex: navigationShell.currentIndex,
         onDestinationSelected: _onDestinationSelected,
-        backgroundColor: isDark
-            ? AppColors.surfaceDark
-            : AppColors.surfaceLight,
-        indicatorColor: AppColors.primaryRed.withValues(alpha: 0.12),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(
-              Icons.dashboard_rounded,
-              color: AppColors.primaryRed,
-            ),
+        items: const [
+          AppNavItem(
+            icon: Icons.dashboard_outlined,
+            selectedIcon: Icons.dashboard_rounded,
             label: 'Overview',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.car_repair_outlined),
-            selectedIcon: Icon(
-              Icons.car_repair_rounded,
-              color: AppColors.primaryRed,
-            ),
+          AppNavItem(
+            icon: Icons.car_repair_outlined,
+            selectedIcon: Icons.car_repair_rounded,
             label: 'Jobs',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.insights_outlined),
-            selectedIcon: Icon(
-              Icons.insights_rounded,
-              color: AppColors.primaryRed,
-            ),
+          AppNavItem(
+            icon: Icons.insights_outlined,
+            selectedIcon: Icons.insights_rounded,
             label: 'Analytics',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.people_outline_rounded),
-            selectedIcon: Icon(
-              Icons.people_rounded,
-              color: AppColors.primaryRed,
-            ),
+          AppNavItem(
+            icon: Icons.people_outline_rounded,
+            selectedIcon: Icons.people_rounded,
             label: 'Clients',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(
-              Icons.receipt_long_rounded,
-              color: AppColors.primaryRed,
-            ),
+          AppNavItem(
+            icon: Icons.receipt_long_outlined,
+            selectedIcon: Icons.receipt_long_rounded,
             label: 'Invoices',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.storefront_outlined),
-            selectedIcon: Icon(
-              Icons.storefront_rounded,
-              color: AppColors.primaryRed,
-            ),
+          AppNavItem(
+            icon: Icons.storefront_outlined,
+            selectedIcon: Icons.storefront_rounded,
             label: 'Garage',
           ),
         ],

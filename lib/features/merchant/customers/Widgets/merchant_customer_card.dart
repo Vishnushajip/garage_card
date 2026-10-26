@@ -66,9 +66,38 @@ class MerchantCustomerCard extends StatelessWidget {
                         customer.name,
                         style: AppFonts.titleMedium(color: primaryTextColor),
                       ),
-                      Text(
-                        customer.phone,
-                        style: AppFonts.labelSmall(color: secondaryTextColor),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.phone_outlined,
+                            size: 13,
+                            color: secondaryTextColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            customer.phone,
+                            style: AppFonts.labelSmall(
+                              color: secondaryTextColor,
+                            ),
+                          ),
+                          if (customer.whatsappNumber.isNotEmpty &&
+                              customer.whatsappNumber != customer.phone) ...[
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              size: 13,
+                              color: AppColors.success,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              customer.whatsappNumber,
+                              style: AppFonts.labelSmall(
+                                color: AppColors.success,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
@@ -79,6 +108,7 @@ class MerchantCustomerCard extends StatelessWidget {
                     color: AppColors.accentBlue,
                     size: 20,
                   ),
+                  tooltip: 'Call Phone',
                   onPressed: () =>
                       WhatsAppShareService.makePhoneCall(customer.phone),
                 ),
@@ -88,11 +118,17 @@ class MerchantCustomerCard extends StatelessWidget {
                     color: AppColors.success,
                     size: 20,
                   ),
-                  onPressed: () => WhatsAppShareService.sendWhatsAppMessage(
-                    phoneNumber: customer.phone,
-                    message:
-                        'Hello ${customer.name}, message from your garage.',
-                  ),
+                  tooltip: 'WhatsApp Message',
+                  onPressed: () {
+                    final target = customer.whatsappNumber.isNotEmpty
+                        ? customer.whatsappNumber
+                        : customer.phone;
+                    WhatsAppShareService.sendWhatsAppMessage(
+                      phoneNumber: target,
+                      message:
+                          'Hello ${customer.name}, message from your garage.',
+                    );
+                  },
                 ),
               ],
             ),

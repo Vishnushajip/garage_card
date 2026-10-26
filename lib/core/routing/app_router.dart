@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
+import 'package:garage_card/core/shared_widgets/no_internet_screen.dart';
 import 'package:garage_card/features/authentication/View/auth_screen.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/customer/appointments/View/customer_appointments_screen.dart';
@@ -25,6 +26,11 @@ import 'package:garage_card/features/merchant/merchant_navigation_shell.dart';
 import 'package:garage_card/features/merchant/notifications/View/merchant_notifications_screen.dart';
 import 'package:garage_card/features/merchant/service_jobs/View/merchant_job_detail_screen.dart';
 import 'package:garage_card/features/merchant/service_jobs/View/merchant_jobs_screen.dart';
+import 'package:garage_card/features/chat/View/chat_screen.dart';
+import 'package:garage_card/features/chat/View/conversation_list_screen.dart';
+import 'package:garage_card/features/customer/garage_details/View/customer_garage_detail_screen.dart';
+import 'package:garage_card/features/merchant/service_catalog/View/merchant_services_screen.dart';
+import 'package:garage_card/features/shared/repository/garage_repository.dart';
 import 'package:garage_card/features/splash/View/splash_screen.dart';
 import 'package:go_router/go_router.dart';
 
@@ -107,11 +113,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RoutePaths.customerGarages,
                 builder: (context, state) => NearbyGaragesScreen(
-                  onSelectGarage: (id) =>
-                      CustomerAppointmentsScreen.showBookingSheet(
-                        context,
-                        garageId: id,
-                      ),
+                  onSelectGarage: (id) => context.push('/customer/garages/$id'),
                   onRequestService: (id) =>
                       CustomerAppointmentsScreen.showBookingSheet(
                         context,
@@ -252,6 +254,59 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final jobId = state.pathParameters['id'] ?? '';
           return MerchantJobDetailScreen(jobId: jobId);
         },
+      ),
+      GoRoute(
+        path: RoutePaths.customerGarageDetail,
+        builder: (context, state) {
+          final garageId = state.pathParameters['id'] ?? '';
+          final action = state.uri.queryParameters['action'];
+          final jobId = state.uri.queryParameters['jobId'];
+          return CustomerGarageDetailScreen(
+            garageId: garageId,
+            initialAction: action,
+            targetJobId: jobId,
+            onStartChat: () async {
+              final repo = ref.read(garageRepositoryProvider);
+              final user = ref.read(authViewModelProvider).userProfile;
+              final garage = await repo.getGarageDetails(garageId);
+              final conv = await repo.getOrCreateConversation(
+                customerId: user?.uid ?? 'cust_1',
+                customerName: user?.fullName ?? 'Customer',
+                garageId: garageId,
+                garageName: garage?.name ?? 'Garage',
+              );
+              if (context.mounted) {
+                final encodedName = Uri.encodeComponent(conv.garageName);
+                context.push('/chat/${conv.id}?name=$encodedName');
+              }
+            },
+          );
+        },
+      ),
+      GoRoute(
+        path: RoutePaths.chatList,
+        builder: (context, state) => const ConversationListScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.chatDetail,
+        builder: (context, state) {
+          final convId = state.pathParameters['id'] ?? '';
+          final name = state.uri.queryParameters['name'] ?? 'Chat';
+          final subtitle = state.uri.queryParameters['subtitle'];
+          return ChatScreen(
+            conversationId: convId,
+            recipientName: name,
+            subtitle: subtitle,
+          );
+        },
+      ),
+      GoRoute(
+        path: RoutePaths.merchantServices,
+        builder: (context, state) => const MerchantServicesScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.noInternet,
+        builder: (context, state) => const NoInternetScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

@@ -23,6 +23,8 @@ class AppColors {
   static const Color accentBlueLight = Color(0xFFEF4444);
   static const Color accentAmber = Color(0xFFEA580C);
   static const Color accentAmberLight = Color(0xFFF97316);
+  static const Color primaryAmber = Color(0xFFF59E0B);
+  static const Color primaryGreen = Color(0xFF10B981);
 
   static const Color success = Color(0xFF10B981);
   static const Color successBg = Color(0xFFD1FAE5);

@@ -8,6 +8,7 @@ class DailyTodoItemModel {
     required this.vehicleDisplay,
     required this.customerName,
     required this.customerPhone,
+    this.customerWhatsApp = '',
     required this.type,
     required this.title,
     required this.subtitle,
@@ -22,6 +23,7 @@ class DailyTodoItemModel {
   final String vehicleDisplay;
   final String customerName;
   final String customerPhone;
+  final String customerWhatsApp;
   final TodoItemType type;
   final String title;
   final String subtitle;
@@ -36,6 +38,7 @@ class DailyTodoItemModel {
     String? vehicleDisplay,
     String? customerName,
     String? customerPhone,
+    String? customerWhatsApp,
     TodoItemType? type,
     String? title,
     String? subtitle,
@@ -50,6 +53,7 @@ class DailyTodoItemModel {
       vehicleDisplay: vehicleDisplay ?? this.vehicleDisplay,
       customerName: customerName ?? this.customerName,
       customerPhone: customerPhone ?? this.customerPhone,
+      customerWhatsApp: customerWhatsApp ?? this.customerWhatsApp,
       type: type ?? this.type,
       title: title ?? this.title,
       subtitle: subtitle ?? this.subtitle,

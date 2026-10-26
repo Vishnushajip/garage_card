@@ -7,6 +7,9 @@ class VehicleModel {
     required this.model,
     required this.year,
     required this.licensePlate,
+    this.vehicleType = 'motorcycle',
+    this.engineCc,
+    this.imageUrl,
     this.vin = '',
     this.currentOdometer = 0,
     this.fuelType = 'Petrol',
@@ -23,6 +26,9 @@ class VehicleModel {
   final String model;
   final int year;
   final String licensePlate;
+  final String vehicleType;
+  final int? engineCc;
+  final String? imageUrl;
   final String vin;
   final int currentOdometer;
   final String fuelType;
@@ -41,6 +47,9 @@ class VehicleModel {
       'model': model,
       'year': year,
       'licensePlate': licensePlate,
+      'vehicleType': vehicleType,
+      'engineCc': engineCc,
+      'imageUrl': imageUrl,
       'vin': vin,
       'currentOdometer': currentOdometer,
       'fuelType': fuelType,
@@ -60,6 +69,9 @@ class VehicleModel {
       model: data['model'] as String? ?? '',
       year: (data['year'] as num?)?.toInt() ?? DateTime.now().year,
       licensePlate: data['licensePlate'] as String? ?? '',
+      vehicleType: data['vehicleType'] as String? ?? 'motorcycle',
+      engineCc: (data['engineCc'] as num?)?.toInt(),
+      imageUrl: data['imageUrl'] as String?,
       vin: data['vin'] as String? ?? '',
       currentOdometer: (data['currentOdometer'] as num?)?.toInt() ?? 0,
       fuelType: data['fuelType'] as String? ?? 'Petrol',
@@ -84,6 +96,9 @@ class VehicleModel {
     String? model,
     int? year,
     String? licensePlate,
+    String? vehicleType,
+    int? engineCc,
+    String? imageUrl,
     String? vin,
     int? currentOdometer,
     String? fuelType,
@@ -100,6 +115,9 @@ class VehicleModel {
       model: model ?? this.model,
       year: year ?? this.year,
       licensePlate: licensePlate ?? this.licensePlate,
+      vehicleType: vehicleType ?? this.vehicleType,
+      engineCc: engineCc ?? this.engineCc,
+      imageUrl: imageUrl ?? this.imageUrl,
       vin: vin ?? this.vin,
       currentOdometer: currentOdometer ?? this.currentOdometer,
       fuelType: fuelType ?? this.fuelType,

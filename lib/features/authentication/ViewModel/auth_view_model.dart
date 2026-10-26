@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/errors/app_exception.dart';
 import 'package:garage_card/core/firebase/firebase_config.dart';
@@ -36,12 +37,24 @@ class AuthViewModel extends Notifier<AuthState> {
 
   Future<void> _restoreExistingSession(User user) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedAvatar = prefs.getString('user_avatar_${user.uid}');
+
       final doc = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .get();
       if (doc.exists && doc.data() != null) {
-        final profile = UserProfileModel.fromFirestore(doc.data()!, user.uid);
+        var profile = UserProfileModel.fromFirestore(doc.data()!, user.uid);
+        if (profile.avatarUrl == null && cachedAvatar != null) {
+          profile = profile.copyWith(avatarUrl: cachedAvatar);
+        } else if (profile.avatarUrl == null && user.photoURL != null) {
+          profile = profile.copyWith(avatarUrl: user.photoURL);
+        }
+        if (profile.avatarUrl != null) {
+          await prefs.setString('user_avatar_${user.uid}', profile.avatarUrl!);
+        }
+
         state = state.copyWith(
           isLoading: false,
           isInitialized: true,
@@ -54,12 +67,17 @@ class AuthViewModel extends Notifier<AuthState> {
       }
     } catch (_) {}
 
+    final prefs = await SharedPreferences.getInstance();
+    final cachedAvatar = prefs.getString('user_avatar_${user.uid}');
+    final avatar = cachedAvatar ?? user.photoURL;
+
     final fallbackProfile = UserProfileModel(
       uid: user.uid,
       email: user.email ?? 'user@garagecard.app',
       fullName: user.displayName ?? 'Customer User',
       phoneNumber: user.phoneNumber ?? '',
       role: 'customer',
+      avatarUrl: avatar,
       createdAt: DateTime.now(),
     );
     state = state.copyWith(
@@ -249,6 +267,12 @@ class AuthViewModel extends Notifier<AuthState> {
       }
 
       UserProfileModel profile;
+      final photo = user.photoURL;
+      final prefs = await SharedPreferences.getInstance();
+      if (photo != null && photo.isNotEmpty) {
+        await prefs.setString('user_avatar_${user.uid}', photo);
+      }
+
       try {
         final doc = await FirebaseFirestore.instance
             .collection('users')
@@ -256,6 +280,13 @@ class AuthViewModel extends Notifier<AuthState> {
             .get();
         if (doc.exists && doc.data() != null) {
           profile = UserProfileModel.fromFirestore(doc.data()!, user.uid);
+          if (profile.avatarUrl == null && photo != null) {
+            profile = profile.copyWith(avatarUrl: photo);
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .set(profile.toFirestore(), SetOptions(merge: true));
+          }
         } else {
           profile = UserProfileModel(
             uid: user.uid,
@@ -263,6 +294,7 @@ class AuthViewModel extends Notifier<AuthState> {
             fullName: user.displayName ?? 'Google User',
             phoneNumber: user.phoneNumber ?? '',
             role: intendedRole,
+            avatarUrl: photo,
             garageId: intendedRole == 'merchant' ? 'garage_demo_1' : null,
             createdAt: DateTime.now(),
           );
@@ -278,6 +310,7 @@ class AuthViewModel extends Notifier<AuthState> {
           fullName: user.displayName ?? 'Google User',
           phoneNumber: user.phoneNumber ?? '',
           role: intendedRole,
+          avatarUrl: photo,
           garageId: intendedRole == 'merchant' ? 'garage_demo_1' : null,
           createdAt: DateTime.now(),
         );
@@ -321,17 +354,31 @@ class AuthViewModel extends Notifier<AuthState> {
     }
   }
 
-  void switchExperience(String targetExperience) {
-    if (state.userProfile == null) return;
-    if (targetExperience == 'merchant' &&
-        state.userProfile?.role != 'merchant') {
-      state = state.copyWith(
-        errorMessage:
-            'Unauthorized: Your account does not have merchant privileges.',
+  Future<void> switchExperience(String targetExperience) async {
+    final current = state.userProfile;
+    if (current == null) return;
+
+    var updated = current;
+    if (targetExperience == 'merchant' && current.garageId == null) {
+      updated = current.copyWith(
+        role: 'merchant',
+        garageId: 'garage_${current.uid}',
       );
-      return;
+      if (FirebaseConfig.isInitialized) {
+        try {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(current.uid)
+              .set(updated.toFirestore(), SetOptions(merge: true));
+        } catch (_) {}
+      }
     }
-    state = state.copyWith(activeExperience: targetExperience);
+
+    state = state.copyWith(
+      userProfile: updated,
+      activeExperience: targetExperience,
+      errorMessage: null,
+    );
   }
 
   void updateUserProfile(UserProfileModel profile) {
@@ -341,6 +388,8 @@ class AuthViewModel extends Notifier<AuthState> {
   Future<void> signOut() async {
     state = state.copyWith(isLoading: true);
     try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
       await FirebaseAuth.instance.signOut();
       if (!kIsWeb) {
         await GoogleSignIn().signOut();

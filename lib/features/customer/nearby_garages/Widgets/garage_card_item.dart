@@ -3,6 +3,7 @@ import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/location/geohash_helper.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
+import 'package:garage_card/core/shared_widgets/app_whatsapp_button.dart';
 import 'package:garage_card/features/shared/models/garage_model.dart';
 import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
 
@@ -107,7 +108,7 @@ class GarageCardItem extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    garage.rating.toStringAsFixed(1),
+                                    '${garage.rating.toStringAsFixed(1)} (${garage.reviewCount})',
                                     style: AppFonts.labelSmall(
                                       color: AppColors.primaryDark,
                                     ).copyWith(fontWeight: FontWeight.bold),
@@ -154,6 +155,80 @@ class GarageCardItem extends StatelessWidget {
                             ),
                           ],
                         ),
+                        if (garage.isRoadsideAssistanceAvailable ||
+                            garage.isDoorstepRepairAvailable) ...[
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: [
+                              if (garage.isRoadsideAssistanceAvailable)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.errorBg,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.emergency_rounded,
+                                        size: 11,
+                                        color: AppColors.error,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'On-Road Breakdown',
+                                        style:
+                                            AppFonts.labelSmall(
+                                              color: AppColors.error,
+                                            ).copyWith(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              if (garage.isDoorstepRepairAvailable)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.successBg,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.home_repair_service_rounded,
+                                        size: 11,
+                                        color: AppColors.success,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Doorstep / Pickup',
+                                        style:
+                                            AppFonts.labelSmall(
+                                              color: AppColors.success,
+                                            ).copyWith(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -173,18 +248,11 @@ class GarageCardItem extends StatelessWidget {
                         WhatsAppShareService.makePhoneCall(garage.phone),
                   ),
                   const SizedBox(width: 8),
-                  IconButton.outlined(
-                    tooltip: 'Chat on WhatsApp',
-                    icon: const Icon(
-                      Icons.chat_rounded,
-                      size: 18,
-                      color: AppColors.success,
-                    ),
-                    onPressed: () => WhatsAppShareService.sendWhatsAppMessage(
-                      phoneNumber: garage.phone,
-                      message:
-                          'Hello ${garage.name}, I found your garage on WeFix and would like some service information.',
-                    ),
+                  AppWhatsAppButton(
+                    phoneNumber: garage.phone,
+                    message:
+                        'Hello ${garage.name}, I found your garage on WeFix and need assistance.',
+                    variant: WhatsAppButtonVariant.iconOnly,
                   ),
                   const SizedBox(width: 8),
                   IconButton.outlined(

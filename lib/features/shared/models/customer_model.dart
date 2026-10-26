@@ -5,6 +5,7 @@ class CustomerModel {
     this.userId,
     required this.name,
     required this.phone,
+    this.whatsappNumber = '',
     this.email = '',
     this.address = '',
     this.notes = '',
@@ -17,6 +18,7 @@ class CustomerModel {
   final String? userId;
   final String name;
   final String phone;
+  final String whatsappNumber;
   final String email;
   final String address;
   final String notes;
@@ -29,6 +31,7 @@ class CustomerModel {
       'userId': userId,
       'name': name,
       'phone': phone,
+      'whatsappNumber': whatsappNumber,
       'email': email,
       'address': address,
       'notes': notes,
@@ -44,6 +47,7 @@ class CustomerModel {
       userId: data['userId'] as String?,
       name: data['name'] as String? ?? 'Customer',
       phone: data['phone'] as String? ?? '',
+      whatsappNumber: data['whatsappNumber'] as String? ?? '',
       email: data['email'] as String? ?? '',
       address: data['address'] as String? ?? '',
       notes: data['notes'] as String? ?? '',
@@ -64,6 +68,7 @@ class CustomerModel {
     String? userId,
     String? name,
     String? phone,
+    String? whatsappNumber,
     String? email,
     String? address,
     String? notes,
@@ -76,6 +81,7 @@ class CustomerModel {
       userId: userId ?? this.userId,
       name: name ?? this.name,
       phone: phone ?? this.phone,
+      whatsappNumber: whatsappNumber ?? this.whatsappNumber,
       email: email ?? this.email,
       address: address ?? this.address,
       notes: notes ?? this.notes,

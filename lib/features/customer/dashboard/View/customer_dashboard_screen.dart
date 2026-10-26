@@ -4,6 +4,7 @@ import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
@@ -17,6 +18,7 @@ import '../Widgets/customer_quick_action_button.dart';
 import '../../notifications/ViewModel/customer_notifications_view_model.dart';
 
 import 'package:garage_card/core/routing/route_paths.dart';
+import 'package:garage_card/features/shared/profile_prompt/profile_completion_prompt_service.dart';
 import 'package:go_router/go_router.dart';
 
 class CustomerDashboardScreen extends ConsumerWidget {
@@ -64,30 +66,28 @@ class CustomerDashboardScreen extends ConsumerWidget {
       );
     }
 
+    if (!state.isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          ref
+              .read(profileCompletionPromptServiceProvider)
+              .checkAndShowPrompt(context, ref);
+        }
+      });
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'My Garage',
-              style: AppFonts.titleLarge(color: primaryTextColor),
-            ),
-            Text(
-              'Track repairs, estimates & maintenance',
-              style: AppFonts.labelSmall(color: secondaryTextColor),
-            ),
-          ],
-        ),
+      appBar: AppCustomAppBar(
+        title: 'My Garage',
+        subtitle: 'Track repairs, estimates & maintenance',
+        showAccountSwitch: true,
+        showNotifications: true,
+        unreadNotificationCount: notifState.unreadCount,
         actions: [
           IconButton(
-            icon: Badge(
-              isLabelVisible: notifState.unreadCount > 0,
-              label: Text('${notifState.unreadCount}'),
-              child: const Icon(Icons.notifications_outlined),
-            ),
-            tooltip: 'Notifications',
-            onPressed: () => context.push(RoutePaths.customerNotifications),
+            icon: const Icon(Icons.chat_outlined),
+            tooltip: 'Messages',
+            onPressed: () => context.push(RoutePaths.chatList),
           ),
         ],
       ),

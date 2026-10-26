@@ -38,6 +38,12 @@ features/<feature_name>/
 - Safe handling of nullable fields, ISO dates / Firestore `Timestamp`, numeric conversions (e.g. integer cents/paise or double parsing), and enum mappings with safe fallbacks.
 - Views and ViewModels must never manipulate raw maps (`Map<String, dynamic>`).
 
+### 2.5 Mandatory Multi-Device Responsiveness (Desktop, Laptop, Tablet, Mobile)
+- **100% Responsive Architecture:** Every screen, layout, component, and feature must adapt gracefully across Mobile (<768px), Tablet (768px-1023px), Laptop (1024px-1199px), and Desktop (1200px+).
+- **Adaptive Layout Structures:** Desktop & Tablet form factors must utilize adaptive sidebars/navigation rails, multi-column cards, and maximum width content constraints (`1200px` max).
+- **Mobile Ergonomics:** Mobile form factors must utilize thumb-zone navigation, floating adaptive navigation bars, and responsive bottom sheets.
+- **Zero Overflow Policy:** Under no circumstance may any widget produce a `RenderFlex` overflow on any viewport width.
+
 ---
 
 ## 3. Directory & File Organization

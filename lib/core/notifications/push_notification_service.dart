@@ -12,7 +12,31 @@ import 'package:http/http.dart' as http;
 import '../../firebase_options.dart';
 import 'fcm_token_model.dart';
 import 'notification_event_matrix.dart';
+
+import 'dart:convert';
+
 import 'web_notification_helper.dart';
+
+@pragma('vm:entry-point')
+void notificationTapBackground(NotificationResponse response) async {
+  if (response.actionId == 'chat_reply_action') {
+    final replyText = response.input;
+    final payload = response.payload;
+    if (replyText != null && replyText.trim().isNotEmpty && payload != null) {
+      try {
+        if (Firebase.apps.isEmpty) {
+          await Firebase.initializeApp(
+            options: DefaultFirebaseOptions.currentPlatform,
+          );
+        }
+        await PushNotificationService.executeInlineChatReply(
+          payload,
+          replyText.trim(),
+        );
+      } catch (_) {}
+    }
+  }
+}
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -84,12 +108,27 @@ class PushNotificationService {
 
       await _localNotifications.initialize(
         settings: initSettings,
-        onDidReceiveNotificationResponse: (NotificationResponse response) {
-          final payload = response.payload;
-          if (payload != null && payload.isNotEmpty) {
-            _deepLinkController.add(payload);
-          }
-        },
+        onDidReceiveNotificationResponse:
+            (NotificationResponse response) async {
+              if (response.actionId == 'chat_reply_action') {
+                final replyText = response.input;
+                final payload = response.payload;
+                if (replyText != null &&
+                    replyText.trim().isNotEmpty &&
+                    payload != null) {
+                  await PushNotificationService.executeInlineChatReply(
+                    payload,
+                    replyText.trim(),
+                  );
+                }
+                return;
+              }
+              final payload = response.payload;
+              if (payload != null && payload.isNotEmpty) {
+                _deepLinkController.add(payload);
+              }
+            },
+        onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
       );
 
       if (!kIsWeb) {
@@ -104,6 +143,7 @@ class PushNotificationService {
             description: channelDescription,
             importance: Importance.max,
             playSound: true,
+            sound: RawResourceAndroidNotificationSound('wefix_chime'),
             enableVibration: true,
           );
           await androidPlugin.createNotificationChannel(channel);
@@ -196,6 +236,21 @@ class PushNotificationService {
           .collection('fcmTokens')
           .doc(token)
           .set(tokenModel.toFirestore(), SetOptions(merge: true));
+
+      final userDocRef = firestore!.collection('users').doc(user.uid);
+      final snap = await userDocRef.get();
+      List<String> tokens = [];
+      if (snap.exists &&
+          snap.data() != null &&
+          snap.data()!['fcmTokens'] is List) {
+        tokens = List<String>.from(snap.data()!['fcmTokens'] as List);
+      }
+      tokens.remove(token);
+      tokens.insert(0, token);
+      if (tokens.length > 4) {
+        tokens = tokens.sublist(0, 4);
+      }
+      await userDocRef.set({'fcmTokens': tokens}, SetOptions(merge: true));
     } catch (_) {}
   }
 
@@ -279,6 +334,11 @@ class PushNotificationService {
       bigPictureBitmap = await _downloadImageBitmap(imageUrl);
     }
 
+    final isChat =
+        message.data['type'] == 'chat' ||
+        message.data['isChat'] == 'true' ||
+        deepLink.startsWith('/chat');
+
     final androidDetails = AndroidNotificationDetails(
       channelId,
       channelName,
@@ -286,7 +346,20 @@ class PushNotificationService {
       importance: Importance.max,
       priority: Priority.high,
       playSound: true,
+      sound: const RawResourceAndroidNotificationSound('wefix_chime'),
       enableVibration: true,
+      actions: isChat
+          ? [
+              const AndroidNotificationAction(
+                'chat_reply_action',
+                'Reply',
+                inputs: [
+                  AndroidNotificationActionInput(label: 'Type reply...'),
+                ],
+                allowGeneratedReplies: true,
+              ),
+            ]
+          : null,
       styleInformation: bigPictureBitmap != null
           ? BigPictureStyleInformation(
               bigPictureBitmap,
@@ -301,17 +374,24 @@ class PushNotificationService {
     final notificationDetails = NotificationDetails(android: androidDetails);
 
     final id = message.messageId.hashCode;
+    String payload = deepLink;
+    if (isChat) {
+      final payloadData = {
+        'conversationId': message.data['conversationId'] ?? '',
+        'senderId': message.data['senderId'] ?? '',
+        'senderRole': message.data['senderRole'] ?? 'customer',
+        'deepLink': deepLink,
+      };
+      payload = jsonEncode(payloadData);
+    }
+
     await _localNotifications.show(
       id: id,
       title: title,
       body: body,
       notificationDetails: notificationDetails,
-      payload: deepLink,
+      payload: payload,
     );
-  }
-
-  Future<void> showBackgroundNotification(RemoteMessage message) async {
-    await displayLocalNotification(message);
   }
 
   Future<ByteArrayAndroidBitmap?> _downloadImageBitmap(String url) async {
@@ -324,6 +404,153 @@ class PushNotificationService {
       }
     } catch (_) {}
     return null;
+  }
+
+  static Future<void> executeInlineChatReply(
+    String payload,
+    String replyText,
+  ) async {
+    try {
+      String conversationId = '';
+      String senderRole = 'customer';
+      String senderId = '';
+
+      if (payload.startsWith('{')) {
+        final data = jsonDecode(payload) as Map<String, dynamic>;
+        conversationId = data['conversationId'] as String? ?? '';
+        senderId = data['senderId'] as String? ?? '';
+        senderRole = data['senderRole'] as String? ?? 'customer';
+      } else if (payload.startsWith('/chat/')) {
+        conversationId = payload.replaceFirst('/chat/', '');
+      }
+
+      if (conversationId.isEmpty) return;
+
+      final currentUid = FirebaseAuth.instance.currentUser?.uid ?? senderId;
+      final messageId = DateTime.now().millisecondsSinceEpoch.toString();
+      final now = DateTime.now();
+
+      final convRef = FirebaseFirestore.instance
+          .collection('conversations')
+          .doc(conversationId);
+      final msgRef = convRef.collection('messages').doc(messageId);
+
+      final batch = FirebaseFirestore.instance.batch();
+      batch.set(msgRef, {
+        'conversationId': conversationId,
+        'senderId': currentUid,
+        'senderRole': senderRole,
+        'text': replyText,
+        'createdAt': now.toIso8601String(),
+        'isRead': false,
+      });
+
+      final isCustomer = senderRole == 'customer';
+      batch.update(convRef, {
+        'lastMessage': replyText,
+        'lastMessageTime': now.toIso8601String(),
+        'lastSenderId': currentUid,
+        if (isCustomer)
+          'unreadCountMerchant': FieldValue.increment(1)
+        else
+          'unreadCountCustomer': FieldValue.increment(1),
+      });
+
+      await batch.commit();
+    } catch (_) {}
+  }
+
+  Future<void> sendDirectFcmNotification({
+    required List<String> targetTokens,
+    required String title,
+    required String body,
+    Map<String, String>? data,
+  }) async {
+    for (final token in targetTokens) {
+      if (token.isEmpty) continue;
+      try {
+        await http.post(
+          Uri.parse('https://fcm.googleapis.com/fcm/send'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'to': token,
+            'notification': {
+              'title': title,
+              'body': body,
+              'sound': 'wefix_chime',
+            },
+            'data': data ?? {},
+          }),
+        );
+      } catch (_) {}
+    }
+  }
+
+  Future<void> triggerChatNotification({
+    required String recipientUid,
+    required String conversationId,
+    required String senderName,
+    required String messageText,
+    required String myUid,
+    required String myRole,
+  }) async {
+    final title = 'New message from $senderName';
+    final payloadData = {
+      'conversationId': conversationId,
+      'senderId': myUid,
+      'senderRole': myRole,
+      'type': 'chat',
+      'isChat': 'true',
+      'deepLink': '/chat/$conversationId',
+    };
+
+    if (firestore != null) {
+      final notifId =
+          'chat_${conversationId}_${DateTime.now().millisecondsSinceEpoch}';
+      try {
+        await firestore!
+            .collection('users')
+            .doc(recipientUid)
+            .collection('notifications')
+            .doc(notifId)
+            .set({
+              'recipientUid': recipientUid,
+              'title': title,
+              'body': messageText,
+              'type': 'chat',
+              'referenceId': conversationId,
+              'deepLink': '/chat/$conversationId',
+              'eventId': notifId,
+              'isRead': false,
+              'createdAt': DateTime.now().toIso8601String(),
+            });
+
+        final userDoc = await firestore!
+            .collection('users')
+            .doc(recipientUid)
+            .get();
+        if (userDoc.exists && userDoc.data()?['fcmTokens'] is List) {
+          final tokens = List<String>.from(
+            userDoc.data()!['fcmTokens'] as List,
+          );
+          await sendDirectFcmNotification(
+            targetTokens: tokens,
+            title: title,
+            body: messageText,
+            data: payloadData,
+          );
+        }
+      } catch (_) {}
+    }
+
+    if (auth?.currentUser?.uid == recipientUid) {
+      await displayLocalNotification(
+        RemoteMessage(
+          messageId: 'chat_${DateTime.now().millisecondsSinceEpoch}',
+          data: {'title': title, 'body': messageText, ...payloadData},
+        ),
+      );
+    }
   }
 
   Future<void> triggerEventNotification({
@@ -377,6 +604,26 @@ class PushNotificationService {
             .collection('notifications')
             .doc(idempotencyKey)
             .set(notificationDoc, SetOptions(merge: true));
+
+        final userDoc = await firestore!
+            .collection('users')
+            .doc(recipientUid)
+            .get();
+        if (userDoc.exists && userDoc.data()?['fcmTokens'] is List) {
+          final tokens = List<String>.from(
+            userDoc.data()!['fcmTokens'] as List,
+          );
+          await sendDirectFcmNotification(
+            targetTokens: tokens,
+            title: resolvedTitle,
+            body: resolvedBody,
+            data: {
+              'type': eventType.name,
+              'referenceId': entityId,
+              'deepLink': resolvedLink,
+            },
+          );
+        }
       } catch (_) {}
     }
 

@@ -1,4 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:garage_card/features/shared/models/garage_service_model.dart';
+import 'package:garage_card/features/shared/models/review_model.dart';
+import 'package:garage_card/features/shared/pricing/smart_pricing_engine.dart';
 import 'package:garage_card/features/shared/models/estimate_model.dart';
 import 'package:garage_card/features/shared/models/garage_model.dart';
 import 'package:garage_card/features/shared/models/invoice_model.dart';
@@ -146,6 +149,119 @@ void main() {
       final map = updated.toFirestore();
       final fromMap = ServiceJobModel.fromFirestore(map, 'j_1');
       expect(fromMap.status, 'inProgress');
+    });
+
+    test(
+      'SmartPricingEngine resolves attribute-based pricing with exact cc match',
+      () {
+        const service = GarageServiceModel(
+          id: 'srv_test',
+          garageId: 'g_1',
+          name: 'Oil Change',
+          pricingMethod: 'attribute',
+          attributeRules: [
+            PricingAttributeRule(
+              label: 'Up to 150cc',
+              vehicleType: 'motorcycle',
+              minCc: 0,
+              maxCc: 150,
+              price: 350.0,
+            ),
+            PricingAttributeRule(
+              label: '151cc to 350cc',
+              vehicleType: 'motorcycle',
+              minCc: 151,
+              maxCc: 350,
+              price: 550.0,
+            ),
+            PricingAttributeRule(
+              label: 'Above 350cc',
+              vehicleType: 'motorcycle',
+              minCc: 351,
+              maxCc: 1200,
+              price: 850.0,
+            ),
+          ],
+        );
+
+        final bike125 = VehicleModel(
+          id: 'v1',
+          garageId: 'g_1',
+          customerId: 'c_1',
+          make: 'Honda',
+          model: 'Shine',
+          year: 2022,
+          licensePlate: 'KL 07 1234',
+          vehicleType: 'motorcycle',
+          engineCc: 125,
+        );
+
+        final bike350 = VehicleModel(
+          id: 'v2',
+          garageId: 'g_1',
+          customerId: 'c_1',
+          make: 'Royal Enfield',
+          model: 'Classic 350',
+          year: 2023,
+          licensePlate: 'KL 07 5678',
+          vehicleType: 'motorcycle',
+          engineCc: 349,
+        );
+
+        final eval125 = SmartPricingEngine.evaluate(
+          service: service,
+          vehicle: bike125,
+        );
+        expect(eval125.type, EvaluatedPricingType.attribute);
+        expect(eval125.price, 350.0);
+
+        final eval350 = SmartPricingEngine.evaluate(
+          service: service,
+          vehicle: bike350,
+        );
+        expect(eval350.type, EvaluatedPricingType.attribute);
+        expect(eval350.price, 550.0);
+
+        final overrideEval = SmartPricingEngine.evaluate(
+          service: service,
+          vehicle: bike125,
+          customOverridePrice: 299.0,
+        );
+        expect(overrideEval.type, EvaluatedPricingType.override);
+        expect(overrideEval.price, 299.0);
+      },
+    );
+
+    test('ReviewModel enforces customer photo and name display consent', () {
+      final consentReview = ReviewModel(
+        id: 'r_1',
+        garageId: 'g_1',
+        customerId: 'c_1',
+        customerName: 'Rahul Menon',
+        customerPhotoUrl: 'https://example.com/photo.jpg',
+        rating: 5.0,
+        reviewText: 'Great service!',
+        consentShareName: true,
+        consentSharePhoto: true,
+      );
+
+      expect(consentReview.displayCustomerName, 'Rahul Menon');
+      expect(consentReview.publicPhotoUrl, 'https://example.com/photo.jpg');
+
+      final privateReview = ReviewModel(
+        id: 'r_2',
+        garageId: 'g_1',
+        customerId: 'c_2',
+        customerName: 'Secret User',
+        customerPhotoUrl: 'https://example.com/private.jpg',
+        rating: 4.0,
+        reviewText: 'Good work',
+        consentShareName: false,
+        consentSharePhoto: false,
+      );
+
+      expect(privateReview.displayCustomerName, 'Verified Customer');
+      expect(privateReview.publicPhotoUrl, isNull);
     });
   });
 }

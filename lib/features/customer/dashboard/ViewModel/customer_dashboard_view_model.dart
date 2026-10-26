@@ -31,24 +31,44 @@ class CustomerDashboardViewModel extends Notifier<CustomerDashboardState> {
     try {
       final repo = ref.read(garageRepositoryProvider);
       final locService = ref.read(locationServiceProvider);
-      final location = await locService.getCurrentLocation();
       final customerId = _currentCustomerId;
 
-      final jobs = customerId != null
-          ? await repo.getServiceJobs(customerId: customerId, limit: 10)
-          : <ServiceJobModel>[];
-      final vehicles = customerId != null
-          ? await repo.getVehicles(customerId: customerId, limit: 10)
-          : <VehicleModel>[];
-      final estimates = customerId != null
-          ? await repo.getEstimates(customerId: customerId, limit: 10)
-          : <EstimateModel>[];
-      final invoices = customerId != null
-          ? await repo.getInvoices(customerId: customerId, limit: 10)
-          : <InvoiceModel>[];
-      final reminders = customerId != null
-          ? await repo.getReminders(customerId: customerId)
-          : <ServiceReminderModel>[];
+      final locationFuture = locService.getCurrentLocation().timeout(
+        const Duration(milliseconds: 1200),
+        onTimeout: () => null,
+      );
+
+      final jobsFuture = customerId != null
+          ? repo.getServiceJobs(customerId: customerId, limit: 10)
+          : Future.value(<ServiceJobModel>[]);
+      final vehiclesFuture = customerId != null
+          ? repo.getVehicles(customerId: customerId, limit: 10)
+          : Future.value(<VehicleModel>[]);
+      final estimatesFuture = customerId != null
+          ? repo.getEstimates(customerId: customerId, limit: 10)
+          : Future.value(<EstimateModel>[]);
+      final invoicesFuture = customerId != null
+          ? repo.getInvoices(customerId: customerId, limit: 10)
+          : Future.value(<InvoiceModel>[]);
+      final remindersFuture = customerId != null
+          ? repo.getReminders(customerId: customerId)
+          : Future.value(<ServiceReminderModel>[]);
+
+      final results = await Future.wait([
+        locationFuture,
+        jobsFuture,
+        vehiclesFuture,
+        estimatesFuture,
+        invoicesFuture,
+        remindersFuture,
+      ]);
+
+      final location = results[0] as dynamic;
+      final jobs = results[1] as List<ServiceJobModel>;
+      final vehicles = results[2] as List<VehicleModel>;
+      final estimates = results[3] as List<EstimateModel>;
+      final invoices = results[4] as List<InvoiceModel>;
+      final reminders = results[5] as List<ServiceReminderModel>;
 
       final nearby = await repo.getNearbyGarages(
         latitude: location?.latitude ?? 9.9312,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
@@ -50,17 +51,12 @@ class _MerchantCustomersScreenState
   Widget build(BuildContext context) {
     final state = ref.watch(merchantCustomersViewModelProvider);
     final vm = ref.read(merchantCustomersViewModelProvider.notifier);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor = isDark
-        ? AppColors.textPrimaryDark
-        : AppColors.textPrimaryLight;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Customer Directory',
-          style: AppFonts.titleLarge(color: primaryTextColor),
-        ),
+      appBar: const AppCustomAppBar(
+        title: 'Customer Directory',
+        subtitle: 'Manage registered vehicle owners & contacts',
+        showAccountSwitch: true,
       ),
       body: AppRefresh(
         onRefresh: vm.refresh,
@@ -146,6 +142,7 @@ class _AddCustomerSheetState extends ConsumerState<_AddCustomerSheet> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
+  final _whatsappCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
@@ -154,6 +151,7 @@ class _AddCustomerSheetState extends ConsumerState<_AddCustomerSheet> {
   void dispose() {
     _nameCtrl.dispose();
     _phoneCtrl.dispose();
+    _whatsappCtrl.dispose();
     _emailCtrl.dispose();
     _addressCtrl.dispose();
     _notesCtrl.dispose();
@@ -168,6 +166,7 @@ class _AddCustomerSheetState extends ConsumerState<_AddCustomerSheet> {
         .addCustomer(
           name: _nameCtrl.text.trim(),
           phone: _phoneCtrl.text.trim(),
+          whatsappNumber: _whatsappCtrl.text.trim(),
           email: _emailCtrl.text.trim(),
           address: _addressCtrl.text.trim(),
           notes: _notesCtrl.text.trim(),
@@ -233,11 +232,69 @@ class _AddCustomerSheetState extends ConsumerState<_AddCustomerSheet> {
               const SizedBox(height: 14),
               AppTextField(
                 controller: _phoneCtrl,
-                label: 'Phone Number',
+                label: 'Phone Number (Calling)',
                 hint: 'e.g. +91 98460 11223',
                 keyboardType: TextInputType.phone,
                 required: true,
                 validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 14),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'WhatsApp Number (Repair Updates)',
+                      style: AppFonts.labelLarge(color: primaryTextColor),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () {
+                      _whatsappCtrl.text = _phoneCtrl.text;
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentBlue.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.copy_rounded,
+                            size: 12,
+                            color: AppColors.accentBlue,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Same as Phone',
+                            style: AppFonts.labelSmall(
+                              color: AppColors.accentBlue,
+                            ).copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              AppTextField(
+                controller: _whatsappCtrl,
+                hint: 'e.g. +91 98460 11223',
+                helperText: 'Automated status updates & estimates will be sent to this WhatsApp number',
+                keyboardType: TextInputType.phone,
+                prefixIcon: const Icon(
+                  Icons.chat_bubble_outline_rounded,
+                  size: 20,
+                  color: AppColors.success,
+                ),
               ),
               const SizedBox(height: 14),
               AppTextField(

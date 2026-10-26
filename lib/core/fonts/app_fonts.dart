@@ -29,6 +29,15 @@ class AppFonts {
     );
   }
 
+  static TextStyle displaySmall({required Color color}) {
+    return GoogleFonts.outfit(
+      fontSize: 22,
+      fontWeight: FontWeight.w700,
+      letterSpacing: -0.3,
+      color: color,
+    );
+  }
+
   static TextStyle titleLarge({required Color color}) {
     return GoogleFonts.outfit(
       fontSize: 20,
@@ -41,6 +50,14 @@ class AppFonts {
   static TextStyle titleMedium({required Color color}) {
     return GoogleFonts.outfit(
       fontSize: 16,
+      fontWeight: FontWeight.w600,
+      color: color,
+    );
+  }
+
+  static TextStyle titleSmall({required Color color}) {
+    return GoogleFonts.outfit(
+      fontSize: 14,
       fontWeight: FontWeight.w600,
       color: color,
     );
@@ -75,6 +92,30 @@ class AppFonts {
     return GoogleFonts.plusJakartaSans(
       fontSize: 11,
       fontWeight: FontWeight.w500,
+      color: color,
+    );
+  }
+
+  static TextStyle headlineSmall({required Color color}) {
+    return GoogleFonts.outfit(
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      color: color,
+    );
+  }
+
+  static TextStyle labelMedium({required Color color}) {
+    return GoogleFonts.plusJakartaSans(
+      fontSize: 12,
+      fontWeight: FontWeight.w500,
+      color: color,
+    );
+  }
+
+  static TextStyle bodySmall({required Color color}) {
+    return GoogleFonts.plusJakartaSans(
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
       color: color,
     );
   }

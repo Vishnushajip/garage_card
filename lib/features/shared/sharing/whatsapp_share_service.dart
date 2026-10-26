@@ -186,4 +186,35 @@ class WhatsAppShareService {
         'Book your service appointment conveniently via the WeFix app.\n'
         'Thank you,\n$garageName';
   }
+
+  static String composeReviewRequestMessage({
+    required String customerName,
+    required String garageName,
+    required String garageId,
+    String language = 'english',
+  }) {
+    final link = 'https://wefixgarage.web.app/customer/garages/$garageId';
+    if (language == 'malayalam') {
+      return 'നമസ്കാരം $customerName,\n\n'
+          '$garageName തിരഞ്ഞെടുത്തതിന് ഞങ്ങളുടെ ഹൃദയം നിറഞ്ഞ നന്ദി. നിങ്ങളുടെ വാഹനത്തിന്റെ സർവീസ് തൃപ്തികരമായി പൂർത്തിയായി എന്ന് കരുതുന്നു.\n\n'
+          'നിങ്ങളുടെ വിലയേറിയ അഭിപ്രായങ്ങളും റേറ്റിംഗും പങ്കുവെക്കാൻ ഒരു മിനിറ്റ് സമയം നൽകാമോ? ഇത് ഞങ്ങളുടെ സേവനം കൂടുതൽ മികച്ചതാക്കാൻ സഹായിക്കും:\n'
+          '$link\n\n'
+          'നന്ദി,\n$garageName';
+    }
+
+    if (language == 'bilingual') {
+      return 'Hello $customerName / നമസ്കാരം,\n\n'
+          'Thank you for choosing $garageName! We hope your vehicle service went well.\n'
+          'Could you spare a minute to rate your experience and share your feedback?\n'
+          'നിങ്ങളുടെ വിലയേറിയ അഭിപ്രായങ്ങളും റേറ്റിംഗും പങ്കുവെക്കാൻ താഴെയുള്ള ലിങ്ക് സന്ദർശിക്കുക:\n'
+          '$link\n\n'
+          'Thank you / നന്ദി,\n$garageName';
+    }
+
+    return 'Hi $customerName,\n\n'
+        'Thank you for choosing $garageName! We hope your vehicle service went well.\n\n'
+        'Could you spare a minute to rate your experience and share your feedback? Your feedback helps us improve our service:\n'
+        '$link\n\n'
+        'Thank you,\n$garageName';
+  }
 }

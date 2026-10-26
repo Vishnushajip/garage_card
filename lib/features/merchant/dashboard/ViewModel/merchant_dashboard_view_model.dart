@@ -1,4 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:garage_card/features/shared/models/appointment_model.dart';
+import 'package:garage_card/features/shared/models/customer_model.dart';
+import 'package:garage_card/features/shared/models/estimate_model.dart';
+import 'package:garage_card/features/shared/models/invoice_model.dart';
+import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
 import '../Model/merchant_dashboard_state.dart';
@@ -16,11 +21,19 @@ class MerchantDashboardViewModel extends Notifier<MerchantDashboardState> {
       final repo = ref.read(garageRepositoryProvider);
       const garageId = 'garage_demo_1';
 
-      final jobs = await repo.getServiceJobs(garageId: garageId);
-      final customers = await repo.getCustomers(garageId: garageId);
-      final estimates = await repo.getEstimates(garageId: garageId);
-      final invoices = await repo.getInvoices(garageId: garageId);
-      final appointments = await repo.getAppointments(garageId: garageId);
+      final results = await Future.wait([
+        repo.getServiceJobs(garageId: garageId),
+        repo.getCustomers(garageId: garageId),
+        repo.getEstimates(garageId: garageId),
+        repo.getInvoices(garageId: garageId),
+        repo.getAppointments(garageId: garageId),
+      ]);
+
+      final jobs = results[0] as List<ServiceJobModel>;
+      final customers = results[1] as List<CustomerModel>;
+      final estimates = results[2] as List<EstimateModel>;
+      final invoices = results[3] as List<InvoiceModel>;
+      final appointments = results[4] as List<AppointmentModel>;
 
       final activeJobs = jobs.where((j) => j.status != 'completed').toList();
       final awaitingInspection = jobs

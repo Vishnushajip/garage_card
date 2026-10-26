@@ -31,6 +31,7 @@ class MerchantCustomersViewModel extends Notifier<MerchantCustomersState> {
   Future<bool> addCustomer({
     required String name,
     required String phone,
+    String whatsappNumber = '',
     required String email,
     required String address,
     required String notes,
@@ -42,6 +43,7 @@ class MerchantCustomersViewModel extends Notifier<MerchantCustomersState> {
         garageId: 'garage_demo_1',
         name: name,
         phone: phone,
+        whatsappNumber: whatsappNumber.isNotEmpty ? whatsappNumber : phone,
         email: email,
         address: address,
         notes: notes,

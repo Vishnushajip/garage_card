@@ -202,6 +202,30 @@ void main() {
       expect(latest.isRead, isFalse);
     });
 
+    test('Job completion creates customer notification with direct review action deep link', () async {
+      final repo = GarageRepository();
+      final initialJobs = await repo.getServiceJobs(garageId: 'garage_demo_1');
+      expect(initialJobs, isNotEmpty);
+      final job = initialJobs.first;
+
+      await repo.updateJobStatus(
+        jobId: job.id,
+        newStatus: 'completed',
+        notes: 'Repairs completed and inspected.',
+        updatedBy: 'Lead Mechanic',
+      );
+
+      final notifs = await repo.getNotifications(recipientUid: job.customerId);
+      expect(notifs, isNotEmpty);
+      final latest = notifs.first;
+      expect(latest.type, 'job_status');
+      expect(
+        latest.deepLink,
+        '/customer/garages/${job.garageId}?action=review&jobId=${job.id}',
+      );
+      expect(latest.title, contains('Service Completed'));
+    });
+
     test(
       'Estimate approval creates merchant notification with estimate image',
       () async {

@@ -16,6 +16,7 @@ class JobStatusDialog extends StatefulWidget {
     this.jobNumber = '',
     this.garageName = 'Apex Precision Automotive',
     this.customerPhone = '+919846077112',
+    this.customerWhatsApp = '',
   });
 
   final String currentStatus;
@@ -24,6 +25,7 @@ class JobStatusDialog extends StatefulWidget {
   final String jobNumber;
   final String garageName;
   final String customerPhone;
+  final String customerWhatsApp;
   final Future<bool> Function(String newStatus, String notes) onUpdateStatus;
 
   @override
@@ -56,7 +58,10 @@ class _JobStatusDialogState extends State<JobStatusDialog> {
     _selectedStatus = widget.currentStatus;
     _notesCtrl = TextEditingController();
     _partsCtrl = TextEditingController();
-    _phoneCtrl = TextEditingController(text: widget.customerPhone);
+    final initialNumber = widget.customerWhatsApp.isNotEmpty
+        ? widget.customerWhatsApp
+        : widget.customerPhone;
+    _phoneCtrl = TextEditingController(text: initialNumber);
   }
 
   @override
@@ -198,11 +203,13 @@ class _JobStatusDialogState extends State<JobStatusDialog> {
             const SizedBox(height: 14),
             AppTextField(
               controller: _phoneCtrl,
-              label: 'WhatsApp Phone Number / ഫോൺ നമ്പർ',
+              label: 'Customer WhatsApp Number / വാട്സ്ആപ്പ് നമ്പർ',
               hint: '+91 98460 77112',
+              helperText:
+                  'Repair status updates will be sent to this WhatsApp number',
               keyboardType: TextInputType.phone,
               prefixIcon: const Icon(
-                Icons.phone_rounded,
+                Icons.chat_bubble_outline_rounded,
                 color: AppColors.success,
                 size: 20,
               ),

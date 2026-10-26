@@ -1,32 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/localization/app_localizations.dart';
+import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
-import 'package:garage_card/core/shared_widgets/app_dialog.dart';
-import 'package:garage_card/core/shared_widgets/app_dropdown.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
-import 'package:garage_card/core/notifications/notification_event_matrix.dart';
-import 'package:garage_card/core/notifications/push_notification_service.dart';
-import 'package:garage_card/core/theme/theme_controller.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
+import 'package:garage_card/features/customer/profile/ViewModel/customer_profile_view_model.dart';
+import 'package:go_router/go_router.dart';
 
-import '../ViewModel/customer_profile_view_model.dart';
-import '../Widgets/preference_tile.dart';
-
-class CustomerProfileScreen extends ConsumerWidget {
+class CustomerProfileScreen extends ConsumerStatefulWidget {
   const CustomerProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CustomerProfileScreen> createState() =>
+      _CustomerProfileScreenState();
+}
+
+class _CustomerProfileScreenState extends ConsumerState<CustomerProfileScreen> {
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _phoneCtrl;
+  late final TextEditingController _whatsappCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = ref.read(customerProfileViewModelProvider);
+    _nameCtrl = TextEditingController(text: profile.nameInput);
+    _phoneCtrl = TextEditingController(text: profile.phoneInput);
+    _whatsappCtrl = TextEditingController(text: profile.whatsappInput);
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _phoneCtrl.dispose();
+    _whatsappCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authViewModelProvider);
     final user = authState.userProfile;
     final profileState = ref.watch(customerProfileViewModelProvider);
     final profileVm = ref.read(customerProfileViewModelProvider.notifier);
-    final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
+    final isMerchant = authState.activeExperience == 'merchant';
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark
@@ -36,454 +60,724 @@ class CustomerProfileScreen extends ConsumerWidget {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Profile & Preferences',
-          style: AppFonts.titleLarge(color: primaryTextColor),
-        ),
+      appBar: const AppCustomAppBar(
+        title: 'Account Profile',
+        subtitle: 'Personal details & mode switching',
+        showAccountSwitch: true,
       ),
       body: SingleChildScrollView(
         child: AppResponsiveLayout(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Card(
-                color: cardBg,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: isDark
-                        ? AppColors.borderDark
-                        : AppColors.borderLight,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Card(
+                  color: cardBg,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    side: BorderSide(color: borderColor),
                   ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: AppColors.accentBlue.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            (user?.fullName.isNotEmpty ?? false)
-                                ? user!.fullName[0].toUpperCase()
-                                : 'U',
-                            style: AppFonts.displayMedium(
-                              color: AppColors.accentBlue,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Padding(
+                    padding: const EdgeInsets.all(22),
+                    child: Row(
+                      children: [
+                        Stack(
                           children: [
-                            Text(
-                              user?.fullName ?? 'Valued Customer',
-                              style: AppFonts.titleLarge(
-                                color: primaryTextColor,
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    AppColors.primaryRed,
+                                    AppColors.accentAmber,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primaryRed.withValues(
+                                      alpha: 0.25,
+                                    ),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child:
+                                    (user?.avatarUrl != null &&
+                                        user!.avatarUrl!.isNotEmpty)
+                                    ? Image.network(
+                                        user.avatarUrl!,
+                                        width: 80,
+                                        height: 80,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (ctx, err, stack) =>
+                                            _buildAvatarFallback(user.fullName),
+                                      )
+                                    : _buildAvatarFallback(user?.fullName),
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              user?.email ?? '',
-                              style: AppFonts.bodyMedium(
-                                color: secondaryTextColor,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              user?.phoneNumber ?? '',
-                              style: AppFonts.labelSmall(
-                                color: secondaryTextColor,
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: InkWell(
+                                onTap: () async {
+                                  final picker = ImagePicker();
+                                  final picked = await picker.pickImage(
+                                    source: ImageSource.gallery,
+                                    maxWidth: 800,
+                                    maxHeight: 800,
+                                    imageQuality: 85,
+                                  );
+                                  if (picked != null) {
+                                    final ok = await profileVm.uploadAvatar(
+                                      picked,
+                                    );
+                                    if (ok && context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Avatar updated successfully!',
+                                          ),
+                                          backgroundColor: AppColors.success,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryRed,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: cardBg, width: 2),
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt_rounded,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Card(
-                color: cardBg,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: profileState.isProfileComplete
-                        ? (isDark
-                              ? AppColors.borderDark
-                              : AppColors.borderLight)
-                        : AppColors.accentBlue.withValues(alpha: 0.5),
-                    width: profileState.isProfileComplete ? 1 : 1.5,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
+                        const SizedBox(width: 18),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              Text(
+                                user?.fullName.isNotEmpty == true &&
+                                        user?.fullName != 'User'
+                                    ? user!.fullName
+                                    : 'Valued Client',
+                                style: AppFonts.titleLarge(
+                                  color: primaryTextColor,
+                                ).copyWith(fontWeight: FontWeight.bold),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                user?.email ?? '',
+                                style: AppFonts.bodySmall(
+                                  color: secondaryTextColor,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 6),
                               Container(
-                                padding: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: profileState.isProfileComplete
-                                      ? AppColors.successBg
-                                      : AppColors.accentBlue.withValues(
+                                  color: isMerchant
+                                      ? AppColors.accentAmber.withValues(
+                                          alpha: 0.12,
+                                        )
+                                      : AppColors.primaryRed.withValues(
                                           alpha: 0.12,
                                         ),
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: Icon(
-                                  profileState.isProfileComplete
-                                      ? Icons.verified_user_rounded
-                                      : Icons.contact_page_rounded,
-                                  color: profileState.isProfileComplete
-                                      ? AppColors.success
-                                      : AppColors.accentBlue,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Complete Your Profile',
-                                style: AppFonts.titleMedium(
-                                  color: primaryTextColor,
+                                child: Text(
+                                  isMerchant
+                                      ? 'Merchant Account'
+                                      : 'Customer Account',
+                                  style: AppFonts.labelSmall(
+                                    color: isMerchant
+                                        ? AppColors.accentAmber
+                                        : AppColors.primaryRed,
+                                  ).copyWith(fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ],
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: profileState.isProfileComplete
-                                  ? AppColors.successBg
-                                  : AppColors.warningBg,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              profileState.isProfileComplete
-                                  ? '100% Complete'
-                                  : '${(profileState.completionPercentage * 100).toInt()}% Complete',
-                              style: AppFonts.labelSmall(
-                                color: profileState.isProfileComplete
-                                    ? AppColors.success
-                                    : AppColors.warning,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: profileState.completionPercentage,
-                          backgroundColor: isDark
-                              ? AppColors.borderDark.withValues(alpha: 0.3)
-                              : AppColors.borderLight,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            profileState.isProfileComplete
-                                ? AppColors.success
-                                : AppColors.accentBlue,
-                          ),
-                          minHeight: 6,
-                        ),
-                      ),
-                      if (!profileState.isProfileComplete) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          'Enter your name and phone number to receive repair updates, digital job sheets, and invoices directly.',
-                          style: AppFonts.labelSmall(color: secondaryTextColor),
                         ),
                       ],
-                      const SizedBox(height: 20),
-                      AppTextField(
-                        label: 'Full Name',
-                        hint: 'Enter your full name',
-                        initialValue: profileState.nameInput,
-                        prefixIcon: const Icon(
-                          Icons.person_outline_rounded,
-                          size: 20,
-                        ),
-                        onChanged: profileVm.setName,
-                      ),
-                      const SizedBox(height: 16),
-                      AppTextField(
-                        label: 'Phone Number',
-                        hint: '+91 98765 43210',
-                        initialValue: profileState.phoneInput,
-                        keyboardType: TextInputType.phone,
-                        prefixIcon: const Icon(Icons.phone_outlined, size: 20),
-                        onChanged: profileVm.setPhone,
-                      ),
-                      if (profileState.errorMessage != null) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          profileState.errorMessage!,
-                          style: AppFonts.labelSmall(color: AppColors.error),
-                        ),
-                      ],
-                      if (profileState.successMessage != null) ...[
-                        const SizedBox(height: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Card(
+                  color: cardBg,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(color: borderColor),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Row(
                           children: [
-                            const Icon(
-                              Icons.check_circle_rounded,
-                              color: AppColors.success,
-                              size: 16,
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryRed.withValues(
+                                  alpha: 0.12,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.swap_horiz_rounded,
+                                color: AppColors.primaryRed,
+                                size: 20,
+                              ),
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              profileState.successMessage!,
-                              style: AppFonts.labelSmall(
-                                color: AppColors.success,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Switch Account Experience',
+                                    style: AppFonts.titleMedium(
+                                      color: primaryTextColor,
+                                    ).copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    'Toggle between client and merchant portal',
+                                    style: AppFonts.labelSmall(
+                                      color: secondaryTextColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _ExperienceToggleCard(
+                                title: 'Customer',
+                                icon: Icons.directions_car_rounded,
+                                isSelected: !isMerchant,
+                                isDark: isDark,
+                                onTap: () async {
+                                  if (isMerchant) {
+                                    await ref
+                                        .read(authViewModelProvider.notifier)
+                                        .switchExperience('customer');
+                                    if (context.mounted) {
+                                      context.go(RoutePaths.customer);
+                                    }
+                                  }
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _ExperienceToggleCard(
+                                title: 'Merchant',
+                                icon: Icons.storefront_rounded,
+                                isSelected: isMerchant,
+                                isDark: isDark,
+                                onTap: () async {
+                                  if (!isMerchant) {
+                                    await ref
+                                        .read(authViewModelProvider.notifier)
+                                        .switchExperience('merchant');
+                                    if (context.mounted) {
+                                      context.go(RoutePaths.merchant);
+                                    }
+                                  }
+                                },
                               ),
                             ),
                           ],
                         ),
                       ],
-                      const SizedBox(height: 20),
-                      AppButton(
-                        label: 'Save Profile Details',
-                        icon: const Icon(Icons.save_rounded, size: 18),
-                        isLoading: profileState.isSaving,
-                        isFullWidth: true,
-                        onPressed: profileVm.saveProfile,
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Application Preferences',
-                style: AppFonts.titleLarge(color: primaryTextColor),
-              ),
-              const SizedBox(height: 12),
-              Card(
-                color: cardBg,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(
-                    color: isDark
-                        ? AppColors.borderDark
-                        : AppColors.borderLight,
+                const SizedBox(height: 18),
+                Card(
+                  color: cardBg,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: profileState.isProfileComplete
+                          ? borderColor
+                          : AppColors.accentAmber.withValues(alpha: 0.5),
+                      width: profileState.isProfileComplete ? 1 : 1.5,
+                    ),
                   ),
-                ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      child: AppDropdown<String>(
-                        label: 'Application Language',
-                        value: locale.languageCode,
-                        onChanged: (code) {
-                          if (code != null) {
-                            ref.read(localeProvider.notifier).setLocale(code);
-                          }
-                        },
-                        items: const [
-                          AppDropdownItem(
-                            value: 'en',
-                            title: 'English',
-                            subtitle: 'Default Application Language',
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: profileState.isProfileComplete
+                                          ? AppColors.successBg
+                                          : AppColors.primaryRed.withValues(
+                                              alpha: 0.12,
+                                            ),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Icon(
+                                      profileState.isProfileComplete
+                                          ? Icons.verified_user_rounded
+                                          : Icons.contact_page_rounded,
+                                      color: profileState.isProfileComplete
+                                          ? AppColors.success
+                                          : AppColors.primaryRed,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'Profile Details',
+                                      style: AppFonts.titleMedium(
+                                        color: primaryTextColor,
+                                      ).copyWith(fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: profileState.isProfileComplete
+                                    ? AppColors.successBg
+                                    : AppColors.warningBg,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                profileState.isProfileComplete
+                                    ? '100% Complete'
+                                    : '${(profileState.completionPercentage * 100).toInt()}% Complete',
+                                style: AppFonts.labelSmall(
+                                  color: profileState.isProfileComplete
+                                      ? AppColors.success
+                                      : AppColors.warning,
+                                ).copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: profileState.completionPercentage,
+                            backgroundColor: isDark
+                                ? AppColors.borderDark.withValues(alpha: 0.3)
+                                : AppColors.borderLight,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              profileState.isProfileComplete
+                                  ? AppColors.success
+                                  : AppColors.primaryRed,
+                            ),
                           ),
-                          AppDropdownItem(
-                            value: 'ml',
-                            title: 'മലയാളം (Malayalam)',
-                            subtitle: 'കേരളത്തിലെ പ്രാദേശിക ഭാഷ',
+                        ),
+                        const SizedBox(height: 18),
+                        AppTextField(
+                          label: 'Full Name',
+                          hint: 'Enter your full name',
+                          controller: _nameCtrl,
+                          prefixIcon: const Icon(
+                            Icons.person_outline_rounded,
+                            size: 20,
+                          ),
+                          onChanged: profileVm.setName,
+                        ),
+                        const SizedBox(height: 14),
+                        AppTextField(
+                          label: 'Phone Number (for Calling & Login)',
+                          hint: '+91 98765 43210',
+                          controller: _phoneCtrl,
+                          keyboardType: TextInputType.phone,
+                          prefixIcon: const Icon(
+                            Icons.phone_outlined,
+                            size: 20,
+                          ),
+                          onChanged: profileVm.setPhone,
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'WhatsApp Number (for Repair & Service Updates)',
+                                style: AppFonts.labelLarge(
+                                  color: primaryTextColor,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            InkWell(
+                              borderRadius: BorderRadius.circular(8),
+                              onTap: () {
+                                _whatsappCtrl.text = _phoneCtrl.text;
+                                profileVm.setWhatsApp(_phoneCtrl.text);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.accentBlue.withValues(
+                                    alpha: 0.12,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.copy_rounded,
+                                      size: 13,
+                                      color: AppColors.accentBlue,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Same as Phone',
+                                      style: AppFonts.labelSmall(
+                                        color: AppColors.accentBlue,
+                                      ).copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        AppTextField(
+                          hint: '+91 98765 43210',
+                          helperText: 'Vehicle status notifications & estimates will be sent to this WhatsApp number',
+                          controller: _whatsappCtrl,
+                          keyboardType: TextInputType.phone,
+                          prefixIcon: const Icon(
+                            Icons.chat_bubble_outline_rounded,
+                            size: 20,
+                            color: AppColors.success,
+                          ),
+                          onChanged: profileVm.setWhatsApp,
+                        ),
+                        if (profileState.errorMessage != null) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            profileState.errorMessage!,
+                            style: AppFonts.labelSmall(color: AppColors.error),
                           ),
                         ],
-                      ),
-                    ),
-                    const Divider(height: 1),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      child: AppDropdown<ThemeMode>(
-                        label: 'Appearance & Theme',
-                        value: themeMode,
-                        onChanged: (mode) {
-                          if (mode != null) {
-                            ref
-                                .read(themeModeProvider.notifier)
-                                .setThemeMode(mode);
-                          }
-                        },
-                        items: const [
-                          AppDropdownItem(
-                            value: ThemeMode.system,
-                            title: 'System Default',
-                            subtitle:
-                                'Follows operating system dark/light mode',
-                          ),
-                          AppDropdownItem(
-                            value: ThemeMode.light,
-                            title: 'Light Theme',
-                            subtitle: 'Clean high contrast daytime interface',
-                          ),
-                          AppDropdownItem(
-                            value: ThemeMode.dark,
-                            title: 'Dark Theme',
-                            subtitle: 'OLED midnight dark automotive theme',
+                        if (profileState.successMessage != null) ...[
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                color: AppColors.success,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                profileState.successMessage!,
+                                style: AppFonts.labelSmall(
+                                  color: AppColors.success,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
-                      ),
+                        const SizedBox(height: 18),
+                        AppButton(
+                          label: 'Save Profile Details',
+                          isFullWidth: true,
+                          isLoading: profileState.isSaving,
+                          onPressed: profileVm.saveProfile,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Push Notifications & Alerts',
-                style: AppFonts.titleLarge(color: primaryTextColor),
-              ),
-              const SizedBox(height: 12),
-              Card(
-                color: cardBg,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(
-                    color: isDark
-                        ? AppColors.borderDark
-                        : AppColors.borderLight,
                   ),
                 ),
-                child: Column(
-                  children: [
-                    PreferenceTile(
-                      icon: Icons.notifications_active_rounded,
-                      title: 'Enable Push Notifications',
-                      subtitle: 'Receive instant repair status updates, estimates and photos',
-                      onTap: () async {
-                        final service = ref.read(
-                          pushNotificationServiceProvider,
-                        );
-                        final settings = await service.requestPermission();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                settings != null
-                                    ? 'Notification permissions updated.'
-                                    : 'Push notification service initialized.',
+                const SizedBox(height: 18),
+                Card(
+                  color: cardBg,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(color: borderColor),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Language Preference',
+                          style: AppFonts.titleMedium(color: primaryTextColor)
+                              .copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Select your preferred display language',
+                          style: AppFonts.labelSmall(color: secondaryTextColor),
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _LanguagePill(
+                                code: 'en',
+                                title: 'English',
+                                subtitle: 'Default',
+                                isSelected: locale.languageCode == 'en',
+                                isDark: isDark,
+                                onTap: () => ref
+                                    .read(localeProvider.notifier)
+                                    .setLocale('en'),
                               ),
-                              backgroundColor: AppColors.accentBlue,
                             ),
-                          );
-                        }
-                      },
-                    ),
-                    const Divider(height: 1),
-                    PreferenceTile(
-                      icon: Icons.image_rounded,
-                      title: 'Send Test Notification with Image',
-                      subtitle: 'Preview a rich notification with vehicle image and deep link',
-                      onTap: () async {
-                        final service = ref.read(
-                          pushNotificationServiceProvider,
-                        );
-                        await service.triggerEventNotification(
-                          eventType: NotificationEventType.readyForCollection,
-                          recipientUid: user?.uid ?? 'customer_demo_uid',
-                          entityId: 'job_demo_1',
-                          qualifier:
-                              'test_${DateTime.now().millisecondsSinceEpoch}',
-                          title: 'Test: Vehicle Ready for Pickup!',
-                          body: 'This is a test alert with an automotive vehicle photo.',
-                          customImageUrl:
-                              NotificationEventMatrix.fallbackCarImage,
-                          customDeepLink: '/customer/jobs/job_demo_1',
-                        );
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Test notification dispatched with image!',
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _LanguagePill(
+                                code: 'ml',
+                                title: 'മലയാളം',
+                                subtitle: 'Malayalam',
+                                isSelected: locale.languageCode == 'ml',
+                                isDark: isDark,
+                                onTap: () => ref
+                                    .read(localeProvider.notifier)
+                                    .setLocale('ml'),
                               ),
-                              backgroundColor: AppColors.success,
                             ),
-                          );
-                        }
-                      },
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Account Actions',
-                style: AppFonts.titleLarge(color: primaryTextColor),
-              ),
-              const SizedBox(height: 12),
-              Card(
-                color: cardBg,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(
-                    color: isDark
-                        ? AppColors.borderDark
-                        : AppColors.borderLight,
                   ),
                 ),
-                child: Column(
-                  children: [
-                    PreferenceTile(
-                      icon: Icons.storefront_rounded,
-                      title: 'Switch to Merchant Experience',
-                      subtitle: 'Open garage management tools if you own or manage a shop',
-                      onTap: () {
-                        ref
-                            .read(authViewModelProvider.notifier)
-                            .switchExperience('merchant');
-                      },
-                    ),
-                    const Divider(height: 1),
-                    PreferenceTile(
-                      icon: Icons.logout_rounded,
-                      title: 'Sign Out',
-                      subtitle: 'Securely end your current session',
-                      onTap: () async {
-                        final confirm = await AppDialog.confirm(
-                          context,
-                          title: 'Sign Out?',
-                          message: 'Are you sure you want to sign out of your WeFix account?',
-                          confirmLabel: 'Sign Out',
-                          isDestructive: true,
-                        );
-                        if (confirm == true) {
-                          ref.read(authViewModelProvider.notifier).signOut();
-                        }
-                      },
-                    ),
-                  ],
+                const SizedBox(height: 24),
+                AppButton(
+                  label: 'Sign Out & Clear Session',
+                  variant: AppButtonVariant.outline,
+                  isFullWidth: true,
+                  icon: const Icon(
+                    Icons.logout_rounded,
+                    color: AppColors.primaryRed,
+                    size: 18,
+                  ),
+                  onPressed: () async {
+                    await ref.read(authViewModelProvider.notifier).signOut();
+                    if (context.mounted) {
+                      context.go(RoutePaths.auth);
+                    }
+                  },
                 ),
-              ),
-              const SizedBox(height: 32),
-            ],
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatarFallback(String? name) {
+    final initial =
+        (name != null && name.trim().isNotEmpty && name.trim() != 'User')
+        ? name.trim()[0].toUpperCase()
+        : 'U';
+    return Center(
+      child: Text(
+        initial,
+        style: AppFonts.displayMedium(color: Colors.white)
+            .copyWith(fontWeight: FontWeight.bold, fontSize: 28),
+      ),
+    );
+  }
+}
+
+class _ExperienceToggleCard extends StatelessWidget {
+  const _ExperienceToggleCard({
+    required this.title,
+    required this.icon,
+    required this.isSelected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final String title;
+  final IconData icon;
+  final bool isSelected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primaryRed.withValues(alpha: 0.12)
+              : (isDark ? AppColors.backgroundDark : AppColors.backgroundLight),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primaryRed
+                : (isDark ? AppColors.borderDark : AppColors.borderLight),
+            width: isSelected ? 1.6 : 1.0,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected
+                  ? AppColors.primaryRed
+                  : (isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style:
+                  AppFonts.bodyMedium(
+                    color: isSelected
+                        ? AppColors.primaryRed
+                        : (isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimaryLight),
+                  ).copyWith(
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LanguagePill extends StatelessWidget {
+  const _LanguagePill({
+    required this.code,
+    required this.title,
+    required this.subtitle,
+    required this.isSelected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final String code;
+  final String title;
+  final String subtitle;
+  final bool isSelected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primaryRed.withValues(alpha: 0.12)
+              : (isDark ? AppColors.backgroundDark : AppColors.backgroundLight),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primaryRed
+                : (isDark ? AppColors.borderDark : AppColors.borderLight),
+            width: isSelected ? 1.6 : 1.0,
+          ),
+        ),
+        child: Column(
+          children: [
+            Text(
+              title,
+              style:
+                  AppFonts.titleSmall(
+                    color: isSelected
+                        ? AppColors.primaryRed
+                        : (isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimaryLight),
+                  ).copyWith(
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: AppFonts.labelSmall(
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
+              ),
+            ),
+          ],
         ),
       ),
     );

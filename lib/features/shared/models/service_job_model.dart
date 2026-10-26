@@ -17,6 +17,8 @@ class ServiceJobModel {
     this.completedDate,
     this.vehicleDisplay = '',
     this.customerName = '',
+    this.customerPhone = '',
+    this.customerWhatsApp = '',
     this.createdAt,
     this.updatedAt,
   });
@@ -36,6 +38,8 @@ class ServiceJobModel {
   final DateTime? completedDate;
   final String vehicleDisplay;
   final String customerName;
+  final String customerPhone;
+  final String customerWhatsApp;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -55,6 +59,8 @@ class ServiceJobModel {
       'completedDate': completedDate?.toIso8601String(),
       'vehicleDisplay': vehicleDisplay,
       'customerName': customerName,
+      'customerPhone': customerPhone,
+      'customerWhatsApp': customerWhatsApp,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
@@ -83,6 +89,8 @@ class ServiceJobModel {
       completedDate: DateFormatter.parse(data['completedDate']),
       vehicleDisplay: data['vehicleDisplay'] as String? ?? '',
       customerName: data['customerName'] as String? ?? '',
+      customerPhone: data['customerPhone'] as String? ?? '',
+      customerWhatsApp: data['customerWhatsApp'] as String? ?? '',
       createdAt: DateFormatter.parse(data['createdAt']),
       updatedAt: DateFormatter.parse(data['updatedAt']),
     );
@@ -104,6 +112,8 @@ class ServiceJobModel {
     DateTime? completedDate,
     String? vehicleDisplay,
     String? customerName,
+    String? customerPhone,
+    String? customerWhatsApp,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -124,6 +134,8 @@ class ServiceJobModel {
       completedDate: completedDate ?? this.completedDate,
       vehicleDisplay: vehicleDisplay ?? this.vehicleDisplay,
       customerName: customerName ?? this.customerName,
+      customerPhone: customerPhone ?? this.customerPhone,
+      customerWhatsApp: customerWhatsApp ?? this.customerWhatsApp,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

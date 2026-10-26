@@ -4,6 +4,7 @@ import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
@@ -17,6 +18,7 @@ import '../../analytics/Widgets/daily_briefing_modal.dart';
 import '../../notifications/ViewModel/merchant_notifications_view_model.dart';
 
 import 'package:garage_card/core/routing/route_paths.dart';
+import 'package:garage_card/features/shared/profile_prompt/profile_completion_prompt_service.dart';
 import 'package:go_router/go_router.dart';
 
 class MerchantDashboardScreen extends ConsumerWidget {
@@ -69,33 +71,37 @@ class MerchantDashboardScreen extends ConsumerWidget {
       );
     }
 
+    if (!state.isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          ref
+              .read(profileCompletionPromptServiceProvider)
+              .checkAndShowPrompt(context, ref);
+        }
+      });
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Apex Precision Automotive',
-              style: AppFonts.titleLarge(color: primaryTextColor),
-            ),
-            Text(
-              'Garage Operations & Overview',
-              style: AppFonts.labelSmall(color: secondaryTextColor),
-            ),
-          ],
-        ),
+      appBar: AppCustomAppBar(
+        title: 'Apex Precision Automotive',
+        subtitle: 'Garage Operations & Overview',
+        showAccountSwitch: true,
+        showNotifications: true,
+        unreadNotificationCount: merchantNotifState.unreadCount,
         actions: [
           IconButton(
-            icon: Badge(
-              isLabelVisible: merchantNotifState.unreadCount > 0,
-              label: Text('${merchantNotifState.unreadCount}'),
-              child: const Icon(Icons.notifications_outlined),
-            ),
-            tooltip: 'Garage Notifications',
-            onPressed: () => context.push(RoutePaths.merchantNotifications),
+            icon: const Icon(Icons.miscellaneous_services_rounded),
+            tooltip: 'Services & Pricing',
+            onPressed: () => context.push(RoutePaths.merchantServices),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chat_outlined),
+            tooltip: 'Messages',
+            onPressed: () => context.push(RoutePaths.chatList),
           ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Refresh',
             onPressed: () {
               vm.refresh();
               analyticsVm.refresh();
@@ -235,30 +241,35 @@ class MerchantDashboardScreen extends ConsumerWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.accentBlue.withValues(
-                                      alpha: 0.12,
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.accentBlue.withValues(
+                                        alpha: 0.12,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
-                                    borderRadius: BorderRadius.circular(10),
+                                    child: const Icon(
+                                      Icons.insights_rounded,
+                                      color: AppColors.accentBlue,
+                                      size: 20,
+                                    ),
                                   ),
-                                  child: const Icon(
-                                    Icons.insights_rounded,
-                                    color: AppColors.accentBlue,
-                                    size: 20,
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      'Daily Pipeline & Analytics',
+                                      style: AppFonts.titleMedium(
+                                        color: primaryTextColor,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'Daily Pipeline & Analytics',
-                                  style: AppFonts.titleMedium(
-                                    color: primaryTextColor,
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             TextButton(
                               onPressed: onNavigateToAnalytics,

@@ -46,6 +46,8 @@ class _MerchantJobDetailScreenState
           vehicleDisplay: job.vehicleDisplay,
           jobNumber: job.jobNumber,
           garageName: 'Apex Precision Automotive',
+          customerPhone: job.customerPhone,
+          customerWhatsApp: job.customerWhatsApp,
           onUpdateStatus: (newStatus, notes) {
             return ref
                 .read(merchantJobsViewModelProvider.notifier)
