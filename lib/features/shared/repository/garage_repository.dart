@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -12,6 +14,7 @@ import '../models/appointment_model.dart';
 import '../models/customer_model.dart';
 import '../models/estimate_model.dart';
 import '../models/garage_model.dart';
+import '../models/inventory_item_model.dart';
 import '../models/invoice_model.dart';
 import '../models/job_status_history_model.dart';
 import '../models/chat_message_model.dart';
@@ -22,11 +25,15 @@ import '../pricing/smart_pricing_engine.dart';
 import '../models/line_item_model.dart';
 import '../models/notification_model.dart';
 import '../models/payment_model.dart';
+import '../models/payment_record_model.dart';
+import '../models/qc_checklist_model.dart';
 import '../models/review_model.dart';
 import '../models/service_job_model.dart';
 import '../models/service_reminder_model.dart';
+import '../models/supplemental_work_model.dart';
 import '../models/vehicle_inspection_model.dart';
 import '../models/vehicle_model.dart';
+import '../models/warranty_item_model.dart';
 
 class GarageRepository {
   GarageRepository() {
@@ -49,6 +56,7 @@ class GarageRepository {
   final List<ReviewModel> _reviews = [];
   final List<ConversationModel> _conversations = [];
   final List<ChatMessageModel> _messages = [];
+  final List<InventoryItemModel> _inventoryItems = [];
 
   void _initData() {
     final now = DateTime.now();
@@ -357,6 +365,14 @@ class GarageRepository {
       completedDate: now,
       vehicleDisplay: '2022 Royal Enfield Classic 350 (KL 07 CE 8821)',
       customerName: 'Rahul Varma',
+      gatePassCode: '482910',
+      isGatePassVerified: false,
+      isQcPassed: true,
+      qcInspectorName: 'Vineeth Roy',
+      qcInspectedAt: now.subtract(const Duration(hours: 2)),
+      qcChecklist: {
+        for (final item in QCChecklistModel.standardChecklistItems) item: true,
+      },
       createdAt: now.subtract(const Duration(hours: 22)),
       updatedAt: now.subtract(const Duration(hours: 1)),
     );
@@ -402,6 +418,9 @@ class GarageRepository {
       completedDate: now.subtract(const Duration(days: 1)),
       vehicleDisplay: '2021 Honda Activa 6G (KL 07 CD 9090)',
       customerName: 'Ananya Krishnan',
+      gatePassCode: '719302',
+      isGatePassVerified: true,
+      gatePassVerifiedAt: now.subtract(const Duration(days: 1)),
       createdAt: now.subtract(const Duration(days: 2)),
       updatedAt: now.subtract(const Duration(days: 1)),
     );
@@ -448,6 +467,18 @@ class GarageRepository {
       estimatedCompletionDate: now.add(const Duration(hours: 3)),
       vehicleDisplay: '2023 BMW 330i M Sport (KL 07 CZ 0007)',
       customerName: 'Vishnu Shaji',
+      supplementalItems: [
+        SupplementalWorkItem(
+          id: 'supp_vishnu_1',
+          jobId: 'job_vishnu_1',
+          title: 'Rear Brake Rotor Surface Machining',
+          reason: 'Uneven rotor scoring detected during brake inspection. Skimming needed to prevent premature pad wear.',
+          partsCost: 0,
+          laborCost: 1200,
+          status: 'pending',
+          createdAt: now.subtract(const Duration(hours: 1)),
+        ),
+      ],
       createdAt: now.subtract(const Duration(hours: 4)),
       updatedAt: now.subtract(const Duration(hours: 1)),
     );
@@ -714,6 +745,39 @@ class GarageRepository {
       balanceDue: 0.0,
       currencyCode: 'INR',
       status: 'paid',
+      paymentRecords: [
+        PaymentRecordModel(
+          id: 'pay_rec_1a',
+          invoiceId: 'inv_demo_1',
+          amount: 2000.0,
+          method: 'upi',
+          reference: 'UPI/98460123/2026',
+          recordedAt: now.subtract(const Duration(days: 45, hours: 2)),
+          notes: 'Advance UPI transfer at check-in',
+        ),
+        PaymentRecordModel(
+          id: 'pay_rec_1b',
+          invoiceId: 'inv_demo_1',
+          amount: 1400.0,
+          method: 'cash',
+          reference: 'CSH-042',
+          recordedAt: now.subtract(const Duration(days: 45)),
+          notes: 'Final balance settled via cash at vehicle collection',
+        ),
+      ],
+      warrantyItems: [
+        WarrantyItemModel(
+          id: 'war_1',
+          invoiceId: 'inv_demo_1',
+          partName: 'Cabin AC Micro-Particle Air Filter',
+          durationMonths: 6,
+          coverageKm: 10000,
+          startDate: now.subtract(const Duration(days: 45)),
+          expiryDate: now.add(const Duration(days: 135)),
+          garageName: 'Apex Speed Auto Care',
+          status: 'active',
+        ),
+      ],
       issuedAt: now.subtract(const Duration(days: 45)),
       createdAt: now.subtract(const Duration(days: 45)),
     );
@@ -756,6 +820,30 @@ class GarageRepository {
       balanceDue: 0.0,
       currencyCode: 'INR',
       status: 'paid',
+      paymentRecords: [
+        PaymentRecordModel(
+          id: 'pay_rec_2',
+          invoiceId: 'inv_demo_2',
+          amount: 2300.0,
+          method: 'upi',
+          reference: 'UPI/88210344/2026',
+          recordedAt: now.subtract(const Duration(hours: 3)),
+          notes: 'Settled via Google Pay QR',
+        ),
+      ],
+      warrantyItems: [
+        WarrantyItemModel(
+          id: 'war_2',
+          invoiceId: 'inv_demo_2',
+          partName: 'OEM Oil Filter & O-Ring Seal',
+          durationMonths: 6,
+          coverageKm: 5000,
+          startDate: now.subtract(const Duration(hours: 3)),
+          expiryDate: now.add(const Duration(days: 180)),
+          garageName: 'Apex Speed Auto Care',
+          status: 'active',
+        ),
+      ],
       issuedAt: now.subtract(const Duration(hours: 3)),
       createdAt: now.subtract(const Duration(hours: 3)),
     );
@@ -798,6 +886,17 @@ class GarageRepository {
       balanceDue: 2500.0,
       currencyCode: 'INR',
       status: 'partially_paid',
+      paymentRecords: [
+        PaymentRecordModel(
+          id: 'pay_rec_3',
+          invoiceId: 'inv_demo_3',
+          amount: 2000.0,
+          method: 'card',
+          reference: 'POS-TXN-8891',
+          recordedAt: now.subtract(const Duration(hours: 5)),
+          notes: 'Partial advance card swipe',
+        ),
+      ],
       dueDate: now,
       issuedAt: now.subtract(const Duration(hours: 5)),
       createdAt: now.subtract(const Duration(hours: 5)),
@@ -1281,6 +1380,99 @@ class GarageRepository {
         consentShareName: false,
         consentSharePhoto: false,
         createdAt: now.subtract(const Duration(days: 20)),
+      ),
+    ]);
+
+    _inventoryItems.addAll([
+      InventoryItemModel(
+        id: 'inv_item_1',
+        garageId: 'garage_demo_1',
+        sku: 'OIL-SYN-5W30',
+        name: 'Castrol Magnatec 5W-30 Full Synthetic Oil',
+        category: 'Fluids & Lubricants',
+        unitCost: 420.0,
+        sellingPrice: 650.0,
+        currentStock: 28,
+        minStockAlert: 10,
+        unit: 'Liters',
+        supplier: 'Castrol Direct Kerala (+91 98460 33441)',
+        location: 'Rack A-2',
+        updatedAt: now.subtract(const Duration(days: 2)),
+      ),
+      InventoryItemModel(
+        id: 'inv_item_2',
+        garageId: 'garage_demo_1',
+        sku: 'FLT-OIL-OEM',
+        name: 'OEM Spin-on Engine Oil Filter',
+        category: 'Filters',
+        unitCost: 160.0,
+        sellingPrice: 280.0,
+        currentStock: 16,
+        minStockAlert: 8,
+        unit: 'Pcs',
+        supplier: 'Bosch Auto Distribution (+91 98471 22334)',
+        location: 'Bin F-04',
+        updatedAt: now.subtract(const Duration(days: 5)),
+      ),
+      InventoryItemModel(
+        id: 'inv_item_3',
+        garageId: 'garage_demo_1',
+        sku: 'BRK-PAD-FRT',
+        name: 'Ceramic High-Performance Brake Pad Set (Front)',
+        category: 'Braking',
+        unitCost: 1100.0,
+        sellingPrice: 1750.0,
+        currentStock: 3,
+        minStockAlert: 6,
+        unit: 'Sets',
+        supplier: 'Brembo India Warehouse (+91 98461 77889)',
+        location: 'Rack B-1',
+        updatedAt: now.subtract(const Duration(days: 1)),
+      ),
+      InventoryItemModel(
+        id: 'inv_item_4',
+        garageId: 'garage_demo_1',
+        sku: 'FLD-BRK-DOT4',
+        name: 'DOT 4 High Boiling Point Brake Fluid (500ml)',
+        category: 'Fluids & Lubricants',
+        unitCost: 190.0,
+        sellingPrice: 320.0,
+        currentStock: 14,
+        minStockAlert: 6,
+        unit: 'Bottles',
+        supplier: 'Motul South Hub (+91 98460 99001)',
+        location: 'Rack A-3',
+        updatedAt: now.subtract(const Duration(days: 7)),
+      ),
+      InventoryItemModel(
+        id: 'inv_item_5',
+        garageId: 'garage_demo_1',
+        sku: 'ELE-BLB-H4',
+        name: 'Philips H4 12V 60/55W VisionPlus Halogen Headlamp Bulb',
+        category: 'Electrical',
+        unitCost: 130.0,
+        sellingPrice: 240.0,
+        currentStock: 2,
+        minStockAlert: 5,
+        unit: 'Pcs',
+        supplier: 'Philips Automotive Lighting (+91 98470 55667)',
+        location: 'Bin E-12',
+        updatedAt: now.subtract(const Duration(days: 3)),
+      ),
+      InventoryItemModel(
+        id: 'inv_item_6',
+        garageId: 'garage_demo_1',
+        sku: 'BLT-SRV-6PK',
+        name: 'Continental 6PK Alternator Serpentine Belt',
+        category: 'Engine Parts',
+        unitCost: 480.0,
+        sellingPrice: 780.0,
+        currentStock: 8,
+        minStockAlert: 4,
+        unit: 'Pcs',
+        supplier: 'Continental ContiTech Hub (+91 98462 11223)',
+        location: 'Rack C-4',
+        updatedAt: now.subtract(const Duration(days: 10)),
       ),
     ]);
   }
@@ -2496,6 +2688,38 @@ class GarageRepository {
     );
     _payments.insert(0, payment);
 
+    final newPaymentRecord = PaymentRecordModel(
+      id: payment.id,
+      invoiceId: invoiceId,
+      amount: amount,
+      method: paymentMethod,
+      reference: referenceNumber,
+      recordedAt: DateTime.now(),
+      notes: notes,
+    );
+    final updatedPaymentRecords = [
+      ...currentInv.paymentRecords,
+      newPaymentRecord,
+    ];
+
+    _invoices[invIndex] = currentInv.copyWith(
+      discountAmount: updatedDiscount,
+      totalAmount: updatedTotal,
+      paidAmount: updatedPaid,
+      balanceDue: updatedBalance,
+      status: updatedStatus,
+      paymentRecords: updatedPaymentRecords,
+    );
+
+    if (updatedBalance <= 0.0 && currentInv.jobId.isNotEmpty) {
+      final jIdx = _jobs.indexWhere((j) => j.id == currentInv.jobId);
+      if (jIdx >= 0 &&
+          (_jobs[jIdx].gatePassCode == null ||
+              _jobs[jIdx].gatePassCode!.isEmpty)) {
+        await generateGatePass(currentInv.garageId, currentInv.jobId);
+      }
+    }
+
     _notifications.insert(
       0,
       NotificationModel(
@@ -2516,7 +2740,563 @@ class GarageRepository {
       ),
     );
 
+    if (FirebaseConfig.isInitialized) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(currentInv.garageId)
+            .collection('invoices')
+            .doc(invoiceId)
+            .update({
+              'discountAmount': updatedDiscount,
+              'totalAmount': updatedTotal,
+              'paidAmount': updatedPaid,
+              'balanceDue': updatedBalance,
+              'status': updatedStatus,
+              'paymentRecords': updatedPaymentRecords
+                  .map((p) => p.toMap())
+                  .toList(),
+              'updatedAt': DateTime.now().toIso8601String(),
+            });
+
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(currentInv.garageId)
+            .collection('payments')
+            .doc(payment.id)
+            .set(payment.toFirestore(), SetOptions(merge: true));
+      } catch (e) {
+        debugPrint('GARAGE_REPO_RECORD_PAYMENT_ERROR: $e');
+      }
+    }
+
     return payment;
+  }
+
+  Future<List<InventoryItemModel>> getInventory(
+    String garageId, {
+    String? category,
+    String? query,
+  }) async {
+    if (garageId.isEmpty) return [];
+    if (FirebaseConfig.isInitialized) {
+      try {
+        final snap = await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('inventory')
+            .get()
+            .timeout(const Duration(seconds: 4));
+        if (snap.docs.isNotEmpty) {
+          var items = snap.docs
+              .map((d) => InventoryItemModel.fromMap(d.data(), d.id))
+              .toList();
+          if (category != null && category.isNotEmpty && category != 'All') {
+            items = items
+                .where(
+                  (i) => i.category.toLowerCase() == category.toLowerCase(),
+                )
+                .toList();
+          }
+          if (query != null && query.isNotEmpty) {
+            final q = query.toLowerCase();
+            items = items
+                .where(
+                  (i) =>
+                      i.name.toLowerCase().contains(q) ||
+                      i.sku.toLowerCase().contains(q) ||
+                      i.category.toLowerCase().contains(q),
+                )
+                .toList();
+          }
+          return items;
+        }
+      } catch (e) {
+        debugPrint('GARAGE_REPO_GET_INVENTORY_ERROR: $e');
+      }
+    }
+    return _inventoryItems.where((i) {
+      if (i.garageId != garageId && garageId != 'garage_demo_1') return false;
+      if (category != null &&
+          category.isNotEmpty &&
+          category != 'All' &&
+          i.category.toLowerCase() != category.toLowerCase()) {
+        return false;
+      }
+      if (query != null && query.isNotEmpty) {
+        final q = query.toLowerCase();
+        return i.name.toLowerCase().contains(q) ||
+            i.sku.toLowerCase().contains(q) ||
+            i.category.toLowerCase().contains(q);
+      }
+      return true;
+    }).toList();
+  }
+
+  Future<InventoryItemModel> saveInventoryItem(
+    String garageId,
+    InventoryItemModel item,
+  ) async {
+    final id = item.id.isNotEmpty ? item.id : const Uuid().v4();
+    final updated = item.copyWith(
+      id: id,
+      garageId: garageId,
+      updatedAt: DateTime.now(),
+    );
+    final idx = _inventoryItems.indexWhere((i) => i.id == id);
+    if (idx >= 0) {
+      _inventoryItems[idx] = updated;
+    } else {
+      _inventoryItems.insert(0, updated);
+    }
+    if (FirebaseConfig.isInitialized) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('inventory')
+            .doc(id)
+            .set(updated.toMap(), SetOptions(merge: true));
+      } catch (e) {
+        debugPrint('GARAGE_REPO_SAVE_INVENTORY_ERROR: $e');
+      }
+    }
+    return updated;
+  }
+
+  Future<void> deleteInventoryItem(String garageId, String itemId) async {
+    _inventoryItems.removeWhere((i) => i.id == itemId);
+    if (FirebaseConfig.isInitialized) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('inventory')
+            .doc(itemId)
+            .delete();
+      } catch (e) {
+        debugPrint('GARAGE_REPO_DELETE_INVENTORY_ERROR: $e');
+      }
+    }
+  }
+
+  Future<void> adjustInventoryStock(
+    String garageId,
+    String itemId,
+    int quantityDelta,
+  ) async {
+    final idx = _inventoryItems.indexWhere((i) => i.id == itemId);
+    if (idx >= 0) {
+      final current = _inventoryItems[idx];
+      final newStock = (current.currentStock + quantityDelta).clamp(0, 999999);
+      final updated = current.copyWith(
+        currentStock: newStock,
+        updatedAt: DateTime.now(),
+      );
+      _inventoryItems[idx] = updated;
+      if (FirebaseConfig.isInitialized) {
+        try {
+          await FirebaseFirestore.instance
+              .collection('garages')
+              .doc(garageId)
+              .collection('inventory')
+              .doc(itemId)
+              .update({
+                'currentStock': newStock,
+                'updatedAt': DateTime.now().toIso8601String(),
+              });
+        } catch (e) {
+          debugPrint('GARAGE_REPO_ADJUST_STOCK_ERROR: $e');
+        }
+      }
+    }
+  }
+
+  Future<List<InventoryItemModel>> getLowStockItems(String garageId) async {
+    final all = await getInventory(garageId);
+    return all.where((i) => i.isLowStock).toList();
+  }
+
+  Future<void> addSupplementalWork(
+    String garageId,
+    String jobId,
+    SupplementalWorkItem item,
+  ) async {
+    final id = item.id.isNotEmpty ? item.id : const Uuid().v4();
+    final newItem = item.copyWith(
+      id: id,
+      jobId: jobId,
+      createdAt: DateTime.now(),
+    );
+    final jobIdx = _jobs.indexWhere((j) => j.id == jobId);
+    if (jobIdx >= 0) {
+      final job = _jobs[jobIdx];
+      final updatedItems = [...job.supplementalItems, newItem];
+      _jobs[jobIdx] = job.copyWith(
+        supplementalItems: updatedItems,
+        updatedAt: DateTime.now(),
+      );
+
+      final notifId = 'supp_${newItem.id}_requested';
+      _notifications.insert(
+        0,
+        NotificationModel(
+          id: const Uuid().v4(),
+          recipientUid: job.customerId,
+          title: 'Additional Repair Required: ${newItem.title}',
+          body:
+              'Mechanic found extra work: ${newItem.title} (+₹${newItem.totalAmount.toStringAsFixed(0)}). Review & approve in app.',
+          type: 'supplemental_request',
+          referenceId: jobId,
+          referenceType: 'service_job',
+          deepLink: '/customer/jobs/$jobId',
+          garageId: garageId,
+          eventId: notifId,
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
+      );
+    }
+
+    if (FirebaseConfig.isInitialized) {
+      try {
+        final jobRef = FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('serviceJobs')
+            .doc(jobId);
+        final snap = await jobRef.get();
+        if (snap.exists && snap.data() != null) {
+          final currentJob = ServiceJobModel.fromFirestore(
+            snap.data()!,
+            snap.id,
+          );
+          final updatedItems = [...currentJob.supplementalItems, newItem];
+          await jobRef.update({
+            'supplementalItems': updatedItems.map((s) => s.toMap()).toList(),
+            'updatedAt': DateTime.now().toIso8601String(),
+          });
+
+          final notifId = 'supp_${newItem.id}_requested';
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(currentJob.customerId)
+              .collection('notifications')
+              .doc(notifId)
+              .set({
+                'recipientUid': currentJob.customerId,
+                'title': 'Additional Repair Required: ${newItem.title}',
+                'body':
+                    'Mechanic found extra work: ${newItem.title} (+₹${newItem.totalAmount.toStringAsFixed(0)}). Tap to approve.',
+                'type': 'supplemental_request',
+                'referenceId': jobId,
+                'referenceType': 'service_job',
+                'deepLink': '/customer/jobs/$jobId',
+                'garageId': garageId,
+                'eventId': notifId,
+                'isRead': false,
+                'createdAt': DateTime.now().toIso8601String(),
+              }, SetOptions(merge: true));
+        }
+      } catch (e) {
+        debugPrint('GARAGE_REPO_ADD_SUPPLEMENTAL_ERROR: $e');
+      }
+    }
+  }
+
+  Future<void> decideSupplementalWork(
+    String garageId,
+    String jobId,
+    String itemId,
+    bool approved, {
+    String? rejectionReason,
+  }) async {
+    final jobIdx = _jobs.indexWhere((j) => j.id == jobId);
+    if (jobIdx >= 0) {
+      final job = _jobs[jobIdx];
+      final itemIdx = job.supplementalItems.indexWhere((s) => s.id == itemId);
+      if (itemIdx >= 0) {
+        final target = job.supplementalItems[itemIdx];
+        final updatedTarget = target.copyWith(
+          status: approved ? 'approved' : 'declined',
+          decidedAt: DateTime.now(),
+          declinedReason: rejectionReason,
+        );
+        final updatedList = List<SupplementalWorkItem>.from(
+          job.supplementalItems,
+        );
+        updatedList[itemIdx] = updatedTarget;
+        _jobs[jobIdx] = job.copyWith(
+          supplementalItems: updatedList,
+          updatedAt: DateTime.now(),
+        );
+
+        final notifId = 'supp_${itemId}_${approved ? "approved" : "declined"}';
+        _notifications.insert(
+          0,
+          NotificationModel(
+            id: const Uuid().v4(),
+            recipientUid: job.garageId,
+            title: approved
+                ? 'Supplemental Work Approved'
+                : 'Supplemental Work Declined',
+            body: approved
+                ? 'Customer approved ${target.title} (+₹${target.totalAmount.toStringAsFixed(0)}).'
+                : 'Customer declined ${target.title}${rejectionReason != null && rejectionReason.isNotEmpty ? ": $rejectionReason" : ""}.',
+            type: 'supplemental_decision',
+            referenceId: jobId,
+            referenceType: 'service_job',
+            deepLink: '/merchant/jobs/$jobId',
+            garageId: garageId,
+            eventId: notifId,
+            isRead: false,
+            createdAt: DateTime.now(),
+          ),
+        );
+      }
+    }
+
+    if (FirebaseConfig.isInitialized) {
+      try {
+        final jobRef = FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('serviceJobs')
+            .doc(jobId);
+        final snap = await jobRef.get();
+        if (snap.exists && snap.data() != null) {
+          final currentJob = ServiceJobModel.fromFirestore(
+            snap.data()!,
+            snap.id,
+          );
+          final itemIdx = currentJob.supplementalItems.indexWhere(
+            (s) => s.id == itemId,
+          );
+          if (itemIdx >= 0) {
+            final target = currentJob.supplementalItems[itemIdx];
+            final updatedTarget = target.copyWith(
+              status: approved ? 'approved' : 'declined',
+              decidedAt: DateTime.now(),
+              declinedReason: rejectionReason,
+            );
+            final updatedList = List<SupplementalWorkItem>.from(
+              currentJob.supplementalItems,
+            );
+            updatedList[itemIdx] = updatedTarget;
+            await jobRef.update({
+              'supplementalItems': updatedList.map((s) => s.toMap()).toList(),
+              'updatedAt': DateTime.now().toIso8601String(),
+            });
+
+            final notifId =
+                'supp_${itemId}_${approved ? "approved" : "declined"}';
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(garageId)
+                .collection('notifications')
+                .doc(notifId)
+                .set({
+                  'recipientUid': garageId,
+                  'title': approved
+                      ? 'Supplemental Work Approved'
+                      : 'Supplemental Work Declined',
+                  'body': approved
+                      ? 'Customer approved ${target.title} (+₹${target.totalAmount.toStringAsFixed(0)}).'
+                      : 'Customer declined ${target.title}.',
+                  'type': 'supplemental_decision',
+                  'referenceId': jobId,
+                  'referenceType': 'service_job',
+                  'deepLink': '/merchant/jobs/$jobId',
+                  'garageId': garageId,
+                  'eventId': notifId,
+                  'isRead': false,
+                  'createdAt': DateTime.now().toIso8601String(),
+                }, SetOptions(merge: true));
+          }
+        }
+      } catch (e) {
+        debugPrint('GARAGE_REPO_DECIDE_SUPPLEMENTAL_ERROR: $e');
+      }
+    }
+  }
+
+  Future<void> updateQcChecklist(
+    String garageId,
+    String jobId,
+    Map<String, bool> checklist, {
+    required String inspectorName,
+  }) async {
+    final isPassed = QCChecklistModel.isAllPassed(checklist);
+    final jobIdx = _jobs.indexWhere((j) => j.id == jobId);
+    if (jobIdx >= 0) {
+      final job = _jobs[jobIdx];
+      _jobs[jobIdx] = job.copyWith(
+        qcChecklist: checklist,
+        isQcPassed: isPassed,
+        qcInspectorName: inspectorName,
+        qcInspectedAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    }
+
+    if (FirebaseConfig.isInitialized) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('serviceJobs')
+            .doc(jobId)
+            .update({
+              'qcChecklist': checklist,
+              'isQcPassed': isPassed,
+              'qcInspectorName': inspectorName,
+              'qcInspectedAt': DateTime.now().toIso8601String(),
+              'updatedAt': DateTime.now().toIso8601String(),
+            });
+      } catch (e) {
+        debugPrint('GARAGE_REPO_UPDATE_QC_ERROR: $e');
+      }
+    }
+  }
+
+  Future<String> generateGatePass(String garageId, String jobId) async {
+    final random = math.Random();
+    final otp = (100000 + random.nextInt(900000)).toString();
+    final jobIdx = _jobs.indexWhere((j) => j.id == jobId);
+    if (jobIdx >= 0) {
+      final job = _jobs[jobIdx];
+      _jobs[jobIdx] = job.copyWith(
+        gatePassCode: otp,
+        isGatePassVerified: false,
+        updatedAt: DateTime.now(),
+      );
+
+      final notifId = 'gatepass_${jobId}_generated';
+      _notifications.insert(
+        0,
+        NotificationModel(
+          id: const Uuid().v4(),
+          recipientUid: job.customerId,
+          title: 'Digital Gate Pass Ready: OTP $otp',
+          body:
+              'Your vehicle ${job.vehicleDisplay} is ready for collection. Show this 6-digit OTP ($otp) to garage security to release vehicle.',
+          type: 'gate_pass',
+          referenceId: jobId,
+          referenceType: 'service_job',
+          deepLink: '/customer/jobs/$jobId',
+          garageId: garageId,
+          eventId: notifId,
+          isRead: false,
+          createdAt: DateTime.now(),
+        ),
+      );
+    }
+
+    if (FirebaseConfig.isInitialized) {
+      try {
+        final jobRef = FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('serviceJobs')
+            .doc(jobId);
+        await jobRef.update({
+          'gatePassCode': otp,
+          'isGatePassVerified': false,
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+      } catch (e) {
+        debugPrint('GARAGE_REPO_GENERATE_GATE_PASS_ERROR: $e');
+      }
+    }
+    return otp;
+  }
+
+  Future<bool> verifyGatePass(
+    String garageId,
+    String jobId,
+    String enteredOtp,
+  ) async {
+    final trimmed = enteredOtp.trim();
+    final jobIdx = _jobs.indexWhere((j) => j.id == jobId);
+    if (jobIdx < 0) return false;
+    final job = _jobs[jobIdx];
+    if (job.gatePassCode == null || job.gatePassCode!.trim() != trimmed) {
+      return false;
+    }
+
+    final now = DateTime.now();
+    _jobs[jobIdx] = job.copyWith(
+      isGatePassVerified: true,
+      gatePassVerifiedAt: now,
+      status: 'completed',
+      completedDate: now,
+      updatedAt: now,
+    );
+
+    final notifId = 'gatepass_${jobId}_verified';
+    _notifications.insert(
+      0,
+      NotificationModel(
+        id: const Uuid().v4(),
+        recipientUid: job.customerId,
+        title: 'Vehicle Released & Delivered',
+        body:
+            'Digital Gate Pass verified for ${job.vehicleDisplay}. Thank you for choosing Apex Speed Auto Care!',
+        type: 'delivery_completed',
+        referenceId: jobId,
+        referenceType: 'service_job',
+        deepLink: '/customer/garages/$garageId?action=review&jobId=$jobId',
+        garageId: garageId,
+        eventId: notifId,
+        isRead: false,
+        createdAt: now,
+      ),
+    );
+
+    if (FirebaseConfig.isInitialized) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('serviceJobs')
+            .doc(jobId)
+            .update({
+              'isGatePassVerified': true,
+              'gatePassVerifiedAt': now.toIso8601String(),
+              'status': 'completed',
+              'completedDate': now.toIso8601String(),
+              'updatedAt': now.toIso8601String(),
+            });
+      } catch (e) {
+        debugPrint('GARAGE_REPO_VERIFY_GATE_PASS_ERROR: $e');
+      }
+    }
+    return true;
+  }
+
+  Future<List<WarrantyItemModel>> getCustomerWarranties(
+    String customerId,
+  ) async {
+    final invoices = await getInvoices(customerId: customerId, limit: 100);
+    final List<WarrantyItemModel> list = [];
+    for (final inv in invoices) {
+      list.addAll(inv.warrantyItems);
+    }
+    return list;
+  }
+
+  Future<List<InvoiceModel>> getInvoicesForTaxExport(
+    String garageId, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final invoices = await getInvoices(garageId: garageId, limit: 200);
+    return invoices.where((inv) {
+      final date = inv.issuedAt ?? inv.createdAt ?? DateTime.now();
+      if (startDate != null && date.isBefore(startDate)) return false;
+      if (endDate != null && date.isAfter(endDate)) return false;
+      return true;
+    }).toList();
   }
 
   Future<List<PaymentModel>> getPayments({

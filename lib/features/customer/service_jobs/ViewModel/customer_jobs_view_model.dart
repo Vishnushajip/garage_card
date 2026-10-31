@@ -120,6 +120,30 @@ class CustomerJobsViewModel extends Notifier<CustomerJobsState> {
     }
   }
 
+  Future<bool> decideSupplementalWork({
+    required String garageId,
+    required String jobId,
+    required String itemId,
+    required bool approved,
+    String? reason,
+  }) async {
+    try {
+      await ref
+          .read(garageRepositoryProvider)
+          .decideSupplementalWork(
+            garageId,
+            jobId,
+            itemId,
+            approved,
+            rejectionReason: reason,
+          );
+      await loadJobDetail(jobId);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> setFilter(String? status) async {
     state = state.copyWith(filterStatus: status);
     await _loadJobs();

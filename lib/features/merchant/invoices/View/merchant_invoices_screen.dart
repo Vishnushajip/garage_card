@@ -14,6 +14,8 @@ import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/features/shared/models/invoice_model.dart';
 
+import '../../analytics/Services/tax_export_service.dart';
+
 import '../ViewModel/merchant_invoices_view_model.dart';
 import '../Widgets/record_payment_dialog.dart';
 
@@ -72,6 +74,26 @@ class MerchantInvoicesScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppCustomAppBar(
           title: 'Billing & Payments',
+          actions: [
+            IconButton(
+              tooltip: 'Export GST Tax Report (CSV)',
+              icon: const Icon(
+                Icons.file_download_outlined,
+                color: AppColors.accentBlue,
+              ),
+              onPressed: () {
+                if (state.invoices.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('No invoices available to export.'),
+                    ),
+                  );
+                  return;
+                }
+                TaxExportService.shareTaxCsv(state.invoices);
+              },
+            ),
+          ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(56),
             child: Container(
@@ -261,6 +283,72 @@ class MerchantInvoicesScreen extends ConsumerWidget {
                                     ),
                                   ],
                                 ),
+                                if (invoice.paymentRecords.isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? AppColors.backgroundDark
+                                          : AppColors.backgroundLight,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? AppColors.borderDark
+                                            : AppColors.borderLight,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Split Payment Records (${invoice.paymentRecords.length})',
+                                          style:
+                                              AppFonts.labelSmall(
+                                                color: secondaryTextColor,
+                                              ).copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        for (final rec
+                                            in invoice.paymentRecords)
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 2,
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  '${rec.method.toUpperCase()} • ${DateFormatter.formatDate(rec.recordedAt)}',
+                                                  style: AppFonts.labelSmall(
+                                                    color: secondaryTextColor,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  CurrencyFormatter.format(
+                                                    rec.amount,
+                                                  ),
+                                                  style:
+                                                      AppFonts.labelSmall(
+                                                        color:
+                                                            AppColors.success,
+                                                      ).copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                                 if (!invoice.isPaid) ...[
                                   const SizedBox(height: 16),
                                   AppButton(

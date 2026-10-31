@@ -10,6 +10,7 @@ import 'package:garage_card/features/authentication/ViewModel/auth_view_model.da
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 import 'package:go_router/go_router.dart';
 
+import '../Services/tax_export_service.dart';
 import '../ViewModel/merchant_analytics_view_model.dart';
 import '../Widgets/bill_analytics_list.dart';
 import '../Widgets/daily_briefing_modal.dart';
@@ -51,6 +52,24 @@ class MerchantAnalyticsScreen extends ConsumerWidget {
       appBar: AppCustomAppBar(
         title: 'Revenue & Operations Analytics',
         actions: [
+          IconButton(
+            icon: const Icon(Icons.file_download_outlined),
+            tooltip: 'Export GST Tax Data (CSV)',
+            onPressed: () async {
+              final invoices = await repo.getInvoicesForTaxExport(garageId);
+              if (invoices.isEmpty) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('No invoices found for tax export.'),
+                    ),
+                  );
+                }
+                return;
+              }
+              await TaxExportService.shareTaxCsv(invoices);
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Refresh Analytics',

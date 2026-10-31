@@ -17,11 +17,13 @@ import 'package:garage_card/features/customer/reminders/View/customer_reminders_
 import 'package:garage_card/features/customer/search/View/customer_search_screen.dart';
 import 'package:garage_card/features/customer/service_jobs/View/customer_job_detail_screen.dart';
 import 'package:garage_card/features/customer/service_jobs/View/customer_jobs_screen.dart';
+import 'package:garage_card/features/customer/warranty/View/customer_warranty_vault_screen.dart';
 import 'package:garage_card/features/merchant/analytics/View/merchant_analytics_screen.dart';
 import 'package:garage_card/features/merchant/customers/View/merchant_customers_screen.dart';
 import 'package:garage_card/features/merchant/dashboard/View/merchant_dashboard_screen.dart';
 import 'package:garage_card/features/merchant/estimates/View/merchant_estimates_screen.dart';
 import 'package:garage_card/features/merchant/garage_profile/View/garage_profile_screen.dart';
+import 'package:garage_card/features/merchant/inventory/View/merchant_inventory_screen.dart';
 import 'package:garage_card/features/merchant/invoices/View/merchant_invoices_screen.dart';
 import 'package:garage_card/features/merchant/merchant_navigation_shell.dart';
 import 'package:garage_card/features/merchant/more/View/merchant_more_screen.dart';
@@ -333,6 +335,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.merchantServices,
         builder: (context, state) => const MerchantServicesScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.merchantInventory,
+        builder: (context, state) => const MerchantInventoryScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.customerWarranties,
+        builder: (context, state) => const CustomerWarrantyVaultScreen(),
       ),
       GoRoute(
         path: RoutePaths.noInternet,

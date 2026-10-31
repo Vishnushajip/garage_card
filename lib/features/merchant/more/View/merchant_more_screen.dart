@@ -171,6 +171,13 @@ class MerchantMoreScreen extends ConsumerWidget {
         color: AppColors.primaryRed,
         onTap: (ctx) => ctx.push(RoutePaths.merchantServices),
       ),
+      _MenuItemData(
+        title: 'Spare Parts & Inventory',
+        subtitle: 'Track workshop stock, margins & reorder levels',
+        icon: Icons.inventory_2_rounded,
+        color: AppColors.accentBlue,
+        onTap: (ctx) => ctx.push(RoutePaths.merchantInventory),
+      ),
     ];
 
     final workshopItems = [

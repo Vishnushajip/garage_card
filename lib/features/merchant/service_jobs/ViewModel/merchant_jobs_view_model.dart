@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
+import 'package:garage_card/features/shared/models/supplemental_work_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
 import '../Model/merchant_jobs_state.dart';
@@ -171,6 +172,63 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
   void filterByStatus(String? status) {
     state = state.copyWith(filterStatus: status);
     _loadJobs();
+  }
+
+  Future<bool> verifyGatePass({
+    required String jobId,
+    required String otp,
+  }) async {
+    try {
+      final garageId = _effectiveGarageId();
+      final success = await ref
+          .read(garageRepositoryProvider)
+          .verifyGatePass(garageId, jobId, otp);
+      if (success) {
+        await selectJob(jobId);
+        await _loadJobs();
+      }
+      return success;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> updateQcChecklist({
+    required String jobId,
+    required Map<String, bool> checklist,
+    required String inspectorName,
+  }) async {
+    try {
+      final garageId = _effectiveGarageId();
+      await ref
+          .read(garageRepositoryProvider)
+          .updateQcChecklist(
+            garageId,
+            jobId,
+            checklist,
+            inspectorName: inspectorName,
+          );
+      await selectJob(jobId);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> addSupplementalWork({
+    required String jobId,
+    required SupplementalWorkItem item,
+  }) async {
+    try {
+      final garageId = _effectiveGarageId();
+      await ref
+          .read(garageRepositoryProvider)
+          .addSupplementalWork(garageId, jobId, item);
+      await selectJob(jobId);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> refresh() async {

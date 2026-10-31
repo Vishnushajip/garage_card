@@ -323,6 +323,49 @@ class _CustomerProfileScreenState extends ConsumerState<CustomerProfileScreen> {
                   side: BorderSide(color: borderColor),
                 ),
                 child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.verified_user_rounded,
+                        color: AppColors.success,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      'Warranty Vault',
+                      style: AppFonts.titleMedium(color: primaryTextColor)
+                          .copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      'View replacement parts coverage & guarantee certificates',
+                      style: AppFonts.labelSmall(color: secondaryTextColor),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.textSecondaryLight,
+                    ),
+                    onTap: () => context.push(RoutePaths.customerWarranties),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Card(
+                color: cardBg,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(color: borderColor),
+                ),
+                child: Padding(
                   padding: const EdgeInsets.all(18),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
