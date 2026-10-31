@@ -12,6 +12,7 @@ class CustomerDashboardState {
     this.activeJobs = const [],
     this.vehicles = const [],
     this.pendingEstimates = const [],
+    this.recentEstimates = const [],
     this.unpaidInvoices = const [],
     this.upcomingReminders = const [],
     this.nearbyGarages = const [],
@@ -22,6 +23,7 @@ class CustomerDashboardState {
   final List<ServiceJobModel> activeJobs;
   final List<VehicleModel> vehicles;
   final List<EstimateModel> pendingEstimates;
+  final List<EstimateModel> recentEstimates;
   final List<InvoiceModel> unpaidInvoices;
   final List<ServiceReminderModel> upcomingReminders;
   final List<GarageModel> nearbyGarages;
@@ -32,6 +34,7 @@ class CustomerDashboardState {
     List<ServiceJobModel>? activeJobs,
     List<VehicleModel>? vehicles,
     List<EstimateModel>? pendingEstimates,
+    List<EstimateModel>? recentEstimates,
     List<InvoiceModel>? unpaidInvoices,
     List<ServiceReminderModel>? upcomingReminders,
     List<GarageModel>? nearbyGarages,
@@ -42,6 +45,7 @@ class CustomerDashboardState {
       activeJobs: activeJobs ?? this.activeJobs,
       vehicles: vehicles ?? this.vehicles,
       pendingEstimates: pendingEstimates ?? this.pendingEstimates,
+      recentEstimates: recentEstimates ?? this.recentEstimates,
       unpaidInvoices: unpaidInvoices ?? this.unpaidInvoices,
       upcomingReminders: upcomingReminders ?? this.upcomingReminders,
       nearbyGarages: nearbyGarages ?? this.nearbyGarages,

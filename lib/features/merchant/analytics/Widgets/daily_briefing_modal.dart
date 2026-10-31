@@ -66,10 +66,17 @@ class DailyBriefingModal extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Good Morning! Daily Garage Briefing',
-                      style: AppFonts.titleMedium(color: AppColors.accentBlue),
+                    Expanded(
+                      child: Text(
+                        'Good Morning! Daily Garage Briefing',
+                        style: AppFonts.titleMedium(
+                          color: AppColors.accentBlue,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     InkWell(
                       onTap: onDismiss,
                       child: const Icon(

@@ -1,4 +1,9 @@
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:garage_card/core/firebase/firebase_config.dart';
+import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
+import 'package:garage_card/features/shared/models/garage_model.dart';
 import 'package:garage_card/features/shared/models/subscription_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
@@ -14,13 +19,19 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
   Future<void> _loadProfile() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final garage = await ref
-          .read(garageRepositoryProvider)
-          .getGarageDetails('garage_demo_1');
+      final user = ref.read(authViewModelProvider).userProfile;
+      final repo = ref.read(garageRepositoryProvider);
+
+      GarageModel? garage;
+      if (user?.garageId != null && user!.garageId!.isNotEmpty) {
+        garage = await repo.getGarageDetails(user.garageId!);
+      } else if (user != null) {
+        garage = await repo.getGarageByOwnerUid(user.uid);
+      }
 
       final sub = SubscriptionModel(
         id: 'sub_1',
-        garageId: 'garage_demo_1',
+        garageId: garage?.id ?? 'sub_new',
         planId: 'pro',
         status: 'active',
         validUntil: DateTime.now().add(const Duration(days: 300)),
@@ -45,33 +56,63 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
     required String taxNumber,
     required String currencyCode,
     required String openHours,
+    String? googleAddress,
+    String? googleMapsUrl,
+    double? latitude,
+    double? longitude,
     bool? isDoorstepRepairAvailable,
     bool? isRoadsideAssistanceAvailable,
   }) async {
     state = state.copyWith(isSaving: true, errorMessage: null);
     try {
+      final user = ref.read(authViewModelProvider).userProfile;
       final current = state.garage;
-      if (current != null) {
-        final updated = current.copyWith(
-          name: name,
-          address: address,
-          phone: phone,
-          email: email,
-          taxNumber: taxNumber,
-          currencyCode: currencyCode,
-          openHours: openHours,
-          isDoorstepRepairAvailable:
-              isDoorstepRepairAvailable ?? current.isDoorstepRepairAvailable,
-          isRoadsideAssistanceAvailable:
-              isRoadsideAssistanceAvailable ??
-              current.isRoadsideAssistanceAvailable,
-        );
-        await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
-        state = state.copyWith(isSaving: false, garage: updated);
-        return true;
+      final garageId =
+          current?.id ??
+          (user != null ? 'garage_${user.uid}' : 'garage_demo_1');
+
+      final updated = GarageModel(
+        id: garageId,
+        name: name,
+        logoUrl: current?.logoUrl,
+        address: address,
+        googleAddress: googleAddress ?? current?.googleAddress,
+        googleMapsUrl: googleMapsUrl ?? current?.googleMapsUrl,
+        phone: phone,
+        email: email,
+        currencyCode: currencyCode,
+        latitude: latitude ?? current?.latitude ?? 9.9674,
+        longitude: longitude ?? current?.longitude ?? 76.2891,
+        city: current?.city ?? 'Kochi',
+        rating: current?.rating ?? 5.0,
+        openHours: openHours,
+        isVerified: true,
+        ownerUid: current?.ownerUid ?? user?.uid ?? 'owner_unknown',
+        taxNumber: taxNumber,
+        servicesOffered:
+            current?.servicesOffered ??
+            const [
+              'Periodic Maintenance',
+              'Brake System Overhaul',
+              'Engine Diagnostic & Tuning',
+            ],
+        createdAt: current?.createdAt ?? DateTime.now(),
+        isDoorstepRepairAvailable:
+            isDoorstepRepairAvailable ??
+            current?.isDoorstepRepairAvailable ??
+            false,
+        isRoadsideAssistanceAvailable:
+            isRoadsideAssistanceAvailable ??
+            current?.isRoadsideAssistanceAvailable ??
+            false,
+      );
+
+      await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
+      if (user != null && (user.garageId == null || user.garageId!.isEmpty)) {
+        await ref.read(authViewModelProvider.notifier).updateGarageId(garageId);
       }
-      state = state.copyWith(isSaving: false);
-      return false;
+      state = state.copyWith(isSaving: false, garage: updated);
+      return true;
     } catch (e) {
       state = state.copyWith(isSaving: false, errorMessage: e.toString());
       return false;
@@ -92,6 +133,80 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
     final updated = current.copyWith(isRoadsideAssistanceAvailable: value);
     state = state.copyWith(garage: updated);
     await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
+  }
+
+  Future<bool> uploadGarageLogo(XFile file) async {
+    final current = state.garage;
+    if (current == null) return false;
+
+    state = state.copyWith(isSaving: true, errorMessage: null);
+    try {
+      final bytes = await file.readAsBytes();
+      final ext = file.name.split('.').last;
+      final refPath =
+          'garages/${current.id}/branding/logo_${DateTime.now().millisecondsSinceEpoch}.$ext';
+
+      String downloadUrl = '';
+      if (FirebaseConfig.isInitialized) {
+        try {
+          final storageRef = FirebaseStorage.instance.ref(refPath);
+          final metadata = SettableMetadata(
+            contentType: file.mimeType ?? 'image/jpeg',
+          );
+          final task = await storageRef.putData(bytes, metadata);
+          downloadUrl = await task.ref.getDownloadURL();
+        } catch (_) {}
+      }
+
+      if (downloadUrl.isEmpty) {
+        downloadUrl = file.path;
+      }
+
+      final updated = current.copyWith(logoUrl: downloadUrl);
+      await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
+      state = state.copyWith(isSaving: false, garage: updated);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isSaving: false, errorMessage: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> uploadGarageCover(XFile file) async {
+    final current = state.garage;
+    if (current == null) return false;
+
+    state = state.copyWith(isSaving: true, errorMessage: null);
+    try {
+      final bytes = await file.readAsBytes();
+      final ext = file.name.split('.').last;
+      final refPath =
+          'garages/${current.id}/branding/cover_${DateTime.now().millisecondsSinceEpoch}.$ext';
+
+      String downloadUrl = '';
+      if (FirebaseConfig.isInitialized) {
+        try {
+          final storageRef = FirebaseStorage.instance.ref(refPath);
+          final metadata = SettableMetadata(
+            contentType: file.mimeType ?? 'image/jpeg',
+          );
+          final task = await storageRef.putData(bytes, metadata);
+          downloadUrl = await task.ref.getDownloadURL();
+        } catch (_) {}
+      }
+
+      if (downloadUrl.isEmpty) {
+        downloadUrl = file.path;
+      }
+
+      final updated = current.copyWith(coverImageUrl: downloadUrl);
+      await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
+      state = state.copyWith(isSaving: false, garage: updated);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isSaving: false, errorMessage: e.toString());
+      return false;
+    }
   }
 
   Future<void> refresh() async {

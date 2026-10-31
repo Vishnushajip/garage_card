@@ -52,7 +52,7 @@ class ConversationListViewModel extends Notifier<ConversationListState> {
   @override
   ConversationListState build() {
     _repo = ref.watch(garageRepositoryProvider);
-    _initStream();
+    Future.microtask(() => _initStream());
     ref.onDispose(() {
       _sub?.cancel();
     });

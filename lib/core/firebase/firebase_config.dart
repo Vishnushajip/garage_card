@@ -7,8 +7,18 @@ class FirebaseConfig {
   FirebaseConfig._();
 
   static bool _isInitialized = false;
+  static bool _isFirestoreDatabaseReady = true;
 
   static bool get isInitialized => _isInitialized;
+  static bool get isFirestoreDatabaseReady => _isFirestoreDatabaseReady;
+
+  static void markFirestoreUnavailable() {
+    _isFirestoreDatabaseReady = false;
+  }
+
+  static void markFirestoreAvailable() {
+    _isFirestoreDatabaseReady = true;
+  }
 
   static Future<void> initialize() async {
     if (_isInitialized) return;

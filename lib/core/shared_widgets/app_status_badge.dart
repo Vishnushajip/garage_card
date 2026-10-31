@@ -13,9 +13,18 @@ class AppStatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     Color bg;
     Color fg;
-    String display = customLabel ?? status.toUpperCase();
+    final normalized = status
+        .replaceAllMapped(RegExp(r'([A-Z])'), (m) => '_${m[1]}')
+        .toLowerCase()
+        .replaceAll(' ', '_');
 
-    final normalized = status.toLowerCase().replaceAll(' ', '_');
+    String display =
+        customLabel ??
+        status
+            .replaceAllMapped(RegExp(r'([A-Z])'), (m) => ' ${m[1]}')
+            .replaceAll('_', ' ')
+            .trim()
+            .toUpperCase();
 
     switch (normalized) {
       case 'completed':
@@ -53,15 +62,21 @@ class AppStatusBadge extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      constraints: const BoxConstraints(maxWidth: 160),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         display,
-        style: AppFonts.labelSmall(color: fg)
-            .copyWith(fontWeight: FontWeight.w700, letterSpacing: 0.4),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppFonts.labelSmall(color: fg).copyWith(
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.3,
+          fontSize: 10,
+        ),
       ),
     );
   }

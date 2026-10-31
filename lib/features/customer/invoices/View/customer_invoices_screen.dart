@@ -4,6 +4,7 @@ import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
@@ -31,16 +32,75 @@ class CustomerInvoicesScreen extends ConsumerWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Invoices & Payments',
-            style: AppFonts.titleLarge(color: primaryTextColor),
-          ),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Invoices'),
-              Tab(text: 'Payment History'),
-            ],
+        appBar: AppCustomAppBar(
+          title: 'Invoices & Payments',
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(56),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              height: 44,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppColors.surfaceDark
+                    : AppColors.backgroundLight,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                ),
+              ),
+              child: TabBar(
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                indicatorSize: TabBarIndicatorSize.tab,
+                dividerColor: Colors.transparent,
+                indicator: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: AppColors.primaryRed,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryRed.withValues(alpha: 0.3),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: secondaryTextColor,
+                labelStyle: AppFonts.labelLarge(color: Colors.white)
+                    .copyWith(fontWeight: FontWeight.bold),
+                unselectedLabelStyle: AppFonts.labelLarge(
+                  color: secondaryTextColor,
+                ),
+                tabs: const [
+                  Tab(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.receipt_long_rounded, size: 17),
+                          SizedBox(width: 8),
+                          Text('Invoices'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Tab(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.payments_outlined, size: 17),
+                          SizedBox(width: 8),
+                          Text('Payment History'),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
         body: TabBarView(
@@ -61,8 +121,8 @@ class CustomerInvoicesScreen extends ConsumerWidget {
                     }
                     if (state.invoices.isEmpty) {
                       return const AppEmptyState(
-                        title: 'No Invoices Found',
-                        message: 'Completed repair jobs and issued invoices will appear here.',
+                        title: 'No Invoices Available Yet',
+                        description: 'Completed repair jobs and issued invoices will appear here.',
                         icon: Icons.receipt_long_outlined,
                       );
                     }

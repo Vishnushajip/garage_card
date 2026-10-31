@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/core/shared_widgets/no_internet_screen.dart';
+import 'package:garage_card/features/authentication/Model/auth_state.dart';
 import 'package:garage_card/features/authentication/View/auth_screen.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/customer/appointments/View/customer_appointments_screen.dart';
@@ -13,9 +14,9 @@ import 'package:garage_card/features/customer/nearby_garages/View/nearby_garages
 import 'package:garage_card/features/customer/notifications/View/customer_notifications_screen.dart';
 import 'package:garage_card/features/customer/profile/View/customer_profile_screen.dart';
 import 'package:garage_card/features/customer/reminders/View/customer_reminders_screen.dart';
+import 'package:garage_card/features/customer/search/View/customer_search_screen.dart';
 import 'package:garage_card/features/customer/service_jobs/View/customer_job_detail_screen.dart';
 import 'package:garage_card/features/customer/service_jobs/View/customer_jobs_screen.dart';
-import 'package:garage_card/features/customer/vehicles/View/customer_vehicles_screen.dart';
 import 'package:garage_card/features/merchant/analytics/View/merchant_analytics_screen.dart';
 import 'package:garage_card/features/merchant/customers/View/merchant_customers_screen.dart';
 import 'package:garage_card/features/merchant/dashboard/View/merchant_dashboard_screen.dart';
@@ -23,6 +24,7 @@ import 'package:garage_card/features/merchant/estimates/View/merchant_estimates_
 import 'package:garage_card/features/merchant/garage_profile/View/garage_profile_screen.dart';
 import 'package:garage_card/features/merchant/invoices/View/merchant_invoices_screen.dart';
 import 'package:garage_card/features/merchant/merchant_navigation_shell.dart';
+import 'package:garage_card/features/merchant/more/View/merchant_more_screen.dart';
 import 'package:garage_card/features/merchant/notifications/View/merchant_notifications_screen.dart';
 import 'package:garage_card/features/merchant/service_jobs/View/merchant_job_detail_screen.dart';
 import 'package:garage_card/features/merchant/service_jobs/View/merchant_jobs_screen.dart';
@@ -34,15 +36,30 @@ import 'package:garage_card/features/shared/repository/garage_repository.dart';
 import 'package:garage_card/features/splash/View/splash_screen.dart';
 import 'package:go_router/go_router.dart';
 
+class _AuthRouterListenable extends ChangeNotifier {
+  _AuthRouterListenable(Ref ref) {
+    ref.listen<AuthState>(authViewModelProvider, (previous, next) {
+      notifyListeners();
+    });
+  }
+}
+
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authViewModelProvider);
+  final authNotifier = _AuthRouterListenable(ref);
+  ref.onDispose(authNotifier.dispose);
 
   return GoRouter(
     initialLocation: RoutePaths.splash,
+    refreshListenable: authNotifier,
     debugLogDiagnostics: false,
     redirect: (context, state) {
+      final authState = ref.read(authViewModelProvider);
       final isSplashRoute = state.matchedLocation == RoutePaths.splash;
       if (isSplashRoute) {
+        return null;
+      }
+
+      if (!authState.isInitialized) {
         return null;
       }
 
@@ -57,6 +74,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return authState.activeExperience == 'merchant'
             ? RoutePaths.merchant
             : RoutePaths.customer;
+      }
+
+      if (state.matchedLocation == RoutePaths.customerVehicles) {
+        return RoutePaths.customerGarages;
+      }
+      if (state.matchedLocation == RoutePaths.customerEstimates) {
+        return RoutePaths.customerInvoices;
       }
 
       if (state.matchedLocation.startsWith('/merchant')) {
@@ -93,17 +117,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) => CustomerDashboardScreen(
                   onNavigateToNearbyGarages: () =>
                       context.go(RoutePaths.customerGarages),
-                  onNavigateToVehicles: () =>
-                      context.go(RoutePaths.customerVehicles),
-                  onNavigateToEstimates: () =>
-                      context.go(RoutePaths.customerEstimates),
                   onNavigateToInvoices: () =>
                       context.go(RoutePaths.customerInvoices),
                   onNavigateToReminders: () =>
-                      context.go(RoutePaths.customerReminders),
+                      context.push(RoutePaths.customerReminders),
                   onNavigateToJobDetail: (id) =>
-                      context.go('/customer/jobs/$id'),
-                  onNavigateToJobs: () => context.go(RoutePaths.customerJobs),
+                      context.push('/customer/jobs/$id'),
+                  onNavigateToJobs: () => context.push(RoutePaths.customerJobs),
                 ),
               ),
             ],
@@ -126,15 +146,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: RoutePaths.customerVehicles,
-                builder: (context, state) =>
-                    CustomerVehiclesScreen(onSelectVehicle: (id) {}),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
                 path: RoutePaths.customerInvoices,
                 builder: (context, state) => const CustomerInvoicesScreen(),
               ),
@@ -151,8 +162,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(
+        path: RoutePaths.customerSearch,
+        builder: (context, state) {
+          final q = state.uri.queryParameters['q'];
+          return CustomerSearchScreen(initialQuery: q);
+        },
+      ),
+      GoRoute(
         path: RoutePaths.customerJobs,
         builder: (context, state) => const CustomerJobsScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.customerVehicles,
+        builder: (context, state) => NearbyGaragesScreen(
+          onSelectGarage: (id) => context.push('/customer/garages/$id'),
+          onRequestService: (id) => CustomerAppointmentsScreen.showBookingSheet(
+            context,
+            garageId: id,
+          ),
+        ),
       ),
       GoRoute(
         path: RoutePaths.customerEstimates,
@@ -217,28 +245,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: RoutePaths.merchantCustomers,
-                builder: (context, state) => const MerchantCustomersScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: RoutePaths.merchantInvoices,
-                builder: (context, state) => const MerchantInvoicesScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: RoutePaths.merchantSettings,
-                builder: (context, state) => const GarageProfileScreen(),
+                path: RoutePaths.merchantMore,
+                builder: (context, state) => const MerchantMoreScreen(),
               ),
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: RoutePaths.merchantCustomers,
+        builder: (context, state) => const MerchantCustomersScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.merchantInvoices,
+        builder: (context, state) => const MerchantInvoicesScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.merchantSettings,
+        builder: (context, state) => const GarageProfileScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.merchantServices,
+        builder: (context, state) => const MerchantServicesScreen(),
       ),
       GoRoute(
         path: RoutePaths.merchantEstimates,
@@ -293,9 +321,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final convId = state.pathParameters['id'] ?? '';
           final name = state.uri.queryParameters['name'] ?? 'Chat';
           final subtitle = state.uri.queryParameters['subtitle'];
+          final phone = state.uri.queryParameters['phone'];
           return ChatScreen(
             conversationId: convId,
             recipientName: name,
+            recipientPhone: phone,
             subtitle: subtitle,
           );
         },

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
-import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_dialog.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_firestore_paginated_list_view.dart';
@@ -19,25 +19,18 @@ class CustomerNotificationsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(customerNotificationsViewModelProvider);
     final vm = ref.read(customerNotificationsViewModelProvider.notifier);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor = isDark
-        ? AppColors.textPrimaryDark
-        : AppColors.textPrimaryLight;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppCustomAppBar(
         leading: state.isSelectionMode
             ? IconButton(
                 icon: const Icon(Icons.close_rounded),
                 onPressed: vm.clearSelection,
               )
             : null,
-        title: Text(
-          state.isSelectionMode
-              ? '${state.selectedIds.length} selected'
-              : 'Notifications',
-          style: AppFonts.titleLarge(color: primaryTextColor),
-        ),
+        title: state.isSelectionMode
+            ? '${state.selectedIds.length} selected'
+            : 'Notifications',
         actions: [
           if (state.isSelectionMode) ...[
             TextButton(

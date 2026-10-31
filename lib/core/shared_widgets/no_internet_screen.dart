@@ -100,7 +100,9 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
                   border: Border.all(color: borderColor),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.35 : 0.06),
+                      color: Colors.black.withValues(
+                        alpha: isDark ? 0.35 : 0.06,
+                      ),
                       blurRadius: 28,
                       offset: const Offset(0, 14),
                     ),
@@ -114,28 +116,30 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
                       customLabel: 'OFFLINE MODE',
                     ),
                     const SizedBox(height: 24),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
-                      child: Container(
-                        height: 220,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFFF1F5F9),
-                          border: Border.all(
-                            color: borderColor.withOpacity(0.5),
-                          ),
+                    Container(
+                      height: 140,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppColors.backgroundDark
+                            : AppColors.backgroundLight,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: borderColor.withValues(alpha: 0.5),
                         ),
-                        child: Image.asset(
-                          'assets/images/no_internet.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => Center(
-                            child: Icon(
-                              Icons.wifi_off_rounded,
-                              size: 80,
-                              color: AppColors.primaryRed.withOpacity(0.8),
-                            ),
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryRed.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.wifi_off_rounded,
+                            size: 42,
+                            color: AppColors.primaryRed,
                           ),
                         ),
                       ),
@@ -149,12 +153,12 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Garage Card requires an active internet connection to sync live repair jobs, digital estimates, and customer invoices in real time.',
+                      'Garage Card requires an active internet connection to sync live repair jobs, digital estimates, and customer invoices in real time. Please check your Wi-Fi router or cellular mobile data connection.',
                       style: AppFonts.bodyMedium(color: secondaryTextColor)
                           .copyWith(height: 1.5),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -177,7 +181,7 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Please check your Wi-Fi router or cellular mobile data connection.',
+                              'Cached records (jobs, vehicles & invoices) remain accessible offline.',
                               style: AppFonts.labelSmall(
                                 color: secondaryTextColor,
                               ),
@@ -186,7 +190,7 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
                     AppButton(
                       label: 'Check Connection',
                       icon: const Icon(
@@ -197,6 +201,18 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
                       isFullWidth: true,
                       isLoading: _isChecking,
                       onPressed: _handleRetry,
+                    ),
+                    const SizedBox(height: 12),
+                    AppButton(
+                      label: 'Browse Offline / View Cached Data',
+                      variant: AppButtonVariant.outline,
+                      icon: const Icon(Icons.cloud_off_rounded, size: 18),
+                      isFullWidth: true,
+                      onPressed: () {
+                        ref
+                            .read(offlineBrowsingProvider.notifier)
+                            .allowOfflineMode();
+                      },
                     ),
                   ],
                 ),

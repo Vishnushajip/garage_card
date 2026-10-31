@@ -10,7 +10,8 @@ import 'package:go_router/go_router.dart';
 class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const AppCustomAppBar({
     super.key,
-    required this.title,
+    this.title = '',
+    this.titleWidget,
     this.subtitle,
     this.leading,
     this.actions,
@@ -20,9 +21,11 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     this.onNotificationTap,
     this.bottom,
     this.centerTitle = false,
+    this.backgroundColor,
   });
 
   final String title;
+  final Widget? titleWidget;
   final String? subtitle;
   final Widget? leading;
   final List<Widget>? actions;
@@ -32,10 +35,11 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final VoidCallback? onNotificationTap;
   final PreferredSizeWidget? bottom;
   final bool centerTitle;
+  final Color? backgroundColor;
 
   @override
   Size get preferredSize =>
-      Size.fromHeight(64 + (bottom?.preferredSize.height ?? 0));
+      Size.fromHeight(60 + (bottom?.preferredSize.height ?? 0));
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,7 +50,9 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final secondaryTextColor = isDark
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
-    final bgColor = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
+    final bgColor =
+        backgroundColor ??
+        (isDark ? AppColors.surfaceDark : AppColors.surfaceLight);
     final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
     final canPop = Navigator.of(context).canPop();
     final authState = ref.watch(authViewModelProvider);
@@ -55,23 +61,26 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     Widget? effectiveLeading = leading;
     if (effectiveLeading == null && canPop) {
       effectiveLeading = Center(
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => Navigator.of(context).pop(),
-          child: Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? AppColors.backgroundDark
-                  : AppColors.backgroundLight,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: borderColor),
-            ),
-            child: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 16,
-              color: primaryTextColor,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppColors.backgroundDark
+                    : AppColors.backgroundLight,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: borderColor),
+              ),
+              child: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 15,
+                color: primaryTextColor,
+              ),
             ),
           ),
         ),
@@ -79,81 +88,6 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     }
 
     final effectiveActions = <Widget>[...?actions];
-
-    if (showAccountSwitch) {
-      effectiveActions.insert(
-        0,
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(20),
-              onTap: () async {
-                final target = isMerchant ? 'customer' : 'merchant';
-                await ref
-                    .read(authViewModelProvider.notifier)
-                    .switchExperience(target);
-                if (context.mounted) {
-                  context.go(
-                    target == 'merchant'
-                        ? RoutePaths.merchant
-                        : RoutePaths.customer,
-                  );
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: isMerchant
-                      ? AppColors.accentAmber.withValues(alpha: 0.12)
-                      : AppColors.primaryRed.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isMerchant
-                        ? AppColors.accentAmber.withValues(alpha: 0.4)
-                        : AppColors.primaryRed.withValues(alpha: 0.4),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      isMerchant
-                          ? Icons.storefront_rounded
-                          : Icons.directions_car_rounded,
-                      size: 14,
-                      color: isMerchant
-                          ? AppColors.accentAmber
-                          : AppColors.primaryRed,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      isMerchant ? 'Merchant' : 'Customer',
-                      style: AppFonts.labelSmall(
-                        color: isMerchant
-                            ? AppColors.accentAmber
-                            : AppColors.primaryRed,
-                      ).copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.swap_horiz_rounded,
-                      size: 14,
-                      color: isMerchant
-                          ? AppColors.accentAmber
-                          : AppColors.primaryRed,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
 
     if (showNotifications) {
       effectiveActions.add(
@@ -182,6 +116,44 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
       );
     }
 
+    Widget? effectiveMiddle = titleWidget;
+    if (effectiveMiddle == null && title.isNotEmpty) {
+      effectiveMiddle = Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: centerTitle
+            ? CrossAxisAlignment.center
+            : CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: AppFonts.titleMedium(color: primaryTextColor)
+                .copyWith(fontWeight: FontWeight.bold),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (subtitle != null && subtitle!.isNotEmpty) ...[
+            const SizedBox(height: 1),
+            Text(
+              subtitle!,
+              style: AppFonts.labelSmall(color: secondaryTextColor),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ],
+      );
+    }
+
+    final Widget? effectiveTrailing = effectiveActions.isNotEmpty
+        ? Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: effectiveActions,
+            ),
+          )
+        : null;
+
     final barWidget = Container(
       decoration: BoxDecoration(
         color: bgColor,
@@ -194,37 +166,11 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                height: 63,
+                height: 59,
                 child: NavigationToolbar(
                   leading: effectiveLeading,
-                  middle: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: centerTitle
-                        ? CrossAxisAlignment.center
-                        : CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: AppFonts.titleMedium(color: primaryTextColor)
-                            .copyWith(fontWeight: FontWeight.bold),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 1),
-                        Text(
-                          subtitle!,
-                          style: AppFonts.labelSmall(color: secondaryTextColor),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: effectiveActions,
-                  ),
+                  middle: effectiveMiddle,
+                  trailing: effectiveTrailing,
                   centerMiddle: centerTitle,
                   middleSpacing: 12,
                 ),

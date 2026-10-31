@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_dropdown.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
@@ -36,18 +37,9 @@ class CustomerAppointmentsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(customerAppointmentViewModelProvider);
     final vm = ref.read(customerAppointmentViewModelProvider.notifier);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor = isDark
-        ? AppColors.textPrimaryDark
-        : AppColors.textPrimaryLight;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Service Appointments',
-          style: AppFonts.titleLarge(color: primaryTextColor),
-        ),
-      ),
+      appBar: const AppCustomAppBar(title: 'Service Appointments'),
       body: AppRefresh(
         onRefresh: vm.refresh,
         child: AppResponsiveLayout(

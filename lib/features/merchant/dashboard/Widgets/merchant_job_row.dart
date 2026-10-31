@@ -21,31 +21,45 @@ class MerchantJobRow extends StatelessWidget {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
 
-    return ListTile(
+    return InkWell(
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      title: Row(
-        children: [
-          Text(
-            job.jobNumber,
-            style: AppFonts.labelLarge(color: AppColors.accentBlue),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    job.jobNumber,
+                    style: AppFonts.labelLarge(color: AppColors.accentBlue),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                AppStatusBadge(status: job.status),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
               job.vehicleDisplay,
-              style: AppFonts.bodyLarge(color: primaryTextColor),
+              style: AppFonts.titleSmall(color: primaryTextColor),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Text(
+              'Customer: ${job.customerName} • ${DateFormatter.formatRelative(job.updatedAt)}',
+              style: AppFonts.labelSmall(color: secondaryTextColor),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
-      subtitle: Text(
-        'Customer: ${job.customerName} • ${DateFormatter.formatRelative(job.updatedAt)}',
-        style: AppFonts.labelSmall(color: secondaryTextColor),
-      ),
-      trailing: AppStatusBadge(status: job.status),
     );
   }
 }

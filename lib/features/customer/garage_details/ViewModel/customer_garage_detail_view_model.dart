@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
@@ -32,7 +33,11 @@ class CustomerGarageDetailViewModel
 
       final authUser = ref.read(authViewModelProvider).userProfile;
       final customerId = authUser?.uid ?? 'cust_demo_1';
-      final vehicles = await _repo.getVehicles(customerId: customerId);
+      final email = authUser?.email ?? FirebaseAuth.instance.currentUser?.email;
+      final vehicles = await _repo.getVehicles(
+        customerId: customerId,
+        userEmail: email,
+      );
 
       final defaultVehicle = vehicles.isNotEmpty ? vehicles.first : null;
 
@@ -56,8 +61,15 @@ class CustomerGarageDetailViewModel
     if (vehicle == null) {
       state = state.copyWith(clearSelectedVehicle: true);
     } else {
-      state = state.copyWith(selectedVehicle: vehicle);
+      state = state.copyWith(
+        selectedVehicle: vehicle,
+        selectedVehicleType: vehicle.vehicleType,
+      );
     }
+  }
+
+  void selectVehicleType(String type) {
+    state = state.copyWith(selectedVehicleType: type);
   }
 
   void selectCategory(String category) {

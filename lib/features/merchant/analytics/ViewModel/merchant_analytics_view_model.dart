@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/models/invoice_model.dart';
 import 'package:garage_card/features/shared/models/notification_model.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
@@ -22,12 +23,21 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
   Future<void> _loadAnalytics() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
+      final user = ref.read(authViewModelProvider).userProfile;
       final repo = ref.read(garageRepositoryProvider);
-      const garageId = 'garage_demo_1';
+      final garageId = (user?.garageId != null && user!.garageId!.isNotEmpty)
+          ? user.garageId!
+          : 'garage_demo_1';
 
-      final invoices = await repo.getInvoices(garageId: garageId, limit: 100);
-      final jobs = await repo.getServiceJobs(garageId: garageId, limit: 100);
-      final payments = await repo.getPayments(garageId: garageId, limit: 100);
+      final results = await Future.wait([
+        repo.getInvoices(garageId: garageId, limit: 100),
+        repo.getServiceJobs(garageId: garageId, limit: 100),
+        repo.getPayments(garageId: garageId, limit: 100),
+      ]);
+
+      final invoices = results[0] as List<InvoiceModel>;
+      final jobs = results[1] as List<ServiceJobModel>;
+      final payments = results[2];
 
       final now = DateTime.now();
       final dateRange = _calculateDateRange(
@@ -53,12 +63,6 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
         now: now,
       );
 
-      final shouldShowBriefing = await _checkAndTriggerMorningBriefing(
-        now: now,
-        todayDeliveries: todoData.todayDeliveries,
-        pendingDues: todoData.pendingDues,
-      );
-
       state = state.copyWith(
         isLoading: false,
         metrics: metrics,
@@ -66,8 +70,18 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
         yesterdayCompletedCount: todoData.yesterdayCompleted,
         todayDeliveriesCount: todoData.todayDeliveries,
         todayPendingPaymentsCount: todoData.pendingDues,
-        showMorningBriefing: shouldShowBriefing,
+        showMorningBriefing: false,
       );
+
+      _checkAndTriggerMorningBriefing(
+        now: now,
+        todayDeliveries: todoData.todayDeliveries,
+        pendingDues: todoData.pendingDues,
+      ).then((shouldShow) {
+        if (shouldShow) {
+          state = state.copyWith(showMorningBriefing: true);
+        }
+      });
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }

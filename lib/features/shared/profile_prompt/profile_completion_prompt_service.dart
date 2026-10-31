@@ -50,6 +50,18 @@ class ProfileCompletionPromptService {
     await prefs.setBool('$_completedPrefix$uid', true);
   }
 
+  Future<void> showCompletionSheet(
+    BuildContext context,
+    UserProfileModel user,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => ProfileCompletionBottomSheet(userProfile: user),
+    );
+  }
+
   Future<void> checkAndShowPrompt(BuildContext context, WidgetRef ref) async {
     final authState = ref.read(authViewModelProvider);
     final user = authState.userProfile;

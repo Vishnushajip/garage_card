@@ -268,24 +268,26 @@ exports.sendAuthorizedNotification = onCall(async (request) => {
   const { recipientUid, title, body, imageUrl, deepLink, type, garageId, eventId } =
     request.data;
 
-  if (!recipientUid || !title || !body) {
-    throw new HttpsError("invalid-argument", "Missing required fields.");
+  if (!recipientUid || !title || !body || !garageId) {
+    throw new HttpsError("invalid-argument", "Missing required fields (recipientUid, title, body, garageId).");
   }
 
-  if (garageId) {
-    const garageDoc = await db.collection("garages").doc(garageId).get();
-    const garageData = garageDoc.data();
-    const isOwner = garageData?.ownerUid === request.auth.uid;
-    const isMember =
-      Array.isArray(garageData?.memberUids) &&
-      garageData.memberUids.includes(request.auth.uid);
+  const garageDoc = await db.collection("garages").doc(garageId).get();
+  if (!garageDoc.exists) {
+    throw new HttpsError("not-found", "Specified garage does not exist.");
+  }
+  const garageData = garageDoc.data();
+  const isOwner = garageData?.ownerUid === request.auth.uid;
+  const isMember =
+    Array.isArray(garageData?.memberUids) &&
+    garageData.memberUids.includes(request.auth.uid);
+  const isCustomerInquiring = garageData?.ownerUid === recipientUid;
 
-    if (!isOwner && !isMember) {
-      throw new HttpsError(
-        "permission-denied",
-        "Not authorized to send notifications for this garage."
-      );
-    }
+  if (!isOwner && !isMember && !isCustomerInquiring) {
+    throw new HttpsError(
+      "permission-denied",
+      "Not authorized to send notifications for this garage."
+    );
   }
 
   const resolvedEventId = eventId || `manual_${Date.now()}_${Math.random().toString(36).substring(7)}`;

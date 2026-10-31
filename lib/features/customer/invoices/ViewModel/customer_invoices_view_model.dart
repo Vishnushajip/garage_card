@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/models/invoice_model.dart';
+import 'package:garage_card/features/shared/models/payment_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
 import '../Model/customer_invoices_state.dart';
@@ -29,7 +30,9 @@ class CustomerInvoicesViewModel extends Notifier<CustomerInvoicesState> {
       final invoices = uid != null
           ? await repo.getInvoices(customerId: uid)
           : <InvoiceModel>[];
-      final payments = await repo.getPayments(garageId: 'garage_demo_1');
+      final payments = uid != null
+          ? await repo.getPayments(customerId: uid)
+          : <PaymentModel>[];
 
       state = state.copyWith(
         isLoading: false,

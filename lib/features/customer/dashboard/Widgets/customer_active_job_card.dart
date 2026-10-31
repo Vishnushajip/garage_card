@@ -46,11 +46,15 @@ class CustomerActiveJobCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    job.jobNumber,
-                    style: AppFonts.labelSmall(color: AppColors.accentBlue)
-                        .copyWith(fontWeight: FontWeight.bold),
+                  Expanded(
+                    child: Text(
+                      job.jobNumber,
+                      style: AppFonts.labelSmall(color: AppColors.accentBlue)
+                          .copyWith(fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   AppStatusBadge(status: job.status),
                 ],
               ),
@@ -72,22 +76,30 @@ class CustomerActiveJobCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.schedule_rounded,
-                        size: 16,
-                        color: AppColors.accentBlue,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        job.estimatedCompletionDate != null
-                            ? 'Est: ${DateFormatter.formatDateTime(job.estimatedCompletionDate)}'
-                            : 'Updated: ${DateFormatter.formatRelative(job.updatedAt)}',
-                        style: AppFonts.labelSmall(color: secondaryTextColor),
-                      ),
-                    ],
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.schedule_rounded,
+                          size: 16,
+                          color: AppColors.accentBlue,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            job.estimatedCompletionDate != null
+                                ? 'Est: ${DateFormatter.formatDateTime(job.estimatedCompletionDate)}'
+                                : 'Updated: ${DateFormatter.formatRelative(job.updatedAt)}',
+                            style: AppFonts.labelSmall(
+                              color: secondaryTextColor,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   const Icon(
                     Icons.chevron_right_rounded,
                     color: AppColors.accentBlue,

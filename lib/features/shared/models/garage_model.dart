@@ -8,6 +8,8 @@ class GarageModel {
     this.coverImageUrl,
     this.description = '',
     required this.address,
+    this.googleAddress,
+    this.googleMapsUrl,
     required this.phone,
     this.whatsappNumber,
     required this.email,
@@ -34,6 +36,8 @@ class GarageModel {
   final String? coverImageUrl;
   final String description;
   final String address;
+  final String? googleAddress;
+  final String? googleMapsUrl;
   final String phone;
   final String? whatsappNumber;
   final String email;
@@ -60,6 +64,8 @@ class GarageModel {
       'coverImageUrl': coverImageUrl,
       'description': description,
       'address': address,
+      'googleAddress': googleAddress,
+      'googleMapsUrl': googleMapsUrl,
       'phone': phone,
       'whatsappNumber': whatsappNumber,
       'email': email,
@@ -89,6 +95,8 @@ class GarageModel {
       coverImageUrl: data['coverImageUrl'] as String?,
       description: data['description'] as String? ?? '',
       address: data['address'] as String? ?? '',
+      googleAddress: data['googleAddress'] as String?,
+      googleMapsUrl: data['googleMapsUrl'] as String?,
       phone: data['phone'] as String? ?? '',
       whatsappNumber:
           data['whatsappNumber'] as String? ?? data['phone'] as String?,
@@ -128,6 +136,8 @@ class GarageModel {
     String? coverImageUrl,
     String? description,
     String? address,
+    String? googleAddress,
+    String? googleMapsUrl,
     String? phone,
     String? whatsappNumber,
     String? email,
@@ -154,6 +164,8 @@ class GarageModel {
       coverImageUrl: coverImageUrl ?? this.coverImageUrl,
       description: description ?? this.description,
       address: address ?? this.address,
+      googleAddress: googleAddress ?? this.googleAddress,
+      googleMapsUrl: googleMapsUrl ?? this.googleMapsUrl,
       phone: phone ?? this.phone,
       whatsappNumber: whatsappNumber ?? this.whatsappNumber,
       email: email ?? this.email,

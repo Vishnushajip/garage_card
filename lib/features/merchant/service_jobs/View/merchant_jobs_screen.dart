@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_firestore_paginated_list_view.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
@@ -53,12 +54,7 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
         : AppColors.textPrimaryLight;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Service Jobs Management',
-          style: AppFonts.titleLarge(color: primaryTextColor),
-        ),
-      ),
+      appBar: const AppCustomAppBar(title: 'Service Jobs Management'),
       body: AppResponsiveLayout(
         child: Column(
           children: [

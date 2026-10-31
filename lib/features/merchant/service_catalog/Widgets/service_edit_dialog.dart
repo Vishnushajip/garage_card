@@ -43,78 +43,123 @@ class ServiceEditDialog extends StatefulWidget {
 class _ServiceEditDialogState extends State<ServiceEditDialog> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _fixedPriceController = TextEditingController();
-  final _startingPriceController = TextEditingController();
   final _durationController = TextEditingController();
+  final _includedController = TextEditingController();
+  final _excludedController = TextEditingController();
+  final _requiredPartsController = TextEditingController();
+  final _specialInstructionsController = TextEditingController();
   final _termsController = TextEditingController();
 
-  final _scooterPriceController = TextEditingController();
-  final _motorcyclePriceController = TextEditingController();
-  final _carPriceController = TextEditingController();
+  final _fixedPriceController = TextEditingController();
+  final _minPriceController = TextEditingController();
+  final _maxPriceController = TextEditingController();
 
-  final _rule1PriceController = TextEditingController();
-  final _rule2PriceController = TextEditingController();
-  final _rule3PriceController = TextEditingController();
+  final Map<String, TextEditingController> _tierFixedPriceControllers = {};
+  final Map<String, TextEditingController> _tierMinPriceControllers = {};
+  final Map<String, TextEditingController> _tierMaxPriceControllers = {};
+  final Map<String, String> _tierPricingTypes = {};
 
-  String _category = 'General';
-  String _pricingMethod = 'fixed';
+  String _category = 'Periodic Service';
+  String _pricingType = 'fixed';
+  final Set<String> _selectedVehicles = {'car', 'motorcycle', 'scooter'};
+  bool _isActive = true;
   bool _isSaving = false;
   String? _error;
+
+  static const List<Map<String, String>> _availableVehicleTypes = [
+    {'id': 'car', 'label': 'Car'},
+    {'id': 'motorcycle', 'label': 'Motorcycle'},
+    {'id': 'scooter', 'label': 'Scooter'},
+    {'id': 'electric_scooter', 'label': 'EV Scooter'},
+    {'id': 'electric_motorcycle', 'label': 'EV Motorcycle'},
+    {'id': 'other', 'label': 'Other'},
+  ];
 
   @override
   void initState() {
     super.initState();
+    for (final v in _availableVehicleTypes) {
+      final id = v['id']!;
+      _tierFixedPriceControllers[id] = TextEditingController();
+      _tierMinPriceControllers[id] = TextEditingController();
+      _tierMaxPriceControllers[id] = TextEditingController();
+      _tierPricingTypes[id] = 'fixed';
+    }
+
     final s = widget.initialService;
     if (s != null) {
       _nameController.text = s.name;
       _descriptionController.text = s.description;
       _category = s.category;
-      _pricingMethod = s.pricingMethod;
       _durationController.text = s.estimatedDuration;
       _termsController.text = s.terms ?? '';
+      _specialInstructionsController.text = s.specialInstructions ?? '';
+      _includedController.text = s.includedItems.join(', ');
+      _excludedController.text = s.excludedItems.join(', ');
+      _requiredPartsController.text = s.requiredParts.join(', ');
+      _isActive = s.isActive;
+
+      _pricingType = s.pricingType.isNotEmpty && s.pricingType != 'fixed'
+          ? s.pricingType
+          : (s.pricingMethod.isNotEmpty ? s.pricingMethod : 'fixed');
+      if (_pricingType == 'category') {
+        _pricingType = 'vehicle_specific';
+      }
 
       if (s.fixedPrice != null) {
         _fixedPriceController.text = s.fixedPrice!.toStringAsFixed(0);
       }
-      if (s.startingPrice != null) {
-        _startingPriceController.text = s.startingPrice!.toStringAsFixed(0);
+      if (s.minPrice != null) {
+        _minPriceController.text = s.minPrice!.toStringAsFixed(0);
+      }
+      if (s.maxPrice != null) {
+        _maxPriceController.text = s.maxPrice!.toStringAsFixed(0);
       }
 
-      if (s.categoryPrices.containsKey('scooter')) {
-        _scooterPriceController.text = s.categoryPrices['scooter']!
-            .toStringAsFixed(0);
-      }
-      if (s.categoryPrices.containsKey('motorcycle')) {
-        _motorcyclePriceController.text = s.categoryPrices['motorcycle']!
-            .toStringAsFixed(0);
-      }
-      if (s.categoryPrices.containsKey('car')) {
-        _carPriceController.text = s.categoryPrices['car']!.toStringAsFixed(0);
+      _selectedVehicles.clear();
+      _selectedVehicles.addAll(s.applicableVehicleTypes);
+      if (_selectedVehicles.isEmpty) {
+        _selectedVehicles.addAll(['car', 'motorcycle', 'scooter']);
       }
 
-      if (s.attributeRules.isNotEmpty) {
-        _rule1PriceController.text = s.attributeRules[0].price.toStringAsFixed(
-          0,
-        );
+      for (final tier in s.vehiclePricing) {
+        final vType = tier.vehicleType.toLowerCase();
+        if (_tierPricingTypes.containsKey(vType)) {
+          _tierPricingTypes[vType] = tier.pricingType;
+          if (tier.fixedPrice != null) {
+            _tierFixedPriceControllers[vType]?.text = tier.fixedPrice!
+                .toStringAsFixed(0);
+          }
+          if (tier.minPrice != null) {
+            _tierMinPriceControllers[vType]?.text = tier.minPrice!
+                .toStringAsFixed(0);
+          }
+          if (tier.maxPrice != null) {
+            _tierMaxPriceControllers[vType]?.text = tier.maxPrice!
+                .toStringAsFixed(0);
+          }
+        }
       }
-      if (s.attributeRules.length > 1) {
-        _rule2PriceController.text = s.attributeRules[1].price.toStringAsFixed(
-          0,
-        );
-      }
-      if (s.attributeRules.length > 2) {
-        _rule3PriceController.text = s.attributeRules[2].price.toStringAsFixed(
-          0,
-        );
+
+      for (final entry in s.categoryPrices.entries) {
+        final vType = entry.key.toLowerCase();
+        if (_tierFixedPriceControllers.containsKey(vType)) {
+          _tierFixedPriceControllers[vType]?.text = entry.value.toStringAsFixed(
+            0,
+          );
+          _tierPricingTypes[vType] = 'fixed';
+        }
       }
     } else {
       _durationController.text = '1-2 hrs';
-      _scooterPriceController.text = '300';
-      _motorcyclePriceController.text = '400';
-      _carPriceController.text = '1000';
-      _rule1PriceController.text = '350';
-      _rule2PriceController.text = '550';
-      _rule3PriceController.text = '850';
+      _fixedPriceController.text = '499';
+      _minPriceController.text = '350';
+      _maxPriceController.text = '750';
+      _tierFixedPriceControllers['car']?.text = '1499';
+      _tierFixedPriceControllers['motorcycle']?.text = '499';
+      _tierFixedPriceControllers['scooter']?.text = '349';
+      _tierFixedPriceControllers['electric_scooter']?.text = '349';
+      _tierFixedPriceControllers['electric_motorcycle']?.text = '499';
     }
   }
 
@@ -122,17 +167,34 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    _fixedPriceController.dispose();
-    _startingPriceController.dispose();
     _durationController.dispose();
+    _includedController.dispose();
+    _excludedController.dispose();
+    _requiredPartsController.dispose();
+    _specialInstructionsController.dispose();
     _termsController.dispose();
-    _scooterPriceController.dispose();
-    _motorcyclePriceController.dispose();
-    _carPriceController.dispose();
-    _rule1PriceController.dispose();
-    _rule2PriceController.dispose();
-    _rule3PriceController.dispose();
+    _fixedPriceController.dispose();
+    _minPriceController.dispose();
+    _maxPriceController.dispose();
+
+    for (final c in _tierFixedPriceControllers.values) {
+      c.dispose();
+    }
+    for (final c in _tierMinPriceControllers.values) {
+      c.dispose();
+    }
+    for (final c in _tierMaxPriceControllers.values) {
+      c.dispose();
+    }
     super.dispose();
+  }
+
+  List<String> _parseCsv(String text) {
+    return text
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
   }
 
   @override
@@ -147,12 +209,14 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
     final surfaceColor = isDark
         ? AppColors.surfaceDark
         : AppColors.surfaceLight;
+    final cardBg = isDark ? AppColors.cardDark : AppColors.cardLight;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       backgroundColor: surfaceColor,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 580),
+        constraints: const BoxConstraints(maxWidth: 620),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: SingleChildScrollView(
@@ -165,9 +229,10 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
                   children: [
                     Text(
                       widget.initialService != null
-                          ? 'Edit Service'
-                          : 'Create Garage Service',
-                      style: AppFonts.headlineSmall(color: primaryText),
+                          ? 'Edit Garage Service'
+                          : 'Add New Service',
+                      style: AppFonts.headlineSmall(color: primaryText)
+                          .copyWith(fontWeight: FontWeight.bold),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close_rounded),
@@ -181,12 +246,13 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
                 AppTextField(
                   controller: _nameController,
                   label: 'Service Name',
-                  hint: 'e.g. Engine Oil Service, Brake Pad Lathe',
+                  hint: 'e.g. Periodic Service, Foam Wash, Brake Overhaul',
+                  required: true,
                 ),
                 const SizedBox(height: 12),
                 AppTextField(
                   controller: _descriptionController,
-                  label: 'Description',
+                  label: 'Service Description',
                   hint: 'Detailed scope of work included in this service...',
                   maxLines: 2,
                 ),
@@ -195,24 +261,41 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
                   children: [
                     Expanded(
                       child: AppDropdown<String>(
-                        label: 'Service Category',
+                        label: 'Category',
                         value: _category,
                         items: const [
-                          AppDropdownItem(value: 'General', title: 'General'),
                           AppDropdownItem(
-                            value: 'Maintenance',
-                            title: 'Maintenance',
+                            value: 'Periodic Service',
+                            title: 'Periodic Maintenance',
+                          ),
+                          AppDropdownItem(
+                            value: 'Water Service & Wash',
+                            title: 'Wash & Detailing',
+                          ),
+                          AppDropdownItem(
+                            value: 'Inspections & Diagnostics',
+                            title: 'Diagnostics & Scan',
                           ),
                           AppDropdownItem(
                             value: 'Mechanical',
-                            title: 'Mechanical',
+                            title: 'Mechanical Repair',
                           ),
                           AppDropdownItem(
-                            value: 'Electrical',
-                            title: 'Electrical',
+                            value: 'Electrical & Battery',
+                            title: 'Electrical & EV',
                           ),
-                          AppDropdownItem(value: 'Bodywork', title: 'Bodywork'),
-                          AppDropdownItem(value: 'Washing', title: 'Washing'),
+                          AppDropdownItem(
+                            value: 'AC & Heating',
+                            title: 'AC & Cooling',
+                          ),
+                          AppDropdownItem(
+                            value: 'Tires & Wheels',
+                            title: 'Tires & Alignment',
+                          ),
+                          AppDropdownItem(
+                            value: 'General',
+                            title: 'General Workshop',
+                          ),
                         ],
                         onChanged: (val) {
                           if (val != null) setState(() => _category = val);
@@ -229,170 +312,266 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
                 Text(
-                  'Smart Pricing Method',
-                  style: AppFonts.labelLarge(color: primaryText),
+                  'Vehicle Compatibility',
+                  style: AppFonts.labelLarge(color: primaryText)
+                      .copyWith(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
+                Text(
+                  'Select all vehicle types compatible with this service:',
+                  style: AppFonts.bodySmall(color: secondaryText),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _availableVehicleTypes.map((v) {
+                    final id = v['id']!;
+                    final label = v['label']!;
+                    final isSelected = _selectedVehicles.contains(id);
+                    return FilterChip(
+                      label: Text(label),
+                      selected: isSelected,
+                      selectedColor: AppColors.accentBlue.withValues(
+                        alpha: 0.15,
+                      ),
+                      checkmarkColor: AppColors.accentBlue,
+                      labelStyle: TextStyle(
+                        color: isSelected ? AppColors.accentBlue : primaryText,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedVehicles.add(id);
+                          } else {
+                            if (_selectedVehicles.length > 1) {
+                              _selectedVehicles.remove(id);
+                            }
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  'Dynamic Pricing Model',
+                  style: AppFonts.labelLarge(color: primaryText)
+                      .copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
                 AppDropdown<String>(
-                  label: 'Select Pricing Model',
-                  value: _pricingMethod,
+                  label: 'Pricing Structure',
+                  value: _pricingType,
                   items: const [
                     AppDropdownItem(
                       value: 'fixed',
-                      title: 'Fixed Price (Same for all vehicles)',
+                      title: 'Option A: Fixed Price (Same for all vehicles)',
                     ),
                     AppDropdownItem(
-                      value: 'category',
-                      title: 'Category-Based (Scooter / Bike / Car)',
+                      value: 'range',
+                      title: 'Option B: Price Range (Min – Max Price)',
                     ),
                     AppDropdownItem(
-                      value: 'attribute',
-                      title: 'Attribute-Based (Engine CC / Capacity rules)',
+                      value: 'vehicle_specific',
+                      title: 'Option C: Vehicle-Specific Pricing',
                     ),
                     AppDropdownItem(
-                      value: 'startingPrice',
-                      title: 'Starting Price (Final on inspection)',
-                    ),
-                    AppDropdownItem(
-                      value: 'quotation',
-                      title: 'Quotation Required (Inspection first)',
+                      value: 'contact',
+                      title: 'Option D: Contact for Price',
                     ),
                   ],
                   onChanged: (val) {
-                    if (val != null) setState(() => _pricingMethod = val);
+                    if (val != null) setState(() => _pricingType = val);
                   },
                 ),
                 const SizedBox(height: 14),
-                if (_pricingMethod == 'fixed') ...[
+                if (_pricingType == 'fixed') ...[
                   AppTextField(
                     controller: _fixedPriceController,
                     label: 'Fixed Price (₹ INR)',
-                    hint: '250',
+                    hint: '499',
                     keyboardType: TextInputType.number,
                   ),
-                ] else if (_pricingMethod == 'startingPrice') ...[
-                  AppTextField(
-                    controller: _startingPriceController,
-                    label: 'Starting Price From (₹ INR)',
-                    hint: '500',
-                    keyboardType: TextInputType.number,
+                ] else if (_pricingType == 'range') ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppTextField(
+                          controller: _minPriceController,
+                          label: 'Minimum Price (₹)',
+                          hint: '300',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: AppTextField(
+                          controller: _maxPriceController,
+                          label: 'Maximum Price (₹)',
+                          hint: '600',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
                   ),
-                ] else if (_pricingMethod == 'category') ...[
+                ] else if (_pricingType == 'vehicle_specific') ...[
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.cardDark : AppColors.cardLight,
-                      borderRadius: BorderRadius.circular(10),
+                      color: cardBg,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: borderColor),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Category Pricing Rules (INR)',
-                          style: AppFonts.labelMedium(color: primaryText),
+                          'Vehicle-Specific Price Tiers (₹ INR)',
+                          style: AppFonts.labelMedium(color: primaryText)
+                              .copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: AppTextField(
-                                controller: _scooterPriceController,
-                                label: 'Scooter (₹)',
-                                hint: '300',
-                                keyboardType: TextInputType.number,
-                              ),
+                        ..._selectedVehicles.map((vId) {
+                          final vLabel = _availableVehicleTypes.firstWhere(
+                            (x) => x['id'] == vId,
+                            orElse: () => {'label': vId},
+                          )['label']!;
+                          final currentMode = _tierPricingTypes[vId] ?? 'fixed';
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppColors.surfaceDark
+                                  : AppColors.surfaceLight,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: borderColor),
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: AppTextField(
-                                controller: _motorcyclePriceController,
-                                label: 'Motorcycle (₹)',
-                                hint: '400',
-                                keyboardType: TextInputType.number,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      vId == 'car'
+                                          ? Icons.directions_car_rounded
+                                          : Icons.two_wheeler_rounded,
+                                      size: 16,
+                                      color: AppColors.accentBlue,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        vLabel,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppFonts.labelMedium(
+                                          color: primaryText,
+                                        ).copyWith(fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    DropdownButton<String>(
+                                      value: currentMode,
+                                      isDense: true,
+                                      underline: const SizedBox.shrink(),
+                                      items: const [
+                                        DropdownMenuItem(
+                                          value: 'fixed',
+                                          child: Text('Fixed'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'range',
+                                          child: Text('Range'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'contact',
+                                          child: Text('Contact'),
+                                        ),
+                                      ],
+                                      onChanged: (val) {
+                                        if (val != null) {
+                                          setState(
+                                            () => _tierPricingTypes[vId] = val,
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                if (currentMode == 'fixed') ...[
+                                  AppTextField(
+                                    controller: _tierFixedPriceControllers[vId],
+                                    label: '$vLabel Price (₹)',
+                                    hint: '500',
+                                    keyboardType: TextInputType.number,
+                                  ),
+                                ] else if (currentMode == 'range') ...[
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: AppTextField(
+                                          controller:
+                                              _tierMinPriceControllers[vId],
+                                          label: 'Min Price (₹)',
+                                          hint: '350',
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: AppTextField(
+                                          controller:
+                                              _tierMaxPriceControllers[vId],
+                                          label: 'Max Price (₹)',
+                                          hint: '650',
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ] else ...[
+                                  Text(
+                                    'Contact workshop for customized $vLabel quote.',
+                                    style: AppFonts.bodySmall(
+                                      color: secondaryText,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: AppTextField(
-                                controller: _carPriceController,
-                                label: 'Car (₹)',
-                                hint: '1000',
-                                keyboardType: TextInputType.number,
-                              ),
-                            ),
-                          ],
-                        ),
+                          );
+                        }),
                       ],
                     ),
                   ),
-                ] else if (_pricingMethod == 'attribute') ...[
+                ] else if (_pricingType == 'contact') ...[
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.cardDark : AppColors.cardLight,
+                      color: cardBg,
                       borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Engine Capacity (CC) Rules',
-                          style: AppFonts.labelMedium(color: primaryText),
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: AppTextField(
-                                controller: _rule1PriceController,
-                                label: 'Up to 150cc (₹)',
-                                hint: '350',
-                                keyboardType: TextInputType.number,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: AppTextField(
-                                controller: _rule2PriceController,
-                                label: '151cc - 350cc (₹)',
-                                hint: '550',
-                                keyboardType: TextInputType.number,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: AppTextField(
-                                controller: _rule3PriceController,
-                                label: '351cc+ (₹)',
-                                hint: '850',
-                                keyboardType: TextInputType.number,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ] else if (_pricingMethod == 'quotation') ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.cardDark : AppColors.cardLight,
-                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: borderColor),
                     ),
                     child: Row(
                       children: [
                         const Icon(
-                          Icons.info_outline_rounded,
-                          color: AppColors.primaryAmber,
+                          Icons.phone_in_talk_rounded,
+                          color: AppColors.accentAmber,
                           size: 20,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Customers will be requested to bring vehicle for physical assessment and digital estimate preparation.',
+                            'Customers will see "Contact for Price" and request custom inspection quotes.',
                             style: AppFonts.bodySmall(color: secondaryText),
                           ),
                         ),
@@ -400,11 +579,44 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
                 AppTextField(
-                  controller: _termsController,
-                  label: 'Terms & Conditions / Inclusions',
-                  hint: 'e.g. Includes coolant check; excludes external part costs',
+                  controller: _includedController,
+                  label: 'Included Items (Comma-Separated)',
+                  hint: 'e.g. Engine oil change, OEM oil filter, 25-point scan',
+                ),
+                const SizedBox(height: 12),
+                AppTextField(
+                  controller: _excludedController,
+                  label: 'Excluded Items (Comma-Separated)',
+                  hint: 'e.g. Major engine overhaul, Body painting',
+                ),
+                const SizedBox(height: 12),
+                AppTextField(
+                  controller: _requiredPartsController,
+                  label: 'Required Parts (Comma-Separated)',
+                  hint: 'e.g. Synthetic Engine Oil, Oil Filter Cartridge',
+                ),
+                const SizedBox(height: 12),
+                AppTextField(
+                  controller: _specialInstructionsController,
+                  label: 'Special Instructions / Terms',
+                  hint: 'e.g. Please bring vehicle 10 mins prior to slot',
+                ),
+                const SizedBox(height: 12),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Active Service',
+                    style: AppFonts.labelLarge(color: primaryText),
+                  ),
+                  subtitle: Text(
+                    'When active, customers can discover and book this service.',
+                    style: AppFonts.bodySmall(color: secondaryText),
+                  ),
+                  value: _isActive,
+                  activeColor: AppColors.primaryRed,
+                  onChanged: (val) => setState(() => _isActive = val),
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 10),
@@ -450,58 +662,53 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
                               widget.initialService?.id ??
                               'srv_${const Uuid().v4().substring(0, 8)}';
 
+                          final tiers = <VehiclePricingTier>[];
                           final catPrices = <String, double>{};
-                          if (_pricingMethod == 'category') {
-                            catPrices['scooter'] =
-                                double.tryParse(_scooterPriceController.text) ??
-                                300.0;
-                            catPrices['motorcycle'] =
-                                double.tryParse(
-                                  _motorcyclePriceController.text,
-                                ) ??
-                                400.0;
-                            catPrices['car'] =
-                                double.tryParse(_carPriceController.text) ??
-                                1000.0;
-                          }
 
-                          final attrRules = <PricingAttributeRule>[];
-                          if (_pricingMethod == 'attribute') {
-                            attrRules.addAll([
-                              PricingAttributeRule(
-                                label: 'Up to 150cc',
-                                vehicleType: 'motorcycle',
-                                minCc: 0,
-                                maxCc: 150,
-                                price:
-                                    double.tryParse(
-                                      _rule1PriceController.text,
-                                    ) ??
-                                    350.0,
-                              ),
-                              PricingAttributeRule(
-                                label: '151cc to 350cc',
-                                vehicleType: 'motorcycle',
-                                minCc: 151,
-                                maxCc: 350,
-                                price:
-                                    double.tryParse(
-                                      _rule2PriceController.text,
-                                    ) ??
-                                    550.0,
-                              ),
-                              PricingAttributeRule(
-                                label: 'Above 350cc',
-                                vehicleType: 'motorcycle',
-                                minCc: 351,
-                                maxCc: 2000,
-                                price:
-                                    double.tryParse(
-                                      _rule3PriceController.text,
-                                    ) ??
-                                    850.0,
-                              ),
-                            ]);
+                          if (_pricingType == 'vehicle_specific') {
+                            for (final vId in _selectedVehicles) {
+                              final mode = _tierPricingTypes[vId] ?? 'fixed';
+                              if (mode == 'fixed') {
+                                final p = double.tryParse(
+                                  _tierFixedPriceControllers[vId]?.text ?? '',
+                                );
+                                if (p != null) {
+                                  tiers.add(
+                                    VehiclePricingTier(
+                                      vehicleType: vId,
+                                      pricingType: 'fixed',
+                                      fixedPrice: p,
+                                    ),
+                                  );
+                                  catPrices[vId] = p;
+                                }
+                              } else if (mode == 'range') {
+                                final minP = double.tryParse(
+                                  _tierMinPriceControllers[vId]?.text ?? '',
+                                );
+                                final maxP = double.tryParse(
+                                  _tierMaxPriceControllers[vId]?.text ?? '',
+                                );
+                                if (minP != null && maxP != null) {
+                                  tiers.add(
+                                    VehiclePricingTier(
+                                      vehicleType: vId,
+                                      pricingType: 'range',
+                                      minPrice: minP,
+                                      maxPrice: maxP,
+                                    ),
+                                  );
+                                  catPrices[vId] = minP;
+                                }
+                              } else {
+                                tiers.add(
+                                  VehiclePricingTier(
+                                    vehicleType: vId,
+                                    pricingType: 'contact',
+                                  ),
+                                );
+                              }
+                            }
                           }
 
                           final newService = GarageServiceModel(
@@ -510,26 +717,39 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
                             name: _nameController.text.trim(),
                             description: _descriptionController.text.trim(),
                             category: _category,
-                            pricingMethod: _pricingMethod,
+                            pricingMethod: _pricingType,
+                            pricingType: _pricingType,
                             fixedPrice: double.tryParse(
                               _fixedPriceController.text,
                             ),
-                            startingPrice: double.tryParse(
-                              _startingPriceController.text,
-                            ),
+                            minPrice: double.tryParse(_minPriceController.text),
+                            maxPrice: double.tryParse(_maxPriceController.text),
+                            vehiclePricing: tiers,
                             categoryPrices: catPrices,
-                            attributeRules: attrRules,
+                            supportedVehicleTypes: _selectedVehicles.toList(),
                             estimatedDuration:
                                 _durationController.text.trim().isNotEmpty
                                 ? _durationController.text.trim()
                                 : '1-2 hrs',
+                            includedItems: _parseCsv(_includedController.text),
+                            excludedItems: _parseCsv(_excludedController.text),
+                            requiredParts: _parseCsv(
+                              _requiredPartsController.text,
+                            ),
+                            specialInstructions:
+                                _specialInstructionsController.text
+                                    .trim()
+                                    .isNotEmpty
+                                ? _specialInstructionsController.text.trim()
+                                : null,
                             terms: _termsController.text.trim().isNotEmpty
                                 ? _termsController.text.trim()
                                 : null,
-                            isActive: widget.initialService?.isActive ?? true,
+                            isActive: _isActive,
                             createdAt:
                                 widget.initialService?.createdAt ??
                                 DateTime.now(),
+                            updatedAt: DateTime.now(),
                           );
 
                           final nav = Navigator.of(context);

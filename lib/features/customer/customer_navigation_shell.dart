@@ -48,20 +48,12 @@ class CustomerNavigationShell extends StatelessWidget {
                   label: Text('Home'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.explore_outlined),
+                  icon: Icon(Icons.storefront_outlined),
                   selectedIcon: Icon(
-                    Icons.explore_rounded,
+                    Icons.storefront_rounded,
                     color: AppColors.primaryRed,
                   ),
                   label: Text('Garages'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.directions_car_outlined),
-                  selectedIcon: Icon(
-                    Icons.directions_car_rounded,
-                    color: AppColors.primaryRed,
-                  ),
-                  label: Text('Vehicles'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.receipt_long_outlined),
@@ -100,14 +92,9 @@ class CustomerNavigationShell extends StatelessWidget {
             label: 'Home',
           ),
           AppNavItem(
-            icon: Icons.explore_outlined,
-            selectedIcon: Icons.explore_rounded,
+            icon: Icons.storefront_outlined,
+            selectedIcon: Icons.storefront_rounded,
             label: 'Garages',
-          ),
-          AppNavItem(
-            icon: Icons.directions_car_outlined,
-            selectedIcon: Icons.directions_car_rounded,
-            label: 'Vehicles',
           ),
           AppNavItem(
             icon: Icons.receipt_long_outlined,

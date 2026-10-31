@@ -7,6 +7,8 @@ class ConversationModel {
     required this.customerName,
     required this.garageId,
     required this.garageName,
+    this.customerPhone,
+    this.garagePhone,
     this.lastMessage = '',
     this.lastMessageTime,
     this.lastSenderId,
@@ -22,6 +24,8 @@ class ConversationModel {
   final String customerName;
   final String garageId;
   final String garageName;
+  final String? customerPhone;
+  final String? garagePhone;
   final String lastMessage;
   final DateTime? lastMessageTime;
   final String? lastSenderId;
@@ -44,6 +48,8 @@ class ConversationModel {
       'customerName': customerName,
       'garageId': garageId,
       'garageName': garageName,
+      'customerPhone': customerPhone,
+      'garagePhone': garagePhone,
       'lastMessage': lastMessage,
       'lastMessageTime': lastMessageTime?.toIso8601String(),
       'lastSenderId': lastSenderId,
@@ -66,6 +72,8 @@ class ConversationModel {
       customerName: data['customerName'] as String? ?? 'Customer',
       garageId: data['garageId'] as String? ?? '',
       garageName: data['garageName'] as String? ?? 'Garage',
+      customerPhone: data['customerPhone'] as String?,
+      garagePhone: data['garagePhone'] as String?,
       lastMessage: data['lastMessage'] as String? ?? '',
       lastMessageTime: DateFormatter.parse(data['lastMessageTime']),
       lastSenderId: data['lastSenderId'] as String?,
@@ -83,6 +91,8 @@ class ConversationModel {
     String? customerName,
     String? garageId,
     String? garageName,
+    String? customerPhone,
+    String? garagePhone,
     String? lastMessage,
     DateTime? lastMessageTime,
     String? lastSenderId,
@@ -98,6 +108,8 @@ class ConversationModel {
       customerName: customerName ?? this.customerName,
       garageId: garageId ?? this.garageId,
       garageName: garageName ?? this.garageName,
+      customerPhone: customerPhone ?? this.customerPhone,
+      garagePhone: garagePhone ?? this.garagePhone,
       lastMessage: lastMessage ?? this.lastMessage,
       lastMessageTime: lastMessageTime ?? this.lastMessageTime,
       lastSenderId: lastSenderId ?? this.lastSenderId,

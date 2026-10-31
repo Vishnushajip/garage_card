@@ -49,6 +49,37 @@ class CustomerProfileViewModel extends Notifier<CustomerProfileState> {
     setWhatsApp(state.phoneInput);
   }
 
+  void setEditingDetails(bool isEditing) {
+    state = state.copyWith(isEditingDetails: isEditing);
+  }
+
+  void startEditingDetails() {
+    final user = state.userProfile;
+    final initialName = (user?.fullName != null && user!.fullName != 'User')
+        ? user.fullName
+        : state.nameInput;
+    state = state.copyWith(
+      isEditingDetails: true,
+      nameInput: initialName,
+      phoneInput: user?.phoneNumber.isNotEmpty == true
+          ? user!.phoneNumber
+          : state.phoneInput,
+      whatsappInput: user?.whatsappNumber.isNotEmpty == true
+          ? user!.whatsappNumber
+          : state.whatsappInput,
+      errorMessage: null,
+      successMessage: null,
+    );
+  }
+
+  void cancelEditingDetails() {
+    state = state.copyWith(
+      isEditingDetails: false,
+      errorMessage: null,
+      successMessage: null,
+    );
+  }
+
   Future<bool> saveProfile() async {
     final trimmedName = state.nameInput.trim();
     final trimmedPhone = state.phoneInput.trim();
@@ -106,6 +137,7 @@ class CustomerProfileViewModel extends Notifier<CustomerProfileState> {
 
       state = state.copyWith(
         isSaving: false,
+        isEditingDetails: false,
         userProfile: updated,
         successMessage: 'Profile completed successfully!',
       );

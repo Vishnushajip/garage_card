@@ -4,6 +4,7 @@ import 'package:garage_card/features/shared/models/vehicle_model.dart';
 
 enum EvaluatedPricingType {
   fixed,
+  range,
   category,
   attribute,
   startingPrice,
@@ -16,6 +17,8 @@ class EvaluatedPrice {
   const EvaluatedPrice({
     required this.type,
     this.price,
+    this.minPrice,
+    this.maxPrice,
     this.startingPrice,
     this.matchedRuleLabel,
     this.currencyCode = 'INR',
@@ -23,6 +26,8 @@ class EvaluatedPrice {
 
   final EvaluatedPricingType type;
   final double? price;
+  final double? minPrice;
+  final double? maxPrice;
   final double? startingPrice;
   final String? matchedRuleLabel;
   final String currencyCode;
@@ -32,6 +37,8 @@ class EvaluatedPrice {
       type == EvaluatedPricingType.unresolved;
 
   bool get isStartingPrice => type == EvaluatedPricingType.startingPrice;
+  bool get isRange => type == EvaluatedPricingType.range;
+  double? get amount => price ?? minPrice ?? startingPrice;
 
   String get formattedDisplay {
     switch (type) {
@@ -42,14 +49,30 @@ class EvaluatedPrice {
         if (price != null) {
           return CurrencyFormatter.format(price!, currencyCode: currencyCode);
         }
-        return 'Quotation Required';
+        return 'Contact for Price';
+      case EvaluatedPricingType.range:
+        if (minPrice != null && maxPrice != null) {
+          final minFmt = CurrencyFormatter.format(
+            minPrice!,
+            currencyCode: currencyCode,
+          );
+          final maxFmt = CurrencyFormatter.format(
+            maxPrice!,
+            currencyCode: currencyCode,
+          );
+          return '$minFmt – $maxFmt';
+        }
+        if (minPrice != null) {
+          return 'Starting from ${CurrencyFormatter.format(minPrice!, currencyCode: currencyCode)}';
+        }
+        return 'Contact for Price';
       case EvaluatedPricingType.startingPrice:
         if (startingPrice != null) {
           return 'Starting from ${CurrencyFormatter.format(startingPrice!, currencyCode: currencyCode)}';
         }
-        return 'Quotation Required';
+        return 'Contact for Price';
       case EvaluatedPricingType.quotation:
-        return 'Quotation Required';
+        return 'Contact for Price';
       case EvaluatedPricingType.unresolved:
         return 'Inspection Required';
     }
@@ -60,7 +83,13 @@ class EvaluatedPrice {
       case EvaluatedPricingType.override:
         return 'Custom job override';
       case EvaluatedPricingType.fixed:
-        return 'Fixed price for all vehicles';
+        return matchedRuleLabel != null
+            ? 'Fixed price for $matchedRuleLabel'
+            : 'Fixed price for all vehicles';
+      case EvaluatedPricingType.range:
+        return matchedRuleLabel != null
+            ? 'Estimated range for $matchedRuleLabel'
+            : 'Price range depends on scope / parts';
       case EvaluatedPricingType.category:
         return matchedRuleLabel != null
             ? 'Based on category ($matchedRuleLabel)'
@@ -72,7 +101,7 @@ class EvaluatedPrice {
       case EvaluatedPricingType.startingPrice:
         return 'Final price confirmed after inspection';
       case EvaluatedPricingType.quotation:
-        return 'Custom estimate prepared after inspection';
+        return 'Custom quote prepared after inspection';
       case EvaluatedPricingType.unresolved:
         return 'Price confirmed upon physical inspection';
     }
@@ -85,6 +114,7 @@ class SmartPricingEngine {
   static EvaluatedPrice evaluate({
     required GarageServiceModel service,
     VehicleModel? vehicle,
+    String? vehicleType,
     double? customOverridePrice,
     String currencyCode = 'INR',
   }) {
@@ -96,51 +126,125 @@ class SmartPricingEngine {
       );
     }
 
-    if (service.pricingMethod == 'quotation') {
+    final pType = service.effectivePricingType.toLowerCase();
+
+    if (pType == 'contact_for_price' ||
+        pType == 'quotation' ||
+        pType == 'contact') {
       return EvaluatedPrice(
         type: EvaluatedPricingType.quotation,
         currencyCode: currencyCode,
       );
     }
 
-    if (vehicle != null && service.attributeRules.isNotEmpty) {
-      for (final rule in service.attributeRules) {
-        if (rule.matchesVehicle(vehicle.vehicleType, vehicle.engineCc)) {
+    final effectiveType = vehicle?.vehicleType ?? vehicleType;
+
+    if (effectiveType != null && effectiveType.isNotEmpty) {
+      final tier = service.getTierForVehicle(effectiveType);
+      if (tier != null) {
+        final tierType = tier.pricingType.toLowerCase();
+        if (tierType == 'contact' || tierType == 'contact_for_price') {
           return EvaluatedPrice(
-            type: EvaluatedPricingType.attribute,
-            price: rule.price,
-            matchedRuleLabel: rule.label,
+            type: EvaluatedPricingType.quotation,
+            matchedRuleLabel: tier.vehicleType,
+            currencyCode: currencyCode,
+          );
+        }
+        if (tierType == 'range' &&
+            tier.minPrice != null &&
+            tier.maxPrice != null) {
+          return EvaluatedPrice(
+            type: EvaluatedPricingType.range,
+            minPrice: tier.minPrice,
+            maxPrice: tier.maxPrice,
+            matchedRuleLabel: tier.vehicleType,
+            currencyCode: currencyCode,
+          );
+        }
+        if (tier.fixedPrice != null && tier.fixedPrice! > 0) {
+          return EvaluatedPrice(
+            type: EvaluatedPricingType.fixed,
+            price: tier.fixedPrice,
+            matchedRuleLabel: tier.vehicleType,
+            currencyCode: currencyCode,
+          );
+        }
+      }
+
+      if (service.attributeRules.isNotEmpty) {
+        for (final rule in service.attributeRules) {
+          if (rule.matchesVehicle(effectiveType, vehicle?.engineCc)) {
+            return EvaluatedPrice(
+              type: EvaluatedPricingType.attribute,
+              price: rule.price,
+              matchedRuleLabel: rule.label,
+              currencyCode: currencyCode,
+            );
+          }
+        }
+      }
+
+      if (service.categoryPrices.isNotEmpty) {
+        final normalizedType = effectiveType.toLowerCase();
+        if (service.categoryPrices.containsKey(normalizedType)) {
+          return EvaluatedPrice(
+            type: EvaluatedPricingType.category,
+            price: service.categoryPrices[normalizedType],
+            matchedRuleLabel: effectiveType,
             currencyCode: currencyCode,
           );
         }
       }
     }
 
-    if (vehicle != null && service.categoryPrices.isNotEmpty) {
-      final normalizedType = vehicle.vehicleType.toLowerCase();
-      if (service.categoryPrices.containsKey(normalizedType)) {
+    if (pType == 'vehicle_specific' && service.vehiclePricing.isNotEmpty) {
+      double? overallMin;
+      double? overallMax;
+      for (final tier in service.vehiclePricing) {
+        if (tier.fixedPrice != null && tier.fixedPrice! > 0) {
+          overallMin = overallMin == null
+              ? tier.fixedPrice
+              : (tier.fixedPrice! < overallMin ? tier.fixedPrice : overallMin);
+          overallMax = overallMax == null
+              ? tier.fixedPrice
+              : (tier.fixedPrice! > overallMax ? tier.fixedPrice : overallMax);
+        }
+        if (tier.minPrice != null && tier.minPrice! > 0) {
+          overallMin = overallMin == null
+              ? tier.minPrice
+              : (tier.minPrice! < overallMin ? tier.minPrice : overallMin);
+        }
+        if (tier.maxPrice != null && tier.maxPrice! > 0) {
+          overallMax = overallMax == null
+              ? tier.maxPrice
+              : (tier.maxPrice! > overallMax ? tier.maxPrice : overallMax);
+        }
+      }
+      if (overallMin != null &&
+          overallMax != null &&
+          overallMin != overallMax) {
         return EvaluatedPrice(
-          type: EvaluatedPricingType.category,
-          price: service.categoryPrices[normalizedType],
-          matchedRuleLabel: vehicle.vehicleType,
+          type: EvaluatedPricingType.range,
+          minPrice: overallMin,
+          maxPrice: overallMax,
+          currencyCode: currencyCode,
+        );
+      }
+      if (overallMin != null) {
+        return EvaluatedPrice(
+          type: EvaluatedPricingType.fixed,
+          price: overallMin,
           currencyCode: currencyCode,
         );
       }
     }
 
-    if (service.pricingMethod == 'fixed' && service.fixedPrice != null) {
+    if (pType == 'range' ||
+        (service.minPrice != null && service.maxPrice != null)) {
       return EvaluatedPrice(
-        type: EvaluatedPricingType.fixed,
-        price: service.fixedPrice,
-        currencyCode: currencyCode,
-      );
-    }
-
-    if (service.pricingMethod == 'startingPrice' &&
-        service.startingPrice != null) {
-      return EvaluatedPrice(
-        type: EvaluatedPricingType.startingPrice,
-        startingPrice: service.startingPrice,
+        type: EvaluatedPricingType.range,
+        minPrice: service.minPrice,
+        maxPrice: service.maxPrice,
         currencyCode: currencyCode,
       );
     }

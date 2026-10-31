@@ -64,28 +64,12 @@ class MerchantNavigationShell extends StatelessWidget {
                   label: Text('Analytics'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.people_outline_rounded),
+                  icon: Icon(Icons.grid_view_outlined),
                   selectedIcon: Icon(
-                    Icons.people_rounded,
+                    Icons.grid_view_rounded,
                     color: AppColors.primaryRed,
                   ),
-                  label: Text('Clients'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.receipt_long_outlined),
-                  selectedIcon: Icon(
-                    Icons.receipt_long_rounded,
-                    color: AppColors.primaryRed,
-                  ),
-                  label: Text('Invoices'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.storefront_outlined),
-                  selectedIcon: Icon(
-                    Icons.storefront_rounded,
-                    color: AppColors.primaryRed,
-                  ),
-                  label: Text('Garage'),
+                  label: Text('More'),
                 ),
               ],
             ),
@@ -118,19 +102,9 @@ class MerchantNavigationShell extends StatelessWidget {
             label: 'Analytics',
           ),
           AppNavItem(
-            icon: Icons.people_outline_rounded,
-            selectedIcon: Icons.people_rounded,
-            label: 'Clients',
-          ),
-          AppNavItem(
-            icon: Icons.receipt_long_outlined,
-            selectedIcon: Icons.receipt_long_rounded,
-            label: 'Invoices',
-          ),
-          AppNavItem(
-            icon: Icons.storefront_outlined,
-            selectedIcon: Icons.storefront_rounded,
-            label: 'Garage',
+            icon: Icons.grid_view_outlined,
+            selectedIcon: Icons.grid_view_rounded,
+            label: 'More',
           ),
         ],
       ),

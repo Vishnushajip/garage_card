@@ -4,15 +4,16 @@ import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
-import 'package:garage_card/core/shared_widgets/app_dropdown.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/features/customer/appointments/View/customer_appointments_screen.dart';
+import 'package:garage_card/features/customer/inquiry/customer_inquiry_service.dart';
+import 'package:garage_card/features/shared/models/garage_model.dart';
 import 'package:garage_card/features/shared/models/garage_service_model.dart';
 import 'package:garage_card/features/shared/models/review_model.dart';
-import 'package:garage_card/features/shared/models/vehicle_model.dart';
 import 'package:garage_card/features/shared/pricing/smart_pricing_engine.dart';
 import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
 
@@ -101,7 +102,7 @@ class _CustomerGarageDetailScreenState
 
     if (state.errorMessage != null && state.garage == null) {
       return Scaffold(
-        appBar: AppBar(),
+        appBar: const AppCustomAppBar(title: 'Workshop Details'),
         body: Center(
           child: AppErrorState(
             message: state.errorMessage!,
@@ -271,36 +272,51 @@ class _CustomerGarageDetailScreenState
                 ),
                 child: Row(
                   children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Icons.call_rounded, size: 18),
-                        label: const Text('Call'),
-                        onPressed: () =>
-                            WhatsAppShareService.makePhoneCall(garage.phone),
+                    _buildActionPill(
+                      context: context,
+                      icon: Icons.directions_rounded,
+                      label: 'Directions',
+                      accentColor: AppColors.info,
+                      onTap: () => WhatsAppShareService.openMapDirections(
+                        latitude: garage.latitude,
+                        longitude: garage.longitude,
+                        label: garage.name,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        icon: const Icon(
-                          Icons.chat_bubble_outline_rounded,
-                          size: 18,
-                        ),
-                        label: const Text('Chat'),
-                        onPressed: widget.onStartChat,
+                    _buildActionPill(
+                      context: context,
+                      icon: Icons.phone_rounded,
+                      label: 'Call',
+                      accentColor: AppColors.primaryGreen,
+                      onTap: () =>
+                          WhatsAppShareService.makePhoneCall(garage.phone),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildActionPill(
+                      context: context,
+                      icon: Icons.chat_rounded,
+                      label: 'WhatsApp',
+                      accentColor: const Color(0xFF25D366),
+                      onTap: () => WhatsAppShareService.openWhatsAppChat(
+                        phoneNumber: garage.phone,
+                        text:
+                            'Hello ${garage.name}, I found your garage on WeFix and would like to inquire about your services.',
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Icons.directions_rounded, size: 18),
-                        label: const Text('Directions'),
-                        onPressed: () => WhatsAppShareService.openMapDirections(
-                          latitude: garage.latitude,
-                          longitude: garage.longitude,
-                          label: garage.name,
-                        ),
-                      ),
+                    _buildActionPill(
+                      context: context,
+                      icon: Icons.forum_rounded,
+                      label: 'Chat',
+                      accentColor: AppColors.accentBlue,
+                      onTap:
+                          widget.onStartChat ??
+                          () => CustomerInquiryService.startInquiry(
+                            context,
+                            ref,
+                            garage: garage,
+                          ),
                     ),
                   ],
                 ),
@@ -315,7 +331,7 @@ class _CustomerGarageDetailScreenState
                   unselectedLabelColor: secondaryText,
                   indicatorColor: AppColors.primaryRed,
                   tabs: const [
-                    Tab(text: 'Services & Pricing'),
+                    Tab(text: 'Packages & Services'),
                     Tab(text: 'Reviews'),
                     Tab(text: 'About'),
                   ],
@@ -372,9 +388,6 @@ class _CustomerGarageDetailScreenState
     final primaryText = isDark
         ? AppColors.textPrimaryDark
         : AppColors.textPrimaryLight;
-    final secondaryText = isDark
-        ? AppColors.textSecondaryDark
-        : AppColors.textSecondaryLight;
 
     return AppRefresh(
       onRefresh: () => vm.loadGarage(widget.garageId),
@@ -382,64 +395,96 @@ class _CustomerGarageDetailScreenState
         padding: const EdgeInsets.all(16),
         children: [
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.cardDark : AppColors.cardLight,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Icon(
-                      Icons.tune_rounded,
-                      size: 18,
-                      color: AppColors.primaryRed,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryRed,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'OFFERS & PACKAGES',
+                        style: AppFonts.labelSmall(color: Colors.white)
+                            .copyWith(fontWeight: FontWeight.bold),
+                      ),
                     ),
-                    const SizedBox(width: 8),
+                    const Spacer(),
+                    const Icon(
+                      Icons.verified_rounded,
+                      color: AppColors.accentAmber,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
                     Text(
-                      'Smart Pricing Evaluator',
-                      style: AppFonts.labelLarge(color: primaryText),
+                      'Genuine Workshop Services',
+                      style: AppFonts.labelSmall(color: Colors.white70),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(
-                  'Pricing is dynamically calculated for your selected vehicle based on garage-configured engine capacity and category rules.',
-                  style: AppFonts.bodySmall(color: secondaryText),
+                  'Explore transparent service packages with fixed charges, comprehensive checkups, and genuine spares.',
+                  style: AppFonts.bodySmall(color: Colors.white70),
                 ),
-                const SizedBox(height: 12),
-                if (state.customerVehicles.isNotEmpty)
-                  AppDropdown<VehicleModel?>(
-                    label: 'Calculating for vehicle',
-                    value: state.selectedVehicle,
-                    items: [
-                      const AppDropdownItem<VehicleModel?>(
-                        value: null,
-                        title: 'Generic Standard Vehicle',
-                      ),
-                      ...state.customerVehicles.map(
-                        (v) => AppDropdownItem<VehicleModel?>(
-                          value: v,
-                          title: '${v.displayName} • ${v.vehicleType}',
-                        ),
-                      ),
-                    ],
-                    onChanged: vm.selectVehicle,
-                  )
-                else
-                  Text(
-                    'No vehicles registered. Prices shown below reflect standard category pricing.',
-                    style: AppFonts.bodySmall(color: AppColors.accentBlue),
-                  ),
               ],
             ),
           ),
           const SizedBox(height: 16),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children:
+                  [
+                    {'id': 'All', 'label': 'All Vehicles'},
+                    {'id': 'car', 'label': 'Cars'},
+                    {'id': 'motorcycle', 'label': 'Motorcycles'},
+                    {'id': 'scooter', 'label': 'Scooters'},
+                    {'id': 'electric_scooter', 'label': 'EV Scooters'},
+                    {'id': 'electric_motorcycle', 'label': 'EV Motorcycles'},
+                  ].map((v) {
+                    final id = v['id']!;
+                    final label = v['label']!;
+                    final isSelected = state.selectedVehicleType == id;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(label),
+                        selected: isSelected,
+                        selectedColor: AppColors.accentBlue.withValues(
+                          alpha: 0.15,
+                        ),
+                        checkmarkColor: AppColors.accentBlue,
+                        labelStyle: TextStyle(
+                          color: isSelected
+                              ? AppColors.accentBlue
+                              : primaryText,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                        onSelected: (_) => vm.selectVehicleType(id),
+                      ),
+                    );
+                  }).toList(),
+            ),
+          ),
+          const SizedBox(height: 12),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -475,10 +520,13 @@ class _CustomerGarageDetailScreenState
               final evaluated = SmartPricingEngine.evaluate(
                 service: service,
                 vehicle: state.selectedVehicle,
+                vehicleType: state.selectedVehicleType != 'All'
+                    ? state.selectedVehicleType
+                    : null,
                 currencyCode: garage.currencyCode,
               );
 
-              return _buildServiceCard(context, service, evaluated, garage.id);
+              return _buildServiceCard(context, service, evaluated, garage);
             }),
           const SizedBox(height: 80),
         ],
@@ -490,7 +538,7 @@ class _CustomerGarageDetailScreenState
     BuildContext context,
     GarageServiceModel service,
     EvaluatedPrice evaluated,
-    String garageId,
+    GarageModel garage,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryText = isDark
@@ -499,6 +547,8 @@ class _CustomerGarageDetailScreenState
     final secondaryText = isDark
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
+    final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     Color priceBadgeColor;
     if (evaluated.isQuotationRequired) {
@@ -509,9 +559,16 @@ class _CustomerGarageDetailScreenState
       priceBadgeColor = AppColors.primaryGreen;
     }
 
+    final whatsappMsg =
+        'Hello ${garage.name}, I would like to inquire about the "${service.name}" package (${evaluated.formattedDisplay}) at your workshop.';
+
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      color: cardBg,
+      margin: const EdgeInsets.only(bottom: 14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: borderColor),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -524,9 +581,37 @@ class _CustomerGarageDetailScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentBlue.withValues(
+                                alpha: 0.1,
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              service.category,
+                              style:
+                                  AppFonts.labelSmall(
+                                    color: AppColors.accentBlue,
+                                  ).copyWith(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
                       Text(
                         service.name,
-                        style: AppFonts.titleMedium(color: primaryText),
+                        style: AppFonts.titleMedium(color: primaryText)
+                            .copyWith(fontWeight: FontWeight.bold),
                       ),
                       if (service.description.isNotEmpty) ...[
                         const SizedBox(height: 4),
@@ -551,7 +636,8 @@ class _CustomerGarageDetailScreenState
                   ),
                   child: Text(
                     evaluated.formattedDisplay,
-                    style: AppFonts.labelLarge(color: priceBadgeColor),
+                    style: AppFonts.labelLarge(color: priceBadgeColor)
+                        .copyWith(fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -559,6 +645,13 @@ class _CustomerGarageDetailScreenState
             const SizedBox(height: 10),
             Row(
               children: [
+                Icon(Icons.schedule_rounded, size: 14, color: secondaryText),
+                const SizedBox(width: 4),
+                Text(
+                  service.estimatedDuration,
+                  style: AppFonts.labelSmall(color: secondaryText),
+                ),
+                const SizedBox(width: 12),
                 Icon(
                   Icons.info_outline_rounded,
                   size: 14,
@@ -568,23 +661,179 @@ class _CustomerGarageDetailScreenState
                 Expanded(
                   child: Text(
                     evaluated.pricingSubtitle,
-                    style: AppFonts.bodySmall(color: secondaryText),
+                    style: AppFonts.labelSmall(color: secondaryText),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                Text(
-                  '⏱ ${service.estimatedDuration}',
-                  style: AppFonts.labelSmall(color: secondaryText),
                 ),
               ],
             ),
+            if (service.vehiclePricing.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: service.vehiclePricing.map((tier) {
+                  String display;
+                  if (tier.pricingType == 'range' &&
+                      tier.minPrice != null &&
+                      tier.maxPrice != null) {
+                    display =
+                        '${tier.vehicleType.toUpperCase()}: ₹${tier.minPrice!.toStringAsFixed(0)}–₹${tier.maxPrice!.toStringAsFixed(0)}';
+                  } else if (tier.fixedPrice != null) {
+                    display =
+                        '${tier.vehicleType.toUpperCase()}: ₹${tier.fixedPrice!.toStringAsFixed(0)}';
+                  } else {
+                    display = '${tier.vehicleType.toUpperCase()}: Quote';
+                  }
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: primaryText.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: borderColor),
+                    ),
+                    child: Text(
+                      display,
+                      style: AppFonts.labelSmall(color: secondaryText)
+                          .copyWith(fontSize: 10, fontWeight: FontWeight.w600),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+            if (service.includedItems.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: service.includedItems.map((item) {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.check_circle_outline_rounded,
+                        size: 12,
+                        color: AppColors.primaryGreen,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        item,
+                        style: AppFonts.labelSmall(color: secondaryText),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ],
             if (service.terms != null && service.terms!.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
-                'Note: ${service.terms}',
-                style: AppFonts.bodySmall(color: secondaryText),
+                'Includes: ${service.terms}',
+                style: AppFonts.labelSmall(color: secondaryText),
               ),
             ],
+            const Divider(height: 20),
+            Row(
+              children: [
+                AppWhatsAppButton(
+                  phoneNumber: garage.phone,
+                  message: whatsappMsg,
+                  variant: WhatsAppButtonVariant.iconOnly,
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  icon: const Icon(
+                    Icons.forum_outlined,
+                    size: 16,
+                    color: AppColors.accentBlue,
+                  ),
+                  label: Text(
+                    'Inquire',
+                    style: AppFonts.labelSmall(color: AppColors.accentBlue)
+                        .copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(
+                      color: AppColors.accentBlue.withValues(alpha: 0.4),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                  ),
+                  onPressed: () => CustomerInquiryService.startInquiry(
+                    context,
+                    ref,
+                    garage: garage,
+                    package: service,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: AppButton(
+                    label: 'Book Service',
+                    variant: AppButtonVariant.primary,
+                    height: 36,
+                    fontSize: 12,
+                    onPressed: () =>
+                        CustomerAppointmentsScreen.showBookingSheet(
+                          context,
+                          garageId: garage.id,
+                        ),
+                  ),
+                ),
+              ],
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionPill({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required Color accentColor,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: accentColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: accentColor.withValues(alpha: 0.28),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 18, color: accentColor),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  style: AppFonts.labelSmall(color: accentColor)
+                      .copyWith(fontWeight: FontWeight.bold, fontSize: 10),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

@@ -202,7 +202,14 @@ class AppDropdown<T> extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(label!, style: AppFonts.labelLarge(color: primaryTextColor)),
+              Flexible(
+                child: Text(
+                  label!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppFonts.labelLarge(color: primaryTextColor),
+                ),
+              ),
               if (required) ...[
                 const SizedBox(width: 4),
                 const Text(

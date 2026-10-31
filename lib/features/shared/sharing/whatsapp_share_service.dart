@@ -42,6 +42,24 @@ class WhatsAppShareService {
     }
   }
 
+  static Future<bool> openWhatsApp({
+    String? phoneNumber,
+    String? phone,
+    String message = '',
+  }) => sendWhatsAppMessage(
+    phoneNumber: phoneNumber ?? phone ?? '',
+    message: message,
+  );
+
+  static Future<bool> openWhatsAppChat({
+    String? phoneNumber,
+    String? phone,
+    String text = '',
+  }) => sendWhatsAppMessage(
+    phoneNumber: phoneNumber ?? phone ?? '',
+    message: text,
+  );
+
   static Future<bool> makePhoneCall(String phoneNumber) async {
     final url = Uri.parse('tel:$phoneNumber');
     if (await canLaunchUrl(url)) {

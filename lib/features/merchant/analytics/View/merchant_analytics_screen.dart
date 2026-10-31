@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:garage_card/core/colors/app_colors.dart';
-import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
+import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 import 'package:go_router/go_router.dart';
 
@@ -27,10 +27,11 @@ class MerchantAnalyticsScreen extends ConsumerWidget {
     final state = ref.watch(merchantAnalyticsViewModelProvider);
     final vm = ref.read(merchantAnalyticsViewModelProvider.notifier);
     final repo = ref.watch(garageRepositoryProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor = isDark
-        ? AppColors.textPrimaryDark
-        : AppColors.textPrimaryLight;
+    final authState = ref.watch(authViewModelProvider);
+    final user = authState.userProfile;
+    final garageId = (user?.garageId != null && user!.garageId!.isNotEmpty)
+        ? user.garageId!
+        : 'garage_demo_1';
 
     if (state.isLoading && state.metrics == null) {
       return const Scaffold(
@@ -47,11 +48,8 @@ class MerchantAnalyticsScreen extends ConsumerWidget {
     final metrics = state.metrics;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Revenue & Operations Analytics',
-          style: AppFonts.titleLarge(color: primaryTextColor),
-        ),
+      appBar: AppCustomAppBar(
+        title: 'Revenue & Operations Analytics',
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -113,10 +111,7 @@ class MerchantAnalyticsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 FutureBuilder(
-                  future: repo.getInvoices(
-                    garageId: 'garage_demo_1',
-                    limit: 50,
-                  ),
+                  future: repo.getInvoices(garageId: garageId, limit: 50),
                   builder: (context, snapshot) {
                     final invoices = snapshot.data ?? [];
                     return BillAnalyticsList(

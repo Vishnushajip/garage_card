@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
@@ -82,7 +83,7 @@ class _MerchantJobDetailScreenState
     final job = state.selectedJob;
     if (job == null) {
       return Scaffold(
-        appBar: AppBar(),
+        appBar: const AppCustomAppBar(title: 'Job Record'),
         body: AppErrorState(
           message: 'Job record not found.',
           onRetry: () => vm.selectJob(widget.jobId),
@@ -91,11 +92,9 @@ class _MerchantJobDetailScreenState
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          job.jobNumber,
-          style: AppFonts.titleLarge(color: primaryTextColor),
-        ),
+      appBar: AppCustomAppBar(
+        title: job.jobNumber,
+        subtitle: job.vehicleDisplay,
         actions: [
           IconButton(
             tooltip: 'Inform Customer via WhatsApp',

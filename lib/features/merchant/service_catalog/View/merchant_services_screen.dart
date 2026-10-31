@@ -4,9 +4,11 @@ import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/shared_widgets/app_dialog.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
-import 'package:garage_card/core/shared_widgets/app_loading.dart';
+import 'package:garage_card/core/shared_widgets/app_error_state.dart';
+import 'package:garage_card/core/shared_widgets/app_loading_overlay.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
+import 'package:garage_card/core/shared_widgets/app_skeleton_loader.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/models/garage_service_model.dart';
 
@@ -52,69 +54,88 @@ class MerchantServicesScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: AppResponsiveLayout(
-        child: AppRefresh(
-          onRefresh: vm.loadServices,
-          child: Column(
-            children: [
-              if (state.categories.length > 1)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: state.categories.map((cat) {
-                        final isSelected = state.selectedCategory == cat;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ChoiceChip(
-                            label: Text(cat),
-                            selected: isSelected,
-                            selectedColor: AppColors.primaryRed,
-                            labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : primaryText,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
+      body: AppLoadingOverlay(
+        isLoading: state.isSaving,
+        message: 'Saving service details...',
+        child: AppResponsiveLayout(
+          child: AppRefresh(
+            onRefresh: vm.loadServices,
+            child: Column(
+              children: [
+                if (state.categories.length > 1)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: state.categories.map((cat) {
+                          final isSelected = state.selectedCategory == cat;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                              label: Text(cat),
+                              selected: isSelected,
+                              selectedColor: AppColors.primaryRed,
+                              labelStyle: TextStyle(
+                                color: isSelected ? Colors.white : primaryText,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                              onSelected: (_) => vm.filterCategory(cat),
                             ),
-                            onSelected: (_) => vm.filterCategory(cat),
-                          ),
-                        );
-                      }).toList(),
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
-                ),
-              Expanded(
-                child: state.isLoading && state.services.isEmpty
-                    ? const Center(child: AppLoading())
-                    : state.filteredServices.isEmpty
-                    ? const Center(
-                        child: AppEmptyState(
-                          title: 'No Services Found',
-                          message: 'Add your garage services with flexible pricing models (Fixed, Category, Engine CC attributes).',
-                          icon: Icons.miscellaneous_services_rounded,
+                Expanded(
+                  child: state.isLoading && state.services.isEmpty
+                      ? AppSkeletonLoader.list(itemCount: 4)
+                      : state.errorMessage != null
+                      ? AppErrorState(
+                          message: state.errorMessage!,
+                          onRetry: vm.loadServices,
+                        )
+                      : state.filteredServices.isEmpty
+                      ? Center(
+                          child: AppEmptyState(
+                            title: state.services.isEmpty
+                                ? 'You haven\'t added any services yet'
+                                : 'No services in "${state.selectedCategory}"',
+                            description: state.services.isEmpty
+                                ? 'Add your workshop services with vehicle-specific pricing to showcase in discovery searches.'
+                                : 'Try choosing another category or tap below to add a service in this category.',
+                            icon: Icons.miscellaneous_services_rounded,
+                            actionLabel: 'Add Service',
+                            onAction: () => ServiceEditDialog.show(
+                              context,
+                              garageId: garageId,
+                              onSave: vm.saveService,
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: state.filteredServices.length,
+                          itemBuilder: (ctx, index) {
+                            final service = state.filteredServices[index];
+                            return _buildServiceTile(
+                              context,
+                              service,
+                              garageId,
+                              vm,
+                              primaryText,
+                              secondaryText,
+                            );
+                          },
                         ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: state.filteredServices.length,
-                        itemBuilder: (ctx, index) {
-                          final service = state.filteredServices[index];
-                          return _buildServiceTile(
-                            context,
-                            service,
-                            garageId,
-                            vm,
-                            primaryText,
-                            secondaryText,
-                          );
-                        },
-                      ),
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

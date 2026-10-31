@@ -35,6 +35,10 @@ class FirestorePaths {
   static String garageInspection(String garageId, String inspectionId) =>
       'garages/$garageId/inspections/$inspectionId';
 
+  static String garageServices(String garageId) => 'garages/$garageId/services';
+  static String garageService(String garageId, String serviceId) =>
+      'garages/$garageId/services/$serviceId';
+
   static String garageServiceCatalog(String garageId) =>
       'garages/$garageId/serviceCatalog';
   static String garageServiceCatalogItem(String garageId, String serviceId) =>

@@ -38,11 +38,22 @@ class CustomerDashboardViewModel extends Notifier<CustomerDashboardState> {
         onTimeout: () => null,
       );
 
+      final profile = ref.read(authViewModelProvider).userProfile;
+      final email = profile?.email ?? FirebaseAuth.instance.currentUser?.email;
+
       final jobsFuture = customerId != null
-          ? repo.getServiceJobs(customerId: customerId, limit: 10)
+          ? repo.getServiceJobs(
+              customerId: customerId,
+              userEmail: email,
+              limit: 10,
+            )
           : Future.value(<ServiceJobModel>[]);
       final vehiclesFuture = customerId != null
-          ? repo.getVehicles(customerId: customerId, limit: 10)
+          ? repo.getVehicles(
+              customerId: customerId,
+              userEmail: email,
+              limit: 10,
+            )
           : Future.value(<VehicleModel>[]);
       final estimatesFuture = customerId != null
           ? repo.getEstimates(customerId: customerId, limit: 10)
@@ -51,7 +62,7 @@ class CustomerDashboardViewModel extends Notifier<CustomerDashboardState> {
           ? repo.getInvoices(customerId: customerId, limit: 10)
           : Future.value(<InvoiceModel>[]);
       final remindersFuture = customerId != null
-          ? repo.getReminders(customerId: customerId)
+          ? repo.getReminders(customerId: customerId, userEmail: email)
           : Future.value(<ServiceReminderModel>[]);
 
       final results = await Future.wait([
@@ -84,6 +95,7 @@ class CustomerDashboardViewModel extends Notifier<CustomerDashboardState> {
         activeJobs: activeJobs,
         vehicles: vehicles,
         pendingEstimates: pendingEstimates,
+        recentEstimates: estimates,
         unpaidInvoices: unpaidInvoices,
         upcomingReminders: reminders,
         nearbyGarages: nearby,

@@ -6,6 +6,7 @@ class RoutePaths {
   static const String noInternet = '/no-internet';
 
   static const String customer = '/customer';
+  static const String customerSearch = '/customer/search';
   static const String customerJobs = '/customer/jobs';
   static const String customerGarages = '/customer/garages';
   static const String customerVehicles = '/customer/vehicles';
@@ -29,4 +30,5 @@ class RoutePaths {
   static const String merchantServices = '/merchant/services';
   static const String merchantNotifications = '/merchant/notifications';
   static const String merchantSettings = '/merchant/settings';
+  static const String merchantMore = '/merchant/more';
 }

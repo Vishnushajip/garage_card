@@ -11,6 +11,7 @@ class CustomerGarageDetailState {
     this.customerVehicles = const [],
     this.selectedVehicle,
     this.selectedCategory = 'All',
+    this.selectedVehicleType = 'All',
     this.isLoading = false,
     this.isSubmittingReview = false,
     this.errorMessage,
@@ -22,6 +23,7 @@ class CustomerGarageDetailState {
   final List<VehicleModel> customerVehicles;
   final VehicleModel? selectedVehicle;
   final String selectedCategory;
+  final String selectedVehicleType;
   final bool isLoading;
   final bool isSubmittingReview;
   final String? errorMessage;
@@ -38,10 +40,16 @@ class CustomerGarageDetailState {
 
   List<GarageServiceModel> get filteredServices {
     final active = services.where((s) => s.isActive).toList();
-    if (selectedCategory == 'All') {
-      return active;
-    }
-    return active.where((s) => s.category == selectedCategory).toList();
+    return active.where((s) {
+      if (selectedCategory != 'All' && s.category != selectedCategory) {
+        return false;
+      }
+      if (selectedVehicleType != 'All' &&
+          !s.supportsVehicle(selectedVehicleType)) {
+        return false;
+      }
+      return true;
+    }).toList();
   }
 
   CustomerGarageDetailState copyWith({
@@ -52,6 +60,7 @@ class CustomerGarageDetailState {
     VehicleModel? selectedVehicle,
     bool clearSelectedVehicle = false,
     String? selectedCategory,
+    String? selectedVehicleType,
     bool? isLoading,
     bool? isSubmittingReview,
     String? errorMessage,
@@ -65,6 +74,7 @@ class CustomerGarageDetailState {
           ? null
           : (selectedVehicle ?? this.selectedVehicle),
       selectedCategory: selectedCategory ?? this.selectedCategory,
+      selectedVehicleType: selectedVehicleType ?? this.selectedVehicleType,
       isLoading: isLoading ?? this.isLoading,
       isSubmittingReview: isSubmittingReview ?? this.isSubmittingReview,
       errorMessage: errorMessage,

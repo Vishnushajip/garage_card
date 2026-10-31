@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/models/appointment_model.dart';
 import 'package:garage_card/features/shared/models/customer_model.dart';
 import 'package:garage_card/features/shared/models/estimate_model.dart';
+import 'package:garage_card/features/shared/models/garage_model.dart';
 import 'package:garage_card/features/shared/models/invoice_model.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
@@ -18,8 +20,39 @@ class MerchantDashboardViewModel extends Notifier<MerchantDashboardState> {
   Future<void> _loadDashboardMetrics() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
+      final user = ref.read(authViewModelProvider).userProfile;
       final repo = ref.read(garageRepositoryProvider);
-      const garageId = 'garage_demo_1';
+
+      GarageModel? garage;
+      if (user?.garageId != null && user!.garageId!.isNotEmpty) {
+        garage = await repo.getGarageDetails(user.garageId!);
+      } else if (user != null) {
+        garage = await repo.getGarageByOwnerUid(user.uid);
+      }
+
+      if (garage == null) {
+        state = state.copyWith(
+          isLoading: false,
+          garage: null,
+          totalActiveJobs: 0,
+          jobsAwaitingInspection: 0,
+          estimatesAwaitingApproval: 0,
+          jobsInProgress: 0,
+          vehiclesReady: 0,
+          totalCompletedJobs: 0,
+          totalClientsCount: 0,
+          totalRevenue: 0.0,
+          totalUnpaidAmount: 0.0,
+          recentJobs: const [],
+          recentCustomers: const [],
+          pendingEstimates: const [],
+          unpaidInvoices: const [],
+          appointments: const [],
+        );
+        return;
+      }
+
+      final garageId = garage.id;
 
       final results = await Future.wait([
         repo.getServiceJobs(garageId: garageId),
@@ -36,6 +69,9 @@ class MerchantDashboardViewModel extends Notifier<MerchantDashboardState> {
       final appointments = results[4] as List<AppointmentModel>;
 
       final activeJobs = jobs.where((j) => j.status != 'completed').toList();
+      final completedJobs = jobs
+          .where((j) => j.status == 'completed' || j.status == 'closed')
+          .length;
       final awaitingInspection = jobs
           .where((j) => j.status == 'inspectionPending')
           .length;
@@ -52,10 +88,18 @@ class MerchantDashboardViewModel extends Notifier<MerchantDashboardState> {
         0.0,
         (sum, item) => sum + item.balanceDue,
       );
+      final totalRevenue = invoices.fold<double>(
+        0.0,
+        (sum, item) => sum + item.paidAmount,
+      );
 
       state = state.copyWith(
         isLoading: false,
+        garage: garage,
         totalActiveJobs: activeJobs.length,
+        totalCompletedJobs: completedJobs,
+        totalClientsCount: customers.length,
+        totalRevenue: totalRevenue,
         jobsAwaitingInspection: awaitingInspection,
         estimatesAwaitingApproval: awaitingEstimate,
         jobsInProgress: inProgress,

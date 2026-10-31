@@ -100,10 +100,15 @@ class AppButton extends StatelessWidget {
           icon!,
           const SizedBox(width: 8),
         ],
-        Text(
-          label,
-          style: AppFonts.labelLarge(color: fg)
-              .copyWith(fontSize: fontSize ?? 14, fontWeight: FontWeight.w600),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppFonts.labelLarge(
+              color: fg,
+            ).copyWith(fontSize: fontSize ?? 14, fontWeight: FontWeight.w600),
+          ),
         ),
       ],
     );

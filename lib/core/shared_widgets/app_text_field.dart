@@ -91,9 +91,13 @@ class _AppTextFieldState extends State<AppTextField> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                widget.label!,
-                style: AppFonts.labelLarge(color: primaryTextColor),
+              Flexible(
+                child: Text(
+                  widget.label!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppFonts.labelLarge(color: primaryTextColor),
+                ),
               ),
               if (widget.required) ...[
                 const SizedBox(width: 4),

@@ -1,10 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
 import '../Model/merchant_jobs_state.dart';
 
 class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
+  String _effectiveGarageId() {
+    final user = ref.read(authViewModelProvider).userProfile;
+    if (user?.garageId != null && user!.garageId!.isNotEmpty) {
+      return user.garageId!;
+    }
+    return 'garage_demo_1';
+  }
+
   @override
   MerchantJobsState build() {
     Future.microtask(_loadJobs);
@@ -22,7 +31,7 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
       final res = await ref
           .read(garageRepositoryProvider)
           .getServiceJobsPaginated(
-            garageId: 'garage_demo_1',
+            garageId: _effectiveGarageId(),
             status: state.filterStatus,
             search: state.searchQuery,
             limit: 15,
@@ -47,7 +56,7 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
       final res = await ref
           .read(garageRepositoryProvider)
           .getServiceJobsPaginated(
-            garageId: 'garage_demo_1',
+            garageId: _effectiveGarageId(),
             status: state.filterStatus,
             search: state.searchQuery,
             limit: 15,
@@ -69,7 +78,7 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
     try {
       final jobs = await ref
           .read(garageRepositoryProvider)
-          .getServiceJobs(garageId: 'garage_demo_1');
+          .getServiceJobs(garageId: _effectiveGarageId());
       final job = jobs.cast<ServiceJobModel?>().firstWhere(
         (j) => j?.id == jobId,
         orElse: () => null,

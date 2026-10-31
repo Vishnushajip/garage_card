@@ -5,6 +5,7 @@ import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_dialog.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
@@ -112,12 +113,7 @@ class CustomerEstimatesScreen extends ConsumerWidget {
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Digital Estimates',
-          style: AppFonts.titleLarge(color: primaryTextColor),
-        ),
-      ),
+      appBar: const AppCustomAppBar(title: 'Digital Estimates'),
       body: AppRefresh(
         onRefresh: vm.refresh,
         child: AppResponsiveLayout(

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/models/estimate_model.dart';
 import 'package:garage_card/features/shared/models/line_item_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
@@ -6,6 +7,14 @@ import 'package:garage_card/features/shared/repository/garage_repository.dart';
 import '../Model/merchant_estimates_state.dart';
 
 class MerchantEstimatesViewModel extends Notifier<MerchantEstimatesState> {
+  String _effectiveGarageId() {
+    final user = ref.read(authViewModelProvider).userProfile;
+    if (user?.garageId != null && user!.garageId!.isNotEmpty) {
+      return user.garageId!;
+    }
+    return 'garage_demo_1';
+  }
+
   @override
   MerchantEstimatesState build() {
     Future.microtask(_loadEstimates);
@@ -17,7 +26,7 @@ class MerchantEstimatesViewModel extends Notifier<MerchantEstimatesState> {
     try {
       final list = await ref
           .read(garageRepositoryProvider)
-          .getEstimates(garageId: 'garage_demo_1');
+          .getEstimates(garageId: _effectiveGarageId());
       state = state.copyWith(isLoading: false, estimates: list);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
@@ -44,7 +53,7 @@ class MerchantEstimatesViewModel extends Notifier<MerchantEstimatesState> {
 
       final est = EstimateModel(
         id: '',
-        garageId: 'garage_demo_1',
+        garageId: _effectiveGarageId(),
         jobId: 'job_demo_1',
         customerId: 'cust_demo_1',
         estimateNumber: estimateNumber,

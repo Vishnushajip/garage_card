@@ -86,3 +86,31 @@ final connectivityControllerProvider =
 final isOnlineProvider = Provider<bool>((ref) {
   return ref.watch(connectivityControllerProvider) == ConnectivityStatus.online;
 });
+
+class OfflineBrowsingController extends Notifier<bool> {
+  @override
+  bool build() {
+    ref.listen<ConnectivityStatus>(connectivityControllerProvider, (
+      prev,
+      next,
+    ) {
+      if (next == ConnectivityStatus.online) {
+        state = false;
+      }
+    });
+    return false;
+  }
+
+  void allowOfflineMode() {
+    state = true;
+  }
+
+  void reset() {
+    state = false;
+  }
+}
+
+final offlineBrowsingProvider =
+    NotifierProvider<OfflineBrowsingController, bool>(
+      OfflineBrowsingController.new,
+    );

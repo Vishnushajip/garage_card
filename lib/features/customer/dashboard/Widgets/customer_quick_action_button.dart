@@ -30,7 +30,7 @@ class CustomerQuickActionButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(16),
@@ -79,14 +79,19 @@ class CustomerQuickActionButton extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 10),
-            Text(
-              label,
-              style: AppFonts.labelSmall(color: primaryTextColor)
-                  .copyWith(fontWeight: FontWeight.w600),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  style: AppFonts.labelSmall(color: primaryTextColor)
+                      .copyWith(fontWeight: FontWeight.w600),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                ),
+              ),
             ),
           ],
         ),

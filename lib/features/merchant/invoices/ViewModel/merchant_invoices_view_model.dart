@@ -1,9 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
 import '../Model/merchant_invoices_state.dart';
 
 class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
+  String _effectiveGarageId() {
+    final user = ref.read(authViewModelProvider).userProfile;
+    if (user?.garageId != null && user!.garageId!.isNotEmpty) {
+      return user.garageId!;
+    }
+    return 'garage_demo_1';
+  }
+
   @override
   MerchantInvoicesState build() {
     Future.microtask(_loadInvoices);
@@ -14,7 +23,7 @@ class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final repo = ref.read(garageRepositoryProvider);
-      const garageId = 'garage_demo_1';
+      final garageId = _effectiveGarageId();
       final invoices = await repo.getInvoices(garageId: garageId);
       final payments = await repo.getPayments(garageId: garageId);
 
@@ -38,6 +47,7 @@ class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
   }) async {
     state = state.copyWith(isRecordingPayment: true, errorMessage: null);
     try {
+      final user = ref.read(authViewModelProvider).userProfile;
       await ref
           .read(garageRepositoryProvider)
           .recordPayment(
@@ -46,7 +56,7 @@ class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
             paymentMethod: paymentMethod,
             referenceNumber: referenceNumber,
             notes: notes,
-            recordedByUid: 'merchant_1',
+            recordedByUid: user?.uid ?? 'merchant_1',
             discountAdjustment: discountAdjustment,
           );
       await _loadInvoices();

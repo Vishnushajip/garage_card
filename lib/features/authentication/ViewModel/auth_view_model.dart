@@ -8,42 +8,90 @@ import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/errors/app_exception.dart';
 import 'package:garage_card/core/firebase/firebase_config.dart';
 import 'package:garage_card/features/shared/models/user_profile_model.dart';
+import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
 import '../Model/auth_state.dart';
 
 class AuthViewModel extends Notifier<AuthState> {
   @override
   AuthState build() {
-    try {
-      if (FirebaseConfig.isInitialized) {
+    Future.microtask(() async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cachedUid = prefs.getString('cached_session_uid');
+        if (cachedUid != null &&
+            cachedUid.isNotEmpty &&
+            state.userProfile == null) {
+          final cachedProfile = UserProfileModel(
+            uid: cachedUid,
+            email: prefs.getString('cached_session_email') ?? '',
+            fullName: prefs.getString('cached_session_name') ?? 'User',
+            phoneNumber: prefs.getString('cached_session_phone') ?? '',
+            role: prefs.getString('cached_session_role') ?? 'customer',
+            garageId: prefs.getString('cached_session_garage_id'),
+            avatarUrl: prefs.getString('cached_session_avatar'),
+            createdAt: DateTime.now(),
+          );
+          state = state.copyWith(
+            isLoading: false,
+            isInitialized: true,
+            userProfile: cachedProfile,
+            activeExperience: cachedProfile.role == 'merchant'
+                ? 'merchant'
+                : 'customer',
+          );
+        }
+      } catch (_) {}
+
+      try {
+        if (!FirebaseConfig.isInitialized) {
+          await FirebaseConfig.initialize();
+        }
         final currentFirebaseUser = FirebaseAuth.instance.currentUser;
         if (currentFirebaseUser != null) {
-          _restoreExistingSession(currentFirebaseUser);
-          return const AuthState(isLoading: true, isInitialized: false);
+          await _restoreExistingSession(currentFirebaseUser);
+        } else {
+          state = state.copyWith(isLoading: false, isInitialized: true);
         }
+      } catch (_) {
+        state = state.copyWith(isLoading: false, isInitialized: true);
+      }
+    });
+
+    return const AuthState(isLoading: true, isInitialized: false);
+  }
+
+  Future<void> _persistSession(UserProfileModel profile) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cached_session_uid', profile.uid);
+      await prefs.setString('cached_session_email', profile.email);
+      await prefs.setString('cached_session_name', profile.fullName);
+      await prefs.setString('cached_session_role', profile.role);
+      await prefs.setString('cached_session_phone', profile.phoneNumber);
+      if (profile.garageId != null && profile.garageId!.isNotEmpty) {
+        await prefs.setString('cached_session_garage_id', profile.garageId!);
       } else {
-        FirebaseConfig.initialize().then((_) {
-          try {
-            final user = FirebaseAuth.instance.currentUser;
-            if (user != null) {
-              _restoreExistingSession(user);
-            }
-          } catch (_) {}
-        });
+        await prefs.remove('cached_session_garage_id');
+      }
+      if (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty) {
+        await prefs.setString('cached_session_avatar', profile.avatarUrl!);
       }
     } catch (_) {}
-    return const AuthState(isLoading: false, isInitialized: true);
   }
 
   Future<void> _restoreExistingSession(User user) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final cachedAvatar = prefs.getString('user_avatar_${user.uid}');
+      final cachedAvatar =
+          prefs.getString('user_avatar_${user.uid}') ??
+          prefs.getString('cached_session_avatar');
 
       final doc = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
-          .get();
+          .get()
+          .timeout(const Duration(seconds: 2));
       if (doc.exists && doc.data() != null) {
         var profile = UserProfileModel.fromFirestore(doc.data()!, user.uid);
         if (profile.avatarUrl == null && cachedAvatar != null) {
@@ -51,9 +99,7 @@ class AuthViewModel extends Notifier<AuthState> {
         } else if (profile.avatarUrl == null && user.photoURL != null) {
           profile = profile.copyWith(avatarUrl: user.photoURL);
         }
-        if (profile.avatarUrl != null) {
-          await prefs.setString('user_avatar_${user.uid}', profile.avatarUrl!);
-        }
+        await _persistSession(profile);
 
         state = state.copyWith(
           isLoading: false,
@@ -68,23 +114,42 @@ class AuthViewModel extends Notifier<AuthState> {
     } catch (_) {}
 
     final prefs = await SharedPreferences.getInstance();
-    final cachedAvatar = prefs.getString('user_avatar_${user.uid}');
-    final avatar = cachedAvatar ?? user.photoURL;
+    final cachedUid = prefs.getString('cached_session_uid');
+    final cachedEmail = prefs.getString('cached_session_email');
+    final cachedName = prefs.getString('cached_session_name');
+    final cachedRole = prefs.getString('cached_session_role');
+    final cachedPhone = prefs.getString('cached_session_phone');
+    final cachedGarageId = prefs.getString('cached_session_garage_id');
+    final cachedAvatar =
+        prefs.getString('cached_session_avatar') ?? user.photoURL;
+
+    final isVishnu =
+        user.email?.toLowerCase() == 'vishnushaji431@gmail.com' ||
+        user.email?.toLowerCase() == '318@gmail.com';
 
     final fallbackProfile = UserProfileModel(
-      uid: user.uid,
-      email: user.email ?? 'user@garagecard.app',
-      fullName: user.displayName ?? 'Customer User',
-      phoneNumber: user.phoneNumber ?? '',
-      role: 'customer',
-      avatarUrl: avatar,
+      uid: user.uid.isNotEmpty ? user.uid : (cachedUid ?? 'user_fallback'),
+      email: user.email ?? (cachedEmail ?? 'user@garagecard.app'),
+      fullName:
+          cachedName ??
+          (user.displayName ?? (isVishnu ? 'Vishnu Shaji' : 'Customer User')),
+      phoneNumber:
+          cachedPhone ??
+          (user.phoneNumber ?? (isVishnu ? '+91 98460 77889' : '')),
+      role: cachedRole ?? 'customer',
+      garageId: cachedGarageId,
+      avatarUrl: cachedAvatar,
       createdAt: DateTime.now(),
     );
+    await _persistSession(fallbackProfile);
+
     state = state.copyWith(
       isLoading: false,
       isInitialized: true,
       userProfile: fallbackProfile,
-      activeExperience: 'customer',
+      activeExperience: fallbackProfile.role == 'merchant'
+          ? 'merchant'
+          : 'customer',
     );
   }
 
@@ -115,39 +180,54 @@ class AuthViewModel extends Notifier<AuthState> {
       final uid = credential?.user?.uid ?? email.hashCode.abs().toString();
       UserProfileModel profile;
 
+      final isVishnu =
+          email.toLowerCase() == 'vishnushaji431@gmail.com' ||
+          email.toLowerCase() == '318@gmail.com' ||
+          email.toLowerCase().contains('vishnu');
+      final defaultName = isVishnu
+          ? 'Vishnu Shaji'
+          : email.split('@').first.toUpperCase();
+      final defaultPhone = isVishnu ? '+91 98460 77889' : '+91 98765 00000';
+      final isDemoMerchant = email.toLowerCase() == 'demo_merchant@garage.com';
+      final initialGarageId = isDemoMerchant ? 'garage_demo_1' : null;
+
       try {
         final doc = await FirebaseFirestore.instance
             .collection('users')
             .doc(uid)
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 2));
         if (doc.exists && doc.data() != null) {
           profile = UserProfileModel.fromFirestore(doc.data()!, uid);
         } else {
           profile = UserProfileModel(
             uid: uid,
             email: email,
-            fullName: email.split('@').first.toUpperCase(),
-            phoneNumber: '+91 98765 00000',
+            fullName: defaultName,
+            phoneNumber: defaultPhone,
             role: intendedRole,
-            garageId: intendedRole == 'merchant' ? 'garage_demo_1' : null,
+            garageId: initialGarageId,
             createdAt: DateTime.now(),
           );
           await FirebaseFirestore.instance
               .collection('users')
               .doc(uid)
-              .set(profile.toFirestore(), SetOptions(merge: true));
+              .set(profile.toFirestore(), SetOptions(merge: true))
+              .timeout(const Duration(seconds: 2));
         }
       } catch (_) {
         profile = UserProfileModel(
           uid: uid,
           email: email,
-          fullName: email.split('@').first.toUpperCase(),
-          phoneNumber: '+91 98765 00000',
+          fullName: defaultName,
+          phoneNumber: defaultPhone,
           role: intendedRole,
-          garageId: intendedRole == 'merchant' ? 'garage_demo_1' : null,
+          garageId: initialGarageId,
           createdAt: DateTime.now(),
         );
       }
+
+      await _persistSession(profile);
 
       final authorizedExperience = profile.role == 'merchant'
           ? 'merchant'
@@ -209,8 +289,11 @@ class AuthViewModel extends Notifier<AuthState> {
         await FirebaseFirestore.instance
             .collection('users')
             .doc(uid)
-            .set(profile.toFirestore());
+            .set(profile.toFirestore())
+            .timeout(const Duration(seconds: 2));
       } catch (_) {}
+
+      await _persistSession(profile);
 
       state = state.copyWith(
         isLoading: false,
@@ -277,7 +360,8 @@ class AuthViewModel extends Notifier<AuthState> {
         final doc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 2));
         if (doc.exists && doc.data() != null) {
           profile = UserProfileModel.fromFirestore(doc.data()!, user.uid);
           if (profile.avatarUrl == null && photo != null) {
@@ -285,36 +369,60 @@ class AuthViewModel extends Notifier<AuthState> {
             await FirebaseFirestore.instance
                 .collection('users')
                 .doc(user.uid)
-                .set(profile.toFirestore(), SetOptions(merge: true));
+                .set(profile.toFirestore(), SetOptions(merge: true))
+                .timeout(const Duration(seconds: 2));
           }
         } else {
+          final isVishnu =
+              user.email?.toLowerCase() == 'vishnushaji431@gmail.com' ||
+              user.email?.toLowerCase() == '318@gmail.com';
+          final defaultName =
+              user.displayName ?? (isVishnu ? 'Vishnu Shaji' : 'Google User');
+          final defaultPhone =
+              (user.phoneNumber != null && user.phoneNumber!.isNotEmpty)
+              ? user.phoneNumber!
+              : (isVishnu ? '+91 98460 77889' : '');
+
           profile = UserProfileModel(
             uid: user.uid,
             email: user.email ?? '',
-            fullName: user.displayName ?? 'Google User',
-            phoneNumber: user.phoneNumber ?? '',
+            fullName: defaultName,
+            phoneNumber: defaultPhone,
             role: intendedRole,
             avatarUrl: photo,
-            garageId: intendedRole == 'merchant' ? 'garage_demo_1' : null,
+            garageId: intendedRole == 'merchant' ? 'garage_${user.uid}' : null,
             createdAt: DateTime.now(),
           );
           await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
-              .set(profile.toFirestore(), SetOptions(merge: true));
+              .set(profile.toFirestore(), SetOptions(merge: true))
+              .timeout(const Duration(seconds: 2));
         }
       } catch (_) {
+        final isVishnu =
+            user.email?.toLowerCase() == 'vishnushaji431@gmail.com' ||
+            user.email?.toLowerCase() == '318@gmail.com';
+        final defaultName =
+            user.displayName ?? (isVishnu ? 'Vishnu Shaji' : 'Google User');
+        final defaultPhone =
+            (user.phoneNumber != null && user.phoneNumber!.isNotEmpty)
+            ? user.phoneNumber!
+            : (isVishnu ? '+91 98460 77889' : '');
+
         profile = UserProfileModel(
           uid: user.uid,
           email: user.email ?? '',
-          fullName: user.displayName ?? 'Google User',
-          phoneNumber: user.phoneNumber ?? '',
+          fullName: defaultName,
+          phoneNumber: defaultPhone,
           role: intendedRole,
           avatarUrl: photo,
-          garageId: intendedRole == 'merchant' ? 'garage_demo_1' : null,
+          garageId: intendedRole == 'merchant' ? 'garage_${user.uid}' : null,
           createdAt: DateTime.now(),
         );
       }
+
+      await _persistSession(profile);
 
       final authorizedExperience = profile.role == 'merchant'
           ? 'merchant'
@@ -358,30 +466,44 @@ class AuthViewModel extends Notifier<AuthState> {
     final current = state.userProfile;
     if (current == null) return;
 
-    var updated = current;
-    if (targetExperience == 'merchant' && current.garageId == null) {
-      updated = current.copyWith(
-        role: 'merchant',
-        garageId: 'garage_${current.uid}',
-      );
-      if (FirebaseConfig.isInitialized) {
-        try {
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(current.uid)
-              .set(updated.toFirestore(), SetOptions(merge: true));
-        } catch (_) {}
-      }
-    }
+    final updated = current.copyWith(
+      role: targetExperience,
+      garageId: targetExperience == 'merchant'
+          ? (current.garageId != null && current.garageId!.isNotEmpty
+                ? current.garageId
+                : null)
+          : null,
+    );
+
+    await _persistSession(updated);
 
     state = state.copyWith(
-      userProfile: updated,
       activeExperience: targetExperience,
-      errorMessage: null,
+      userProfile: updated,
     );
   }
 
+  Future<void> updateGarageId(String garageId) async {
+    final current = state.userProfile;
+    if (current == null) return;
+
+    final updated = current.copyWith(garageId: garageId);
+    await _persistSession(updated);
+    state = state.copyWith(userProfile: updated);
+
+    if (FirebaseConfig.isInitialized) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(current.uid)
+            .set(updated.toFirestore(), SetOptions(merge: true))
+            .timeout(const Duration(seconds: 2));
+      } catch (_) {}
+    }
+  }
+
   void updateUserProfile(UserProfileModel profile) {
+    _persistSession(profile);
     state = state.copyWith(userProfile: profile);
   }
 
@@ -389,11 +511,19 @@ class AuthViewModel extends Notifier<AuthState> {
     state = state.copyWith(isLoading: true);
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('cached_session_uid');
+      await prefs.remove('cached_session_email');
+      await prefs.remove('cached_session_name');
+      await prefs.remove('cached_session_role');
+      await prefs.remove('cached_session_phone');
+      await prefs.remove('cached_session_garage_id');
+      await prefs.remove('cached_session_avatar');
       await prefs.clear();
       await FirebaseAuth.instance.signOut();
       if (!kIsWeb) {
         await GoogleSignIn().signOut();
       }
+      ref.read(garageRepositoryProvider).clearCache();
     } catch (_) {}
     state = const AuthState(isInitialized: true);
   }

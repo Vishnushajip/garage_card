@@ -10,6 +10,7 @@ class CustomerProfileState {
     this.isSaving = false,
     this.errorMessage,
     this.successMessage,
+    this.isEditingDetails = false,
   });
 
   final UserProfileModel? userProfile;
@@ -20,6 +21,7 @@ class CustomerProfileState {
   final bool isSaving;
   final String? errorMessage;
   final String? successMessage;
+  final bool isEditingDetails;
 
   bool get isProfileComplete {
     final name =
@@ -63,6 +65,7 @@ class CustomerProfileState {
     bool? isSaving,
     String? errorMessage,
     String? successMessage,
+    bool? isEditingDetails,
   }) {
     return CustomerProfileState(
       userProfile: userProfile ?? this.userProfile,
@@ -73,6 +76,7 @@ class CustomerProfileState {
       isSaving: isSaving ?? this.isSaving,
       errorMessage: errorMessage,
       successMessage: successMessage,
+      isEditingDetails: isEditingDetails ?? this.isEditingDetails,
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_dropdown.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
@@ -35,17 +36,10 @@ class CustomerVehiclesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(customerVehiclesViewModelProvider);
     final vm = ref.read(customerVehiclesViewModelProvider.notifier);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor = isDark
-        ? AppColors.textPrimaryDark
-        : AppColors.textPrimaryLight;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'My Vehicles',
-          style: AppFonts.titleLarge(color: primaryTextColor),
-        ),
+      appBar: AppCustomAppBar(
+        title: 'My Vehicles',
         actions: [
           IconButton(
             icon: const Icon(Icons.add_rounded),

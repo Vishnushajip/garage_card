@@ -29,9 +29,16 @@ class CustomerVehiclesViewModel extends Notifier<CustomerVehiclesState> {
         state = state.copyWith(isLoading: false, vehicles: []);
         return;
       }
+      final email =
+          ref.read(authViewModelProvider).userProfile?.email ??
+          FirebaseAuth.instance.currentUser?.email;
       final list = await ref
           .read(garageRepositoryProvider)
-          .getVehicles(customerId: uid, search: state.searchQuery);
+          .getVehicles(
+            customerId: uid,
+            userEmail: email,
+            search: state.searchQuery,
+          );
       state = state.copyWith(isLoading: false, vehicles: list);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
