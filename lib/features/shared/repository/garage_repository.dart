@@ -254,7 +254,7 @@ class GarageRepository {
       make: 'Toyota',
       model: 'Innova Crysta 2.4 VX',
       year: 2021,
-      licensePlate: 'KL 07 CC 7733',
+      licensePlate: 'KL 07 CC 773',
       currentOdometer: 89000,
       fuelType: 'Diesel',
       color: 'Super White',
