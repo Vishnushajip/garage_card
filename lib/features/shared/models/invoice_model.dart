@@ -1,4 +1,6 @@
 import 'line_item_model.dart';
+import 'payment_record_model.dart';
+import 'warranty_item_model.dart';
 
 class InvoiceModel {
   const InvoiceModel({
@@ -20,6 +22,8 @@ class InvoiceModel {
     this.status = 'unpaid',
     this.dueDate,
     this.issuedAt,
+    this.paymentRecords = const [],
+    this.warrantyItems = const [],
     this.createdAt,
   });
 
@@ -41,6 +45,8 @@ class InvoiceModel {
   final String status;
   final DateTime? dueDate;
   final DateTime? issuedAt;
+  final List<PaymentRecordModel> paymentRecords;
+  final List<WarrantyItemModel> warrantyItems;
   final DateTime? createdAt;
 
   bool get isPaid => status == 'paid' || balanceDue <= 0.0;
@@ -64,6 +70,8 @@ class InvoiceModel {
       'status': status,
       'dueDate': dueDate?.toIso8601String(),
       'issuedAt': issuedAt?.toIso8601String(),
+      'paymentRecords': paymentRecords.map((e) => e.toMap()).toList(),
+      'warrantyItems': warrantyItems.map((e) => e.toMap()).toList(),
       'createdAt': createdAt?.toIso8601String(),
     };
   }
@@ -99,6 +107,24 @@ class InvoiceModel {
       issuedAt: data['issuedAt'] != null
           ? DateTime.tryParse(data['issuedAt'] as String)
           : null,
+      paymentRecords:
+          (data['paymentRecords'] as List<dynamic>?)
+              ?.map(
+                (e) => PaymentRecordModel.fromMap(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
+              .toList() ??
+          const [],
+      warrantyItems:
+          (data['warrantyItems'] as List<dynamic>?)
+              ?.map(
+                (e) => WarrantyItemModel.fromMap(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
+              .toList() ??
+          const [],
       createdAt: data['createdAt'] != null
           ? DateTime.tryParse(data['createdAt'] as String)
           : null,
@@ -124,6 +150,8 @@ class InvoiceModel {
     String? status,
     DateTime? dueDate,
     DateTime? issuedAt,
+    List<PaymentRecordModel>? paymentRecords,
+    List<WarrantyItemModel>? warrantyItems,
     DateTime? createdAt,
   }) {
     return InvoiceModel(
@@ -145,6 +173,8 @@ class InvoiceModel {
       status: status ?? this.status,
       dueDate: dueDate ?? this.dueDate,
       issuedAt: issuedAt ?? this.issuedAt,
+      paymentRecords: paymentRecords ?? this.paymentRecords,
+      warrantyItems: warrantyItems ?? this.warrantyItems,
       createdAt: createdAt ?? this.createdAt,
     );
   }

@@ -1,4 +1,5 @@
 import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'supplemental_work_model.dart';
 
 class ServiceJobModel {
   const ServiceJobModel({
@@ -19,6 +20,14 @@ class ServiceJobModel {
     this.customerName = '',
     this.customerPhone = '',
     this.customerWhatsApp = '',
+    this.gatePassCode,
+    this.isGatePassVerified = false,
+    this.gatePassVerifiedAt,
+    this.qcChecklist = const {},
+    this.isQcPassed = false,
+    this.qcInspectorName,
+    this.qcInspectedAt,
+    this.supplementalItems = const [],
     this.createdAt,
     this.updatedAt,
   });
@@ -40,6 +49,14 @@ class ServiceJobModel {
   final String customerName;
   final String customerPhone;
   final String customerWhatsApp;
+  final String? gatePassCode;
+  final bool isGatePassVerified;
+  final DateTime? gatePassVerifiedAt;
+  final Map<String, bool> qcChecklist;
+  final bool isQcPassed;
+  final String? qcInspectorName;
+  final DateTime? qcInspectedAt;
+  final List<SupplementalWorkItem> supplementalItems;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -61,6 +78,14 @@ class ServiceJobModel {
       'customerName': customerName,
       'customerPhone': customerPhone,
       'customerWhatsApp': customerWhatsApp,
+      'gatePassCode': gatePassCode,
+      'isGatePassVerified': isGatePassVerified,
+      'gatePassVerifiedAt': gatePassVerifiedAt?.toIso8601String(),
+      'qcChecklist': qcChecklist,
+      'isQcPassed': isQcPassed,
+      'qcInspectorName': qcInspectorName,
+      'qcInspectedAt': qcInspectedAt?.toIso8601String(),
+      'supplementalItems': supplementalItems.map((e) => e.toMap()).toList(),
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
@@ -91,6 +116,25 @@ class ServiceJobModel {
       customerName: data['customerName'] as String? ?? '',
       customerPhone: data['customerPhone'] as String? ?? '',
       customerWhatsApp: data['customerWhatsApp'] as String? ?? '',
+      gatePassCode: data['gatePassCode'] as String?,
+      isGatePassVerified: data['isGatePassVerified'] as bool? ?? false,
+      gatePassVerifiedAt: DateFormatter.parse(data['gatePassVerifiedAt']),
+      qcChecklist:
+          (data['qcChecklist'] as Map<dynamic, dynamic>?)?.map(
+            (k, v) => MapEntry(k.toString(), v as bool? ?? false),
+          ) ??
+          const {},
+      isQcPassed: data['isQcPassed'] as bool? ?? false,
+      qcInspectorName: data['qcInspectorName'] as String?,
+      qcInspectedAt: DateFormatter.parse(data['qcInspectedAt']),
+      supplementalItems:
+          (data['supplementalItems'] as List<dynamic>?)
+              ?.map(
+                (e) =>
+                    SupplementalWorkItem.fromMap(Map<String, dynamic>.from(e)),
+              )
+              .toList() ??
+          const [],
       createdAt: DateFormatter.parse(data['createdAt']),
       updatedAt: DateFormatter.parse(data['updatedAt']),
     );
@@ -114,6 +158,14 @@ class ServiceJobModel {
     String? customerName,
     String? customerPhone,
     String? customerWhatsApp,
+    String? gatePassCode,
+    bool? isGatePassVerified,
+    DateTime? gatePassVerifiedAt,
+    Map<String, bool>? qcChecklist,
+    bool? isQcPassed,
+    String? qcInspectorName,
+    DateTime? qcInspectedAt,
+    List<SupplementalWorkItem>? supplementalItems,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -136,6 +188,14 @@ class ServiceJobModel {
       customerName: customerName ?? this.customerName,
       customerPhone: customerPhone ?? this.customerPhone,
       customerWhatsApp: customerWhatsApp ?? this.customerWhatsApp,
+      gatePassCode: gatePassCode ?? this.gatePassCode,
+      isGatePassVerified: isGatePassVerified ?? this.isGatePassVerified,
+      gatePassVerifiedAt: gatePassVerifiedAt ?? this.gatePassVerifiedAt,
+      qcChecklist: qcChecklist ?? this.qcChecklist,
+      isQcPassed: isQcPassed ?? this.isQcPassed,
+      qcInspectorName: qcInspectorName ?? this.qcInspectorName,
+      qcInspectedAt: qcInspectedAt ?? this.qcInspectedAt,
+      supplementalItems: supplementalItems ?? this.supplementalItems,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

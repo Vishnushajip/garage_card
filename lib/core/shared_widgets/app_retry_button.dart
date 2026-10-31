@@ -76,3 +76,4 @@ class _AppRetryButtonState extends State<AppRetryButton> {
     );
   }
 }
+
