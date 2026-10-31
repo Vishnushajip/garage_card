@@ -328,5 +328,32 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
       },
     );
+
+    testWidgets(
+      'AppLoadingState renders title, description, and cancel action',
+      (tester) async {
+        bool cancelled = false;
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: AppLoadingState(
+                title: 'Locating nearby garages...',
+                description: 'Searching within a 10 km radius',
+                onCancel: () => cancelled = true,
+                cancelLabel: 'Stop Search',
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text('Locating nearby garages...'), findsOneWidget);
+        expect(find.text('Searching within a 10 km radius'), findsOneWidget);
+        expect(find.text('Stop Search'), findsOneWidget);
+
+        await tester.tap(find.text('Stop Search'));
+        expect(cancelled, isTrue);
+      },
+    );
   });
 }
