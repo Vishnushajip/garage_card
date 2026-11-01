@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/errors/app_exception.dart';
 import 'package:garage_card/core/firebase/firebase_config.dart';
+import 'package:garage_card/features/shared/models/garage_model.dart';
 import 'package:garage_card/features/shared/models/user_profile_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
@@ -61,7 +62,20 @@ class AuthViewModel extends Notifier<AuthState> {
         if (currentFirebaseUser != null) {
           await _restoreExistingSession(currentFirebaseUser);
         } else {
-          state = state.copyWith(isLoading: false, isInitialized: true);
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('cached_session_uid');
+          await prefs.remove('cached_session_email');
+          await prefs.remove('cached_session_name');
+          await prefs.remove('cached_session_role');
+          await prefs.remove('cached_session_phone');
+          await prefs.remove('cached_session_garage_id');
+          await prefs.remove('cached_session_avatar');
+          state = state.copyWith(
+            userProfile: null,
+            activeExperience: 'customer',
+            isLoading: false,
+            isInitialized: true,
+          );
         }
       } catch (_) {
         state = state.copyWith(isLoading: false, isInitialized: true);
@@ -101,7 +115,7 @@ class AuthViewModel extends Notifier<AuthState> {
           .collection('users')
           .doc(user.uid)
           .get()
-          .timeout(const Duration(seconds: 2));
+          .timeout(const Duration(seconds: 10));
       if (doc.exists && doc.data() != null) {
         var profile = UserProfileModel.fromFirestore(doc.data()!, user.uid);
         if (profile.avatarUrl == null && cachedAvatar != null) {
@@ -201,7 +215,7 @@ class AuthViewModel extends Notifier<AuthState> {
             .collection('users')
             .doc(uid)
             .get()
-            .timeout(const Duration(seconds: 2));
+            .timeout(const Duration(seconds: 10));
         if (doc.exists && doc.data() != null) {
           profile = UserProfileModel.fromFirestore(doc.data()!, uid);
         } else {
@@ -218,7 +232,7 @@ class AuthViewModel extends Notifier<AuthState> {
               .collection('users')
               .doc(uid)
               .set(profile.toFirestore(), SetOptions(merge: true))
-              .timeout(const Duration(seconds: 2));
+              .timeout(const Duration(seconds: 10));
         }
       } catch (_) {
         profile = UserProfileModel(
@@ -295,8 +309,18 @@ class AuthViewModel extends Notifier<AuthState> {
             .collection('users')
             .doc(uid)
             .set(profile.toFirestore())
-            .timeout(const Duration(seconds: 2));
+            .timeout(const Duration(seconds: 10));
       } catch (_) {}
+
+      if (intendedRole == 'merchant' && garageId != null) {
+        await _ensureMerchantGarageInitialized(
+          uid: uid,
+          garageId: garageId,
+          email: email,
+          name: fullName,
+          phone: phoneNumber,
+        );
+      }
 
       await _persistSession(profile);
 
@@ -322,9 +346,9 @@ class AuthViewModel extends Notifier<AuthState> {
         final googleProvider = GoogleAuthProvider();
         googleProvider.addScope('email');
         googleProvider.addScope('profile');
-        credential = await FirebaseAuth.instance.signInWithPopup(
-          googleProvider,
-        );
+        credential = await FirebaseAuth.instance
+            .signInWithPopup(googleProvider)
+            .timeout(const Duration(seconds: 60));
       } else {
         const webClientId =
             '62265849009-mushlhju9uianaf4aqq4qtcj11kfiij5.apps.googleusercontent.com';
@@ -366,7 +390,7 @@ class AuthViewModel extends Notifier<AuthState> {
             .collection('users')
             .doc(user.uid)
             .get()
-            .timeout(const Duration(seconds: 2));
+            .timeout(const Duration(seconds: 10));
         if (doc.exists && doc.data() != null) {
           profile = UserProfileModel.fromFirestore(doc.data()!, user.uid);
           if (profile.avatarUrl == null && photo != null) {
@@ -402,7 +426,7 @@ class AuthViewModel extends Notifier<AuthState> {
               .collection('users')
               .doc(user.uid)
               .set(profile.toFirestore(), SetOptions(merge: true))
-              .timeout(const Duration(seconds: 2));
+              .timeout(const Duration(seconds: 10));
         }
       } catch (_) {
         final rawName = user.displayName ?? '';
@@ -429,6 +453,17 @@ class AuthViewModel extends Notifier<AuthState> {
 
       await _persistSession(profile);
 
+      if (profile.role == 'merchant') {
+        final gId = profile.garageId ?? 'garage_${user.uid}';
+        await _ensureMerchantGarageInitialized(
+          uid: user.uid,
+          garageId: gId,
+          email: profile.email,
+          name: profile.fullName,
+          phone: profile.phoneNumber,
+        );
+      }
+
       final authorizedExperience = profile.role == 'merchant'
           ? 'merchant'
           : 'customer';
@@ -450,6 +485,50 @@ class AuthViewModel extends Notifier<AuthState> {
       state = state.copyWith(isLoading: false, errorMessage: appEx.message);
       return false;
     }
+  }
+
+  Future<void> _ensureMerchantGarageInitialized({
+    required String uid,
+    required String garageId,
+    required String email,
+    required String name,
+    required String phone,
+  }) async {
+    try {
+      final garageDoc = FirebaseFirestore.instance
+          .collection('garages')
+          .doc(garageId);
+      final snap = await garageDoc.get().timeout(const Duration(seconds: 10));
+      if (!snap.exists) {
+        final defaultGarage = GarageModel(
+          id: garageId,
+          name: name.isNotEmpty ? '$name\'s Workshop' : 'Garage Workshop',
+          address: 'Workshop Address, Kochi, Kerala',
+          email: email,
+          phone: phone,
+          city: 'Kochi',
+          currencyCode: 'INR',
+          rating: 5.0,
+          openHours: 'Mon-Sat: 08:30 AM - 07:30 PM',
+          isVerified: true,
+          ownerUid: uid,
+          createdAt: DateTime.now(),
+        );
+        await garageDoc
+            .set(defaultGarage.toFirestore(), SetOptions(merge: true))
+            .timeout(const Duration(seconds: 10));
+      }
+      await garageDoc
+          .collection('members')
+          .doc(uid)
+          .set({
+            'uid': uid,
+            'role': 'owner',
+            'name': name,
+            'joinedAt': DateTime.now().toIso8601String(),
+          }, SetOptions(merge: true))
+          .timeout(const Duration(seconds: 5));
+    } catch (_) {}
   }
 
   Future<bool> resetPassword(String email) async {
@@ -502,7 +581,7 @@ class AuthViewModel extends Notifier<AuthState> {
             .collection('users')
             .doc(current.uid)
             .set(updated.toFirestore(), SetOptions(merge: true))
-            .timeout(const Duration(seconds: 2));
+            .timeout(const Duration(seconds: 10));
       } catch (_) {}
     }
   }

@@ -1,3 +1,5 @@
+import 'package:garage_card/core/formatting/date_formatter.dart';
+
 import 'line_item_model.dart';
 import 'payment_record_model.dart';
 import 'warranty_item_model.dart';
@@ -101,12 +103,8 @@ class InvoiceModel {
       balanceDue: (data['balanceDue'] as num?)?.toDouble() ?? 0.0,
       currencyCode: data['currencyCode'] as String? ?? 'INR',
       status: data['status'] as String? ?? 'unpaid',
-      dueDate: data['dueDate'] != null
-          ? DateTime.tryParse(data['dueDate'] as String)
-          : null,
-      issuedAt: data['issuedAt'] != null
-          ? DateTime.tryParse(data['issuedAt'] as String)
-          : null,
+      dueDate: DateFormatter.parse(data['dueDate']),
+      issuedAt: DateFormatter.parse(data['issuedAt']),
       paymentRecords:
           (data['paymentRecords'] as List<dynamic>?)
               ?.map(
@@ -125,9 +123,7 @@ class InvoiceModel {
               )
               .toList() ??
           const [],
-      createdAt: data['createdAt'] != null
-          ? DateTime.tryParse(data['createdAt'] as String)
-          : null,
+      createdAt: DateFormatter.parse(data['createdAt']),
     );
   }
 

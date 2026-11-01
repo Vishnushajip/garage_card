@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/firebase/firebase_config.dart';
@@ -18,7 +19,8 @@ mixin CustomerDataRepository on GarageRepositoryStore {
   }) async {
     if (garageId.isEmpty) return [];
 
-    if (FirebaseConfig.isInitialized) {
+    if (FirebaseConfig.isInitialized &&
+        FirebaseAuth.instance.currentUser != null) {
       try {
         final snap = await FirebaseFirestore.instance
             .collection('garages')
@@ -107,7 +109,8 @@ mixin CustomerDataRepository on GarageRepositoryStore {
     }
 
     if (FirebaseConfig.isInitialized &&
-        FirebaseConfig.isFirestoreDatabaseReady) {
+        FirebaseConfig.isFirestoreDatabaseReady &&
+        FirebaseAuth.instance.currentUser != null) {
       try {
         List<VehicleModel> items = [];
         if (hasCustomer) {
@@ -199,7 +202,8 @@ mixin CustomerDataRepository on GarageRepositoryStore {
     );
 
     if (FirebaseConfig.isInitialized &&
-        FirebaseConfig.isFirestoreDatabaseReady) {
+        FirebaseConfig.isFirestoreDatabaseReady &&
+        FirebaseAuth.instance.currentUser != null) {
       try {
         if (newVeh.customerId.isNotEmpty) {
           await FirebaseFirestore.instance

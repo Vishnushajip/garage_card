@@ -113,167 +113,279 @@ class CustomerDashboardScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (user != null && !user.isProfileComplete) ...[
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: AppColors.warningBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: AppColors.warning.withValues(alpha: 0.35),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.warning.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isCompact = constraints.maxWidth < 480;
+
+                      final details = Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: AppColors.warning.withValues(alpha: 0.16),
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            child: const Icon(
+                              Icons.contact_phone_rounded,
+                              color: AppColors.warning,
+                              size: 22,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.contact_phone_rounded,
-                            color: AppColors.warning,
-                            size: 20,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  context.tr('profileIncomplete'),
+                                  style: AppFonts.titleSmall(
+                                    color: AppColors.primaryDark,
+                                  ).copyWith(fontWeight: FontWeight.w800),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  context.tr('completePersonalDetailsDesc'),
+                                  style: AppFonts.labelSmall(
+                                    color: AppColors.textSecondaryLight,
+                                  ).copyWith(height: 1.4),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+
+                      final action = TextButton(
+                        onPressed: () {
+                          ref
+                              .read(profileCompletionPromptServiceProvider)
+                              .showCompletionSheet(context, user);
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: AppColors.warning,
+                          foregroundColor: Colors.white,
+                          minimumSize: isCompact
+                              ? const Size.fromHeight(44)
+                              : null,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                context.tr('profileIncomplete'),
-                                style: AppFonts.titleSmall(
-                                  color: AppColors.primaryDark,
-                                ).copyWith(fontWeight: FontWeight.bold),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                context.tr('completeProfileNow'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppFonts.labelSmall(color: Colors.white)
+                                    .copyWith(fontWeight: FontWeight.w700),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                context.tr('completePersonalDetailsDesc'),
-                                style: AppFonts.labelSmall(
-                                  color: AppColors.textSecondaryLight,
-                                ),
-                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(Icons.arrow_forward_rounded, size: 16),
+                          ],
+                        ),
+                      );
+
+                      return Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppColors.warningBg,
+                              AppColors.warning.withValues(alpha: 0.12),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        TextButton(
-                          onPressed: () {
-                            ref
-                                .read(profileCompletionPromptServiceProvider)
-                                .showCompletionSheet(context, user);
-                          },
-                          style: TextButton.styleFrom(
-                            backgroundColor: AppColors.warning,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Text(
-                            context.tr('completeProfileNow'),
-                            style: AppFonts.labelSmall(color: Colors.white)
-                                .copyWith(fontWeight: FontWeight.bold),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: AppColors.warning.withValues(alpha: 0.35),
                           ),
                         ),
-                      ],
-                    ),
+                        child: isCompact
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  details,
+                                  const SizedBox(height: 14),
+                                  action,
+                                ],
+                              )
+                            : Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(child: details),
+                                  const SizedBox(width: 16),
+                                  action,
+                                ],
+                              ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                 ],
-                InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => context.push(RoutePaths.customerSearch),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      color: cardBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: borderColor),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.accentBlue.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isCompact = constraints.maxWidth < 420;
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(40),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.accentBlue.withValues(alpha: 0.10),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
                           ),
-                          child: const Icon(
-                            Icons.search_rounded,
-                            color: AppColors.accentBlue,
-                            size: 20,
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
                           ),
+                        ],
+                      ),
+                      child: Material(
+                        color: cardBg,
+                        clipBehavior: Clip.antiAlias,
+                        shape: StadiumBorder(
+                          side: BorderSide(color: borderColor),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                context.tr('searchGaragesServicesPackages'),
-                                style: AppFonts.labelMedium(
-                                  color: secondaryTextColor,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                context.tr('searchPlaceholderSub'),
-                                style: AppFonts.bodySmall(
-                                  color: secondaryTextColor.withValues(
-                                    alpha: 0.7,
+                        child: InkWell(
+                          onTap: () => context.push(RoutePaths.customerSearch),
+                          hoverColor: AppColors.accentBlue.withValues(
+                            alpha: 0.04,
+                          ),
+                          splashColor: AppColors.accentBlue.withValues(
+                            alpha: 0.08,
+                          ),
+                          highlightColor: AppColors.accentBlue.withValues(
+                            alpha: 0.04,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accentBlue.withValues(
+                                      alpha: 0.12,
+                                    ),
+                                    shape: BoxShape.circle,
                                   ),
-                                ).copyWith(fontSize: 11),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
+                                  child: const Icon(
+                                    Icons.search_rounded,
+                                    color: AppColors.accentBlue,
+                                    size: 22,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        context.tr(
+                                          'searchGaragesServicesPackages',
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppFonts.labelMedium(
+                                          color: secondaryTextColor,
+                                        ).copyWith(fontWeight: FontWeight.w600),
+                                      ),
+                                      if (!isCompact) ...[
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          context.tr('searchPlaceholderSub'),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppFonts.bodySmall(
+                                            color: secondaryTextColor
+                                                .withValues(alpha: 0.7),
+                                          ).copyWith(fontSize: 11),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  height: 42,
+                                  width: isCompact ? 42 : null,
+                                  padding: isCompact
+                                      ? EdgeInsets.zero
+                                      : const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                        ),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        AppColors.accentBlue,
+                                        Color.lerp(
+                                          AppColors.accentBlue,
+                                          Colors.black,
+                                          0.2,
+                                        )!,
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(40),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.accentBlue.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.tune_rounded,
+                                        size: 18,
+                                        color: Colors.white,
+                                      ),
+                                      if (!isCompact) ...[
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          context.tr('filter'),
+                                          style:
+                                              AppFonts.labelSmall(
+                                                color: Colors.white,
+                                              ).copyWith(
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.accentBlue,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.tune_rounded,
-                                size: 14,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                context.tr('filter'),
-                                style: AppFonts.labelSmall(color: Colors.white)
-                                    .copyWith(fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 10),
                 SingleChildScrollView(
@@ -361,88 +473,152 @@ class CustomerDashboardScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.16),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          top: -50,
+                          right: -40,
+                          child: Container(
+                            width: 150,
+                            height: 150,
                             decoration: BoxDecoration(
-                              color: AppColors.primaryRed,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              context.tr('featuredOffers'),
-                              style: AppFonts.labelSmall(color: Colors.white)
-                                  .copyWith(fontWeight: FontWeight.bold),
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [
+                                  AppColors.primaryRed.withValues(alpha: 0.4),
+                                  AppColors.primaryRed.withValues(alpha: 0),
+                                ],
+                              ),
                             ),
                           ),
-                          Flexible(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.verified_rounded,
-                                  color: Colors.white70,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    context.tr('genuineParts'),
-                                    style: AppFonts.labelSmall(
-                                      color: Colors.white70,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
                                     ),
-                                    overflow: TextOverflow.ellipsis,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          AppColors.primaryRed,
+                                          Color.lerp(
+                                            AppColors.primaryRed,
+                                            Colors.black,
+                                            0.2,
+                                          )!,
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.local_offer_rounded,
+                                          color: Colors.white,
+                                          size: 12,
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          context.tr('featuredOffers'),
+                                          style:
+                                              AppFonts.labelSmall(
+                                                color: Colors.white,
+                                              ).copyWith(
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
+                                  const SizedBox(width: 12),
+                                  Flexible(
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.verified_rounded,
+                                          color: Colors.white70,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Flexible(
+                                          child: Text(
+                                            context.tr('genuineParts'),
+                                            style: AppFonts.labelSmall(
+                                              color: Colors.white70,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                context.tr('workshopPackagesPeriodicCare'),
+                                style:
+                                    AppFonts.headlineSmall(color: Colors.white)
+                                        .copyWith(
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: -0.3,
+                                          height: 1.2,
+                                        ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Book servicing, car wash and engine checkups from trusted workshops near you.',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppFonts.bodySmall(color: Colors.white70)
+                                    .copyWith(height: 1.4),
+                              ),
+                              const SizedBox(height: 14),
+                              AppButton(
+                                label: context.tr('exploreWorkshopPackages'),
+                                onPressed: onNavigateToNearbyGarages,
+                                variant: AppButtonVariant.primary,
+                                height: 38,
+                                fontSize: 12,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        context.tr('workshopPackagesPeriodicCare'),
-                        style: AppFonts.headlineSmall(color: Colors.white)
-                            .copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Periodic Service packages from ₹1,499 • Foam Water Wash & Detailing from ₹499 • Computerized Engine Diagnostics from ₹799.',
-                        style: AppFonts.bodySmall(color: Colors.white70),
-                      ),
-                      const SizedBox(height: 14),
-                      AppButton(
-                        label: context.tr('exploreWorkshopPackages'),
-                        onPressed: onNavigateToNearbyGarages,
-                        variant: AppButtonVariant.primary,
-                        height: 38,
-                        fontSize: 12,
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),

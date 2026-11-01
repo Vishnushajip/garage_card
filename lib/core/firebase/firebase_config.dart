@@ -30,7 +30,13 @@ class FirebaseConfig {
           options: DefaultFirebaseOptions.currentPlatform,
         );
       }
-      if (!kIsWeb) {
+      if (kIsWeb) {
+        FirebaseFirestore.instance.settings = const Settings(
+          persistenceEnabled: true,
+          webExperimentalForceLongPolling: true,
+          ignoreUndefinedProperties: true,
+        );
+      } else {
         FirebaseFirestore.instance.settings = const Settings(
           persistenceEnabled: true,
           cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
@@ -67,6 +69,8 @@ class _AppMapLocationPickerState extends State<AppMapLocationPicker> {
   final TextEditingController _searchCtrl = TextEditingController();
   List<LocationDetails> _searchResults = [];
   bool _isSearching = false;
+  Timer? _debounceTimer;
+  int _searchSeq = 0;
 
   @override
   void initState() {
@@ -92,6 +96,7 @@ class _AppMapLocationPickerState extends State<AppMapLocationPicker> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchCtrl.dispose();
     _mapController.dispose();
     super.dispose();
@@ -141,14 +146,35 @@ class _AppMapLocationPickerState extends State<AppMapLocationPicker> {
     }
   }
 
-  Future<void> _performSearch(String query) async {
-    if (query.trim().length < 3) {
-      setState(() => _searchResults = []);
+  void _performSearch(String query, {bool immediate = false}) {
+    _debounceTimer?.cancel();
+    final trimmed = query.trim();
+    if (trimmed.length < 2) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
       return;
     }
+
+    if (immediate) {
+      _executeSearch(trimmed);
+    } else {
+      _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+        _executeSearch(trimmed);
+      });
+    }
+  }
+
+  Future<void> _executeSearch(String query) async {
+    final currentSeq = ++_searchSeq;
     setState(() => _isSearching = true);
-    final results = await LocationService.instance.searchPlaces(query);
-    if (mounted) {
+    final results = await LocationService.instance.searchPlaces(
+      query,
+      proximityLat: _selectedPoint.latitude,
+      proximityLng: _selectedPoint.longitude,
+    );
+    if (mounted && currentSeq == _searchSeq) {
       setState(() {
         _searchResults = results;
         _isSearching = false;
@@ -404,6 +430,8 @@ class _AppMapLocationPickerState extends State<AppMapLocationPicker> {
                         vertical: 12,
                       ),
                     ),
+                    textInputAction: TextInputAction.search,
+                    onSubmitted: (val) => _performSearch(val, immediate: true),
                     onChanged: (val) => _performSearch(val),
                   ),
                 ),
@@ -428,16 +456,23 @@ class _AppMapLocationPickerState extends State<AppMapLocationPicker> {
                               size: 20,
                             ),
                             title: Text(
-                              item.shortAddress,
-                              style: AppFonts.bodySmall(
-                                color: primaryTextColor,
-                              ),
+                              (item.street != null && item.street!.isNotEmpty)
+                                  ? item.street!
+                                  : item.shortAddress,
+                              style: AppFonts.bodySmall(color: primaryTextColor)
+                                  .copyWith(fontWeight: FontWeight.w600),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             subtitle: Text(
-                              '${item.latitude.toStringAsFixed(4)}, ${item.longitude.toStringAsFixed(4)}',
+                              item.displayName.isNotEmpty
+                                  ? item.displayName
+                                  : '${item.latitude.toStringAsFixed(4)}, ${item.longitude.toStringAsFixed(4)}',
                               style: AppFonts.labelSmall(
                                 color: secondaryTextColor,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             onTap: () => _selectSearchResult(item),
                           );

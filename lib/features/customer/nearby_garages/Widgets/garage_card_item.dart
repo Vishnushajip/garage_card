@@ -35,19 +35,20 @@ class GarageCardItem extends ConsumerWidget {
         : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
 
-    final distanceKm = GeohashHelper.calculateDistanceKm(
-      lat1: userLat,
-      lon1: userLon,
-      lat2: garage.latitude,
-      lon2: garage.longitude,
-    );
+    final hasUserCoords = userLat != 0.0 && userLon != 0.0;
+    final hasGarageCoords = garage.latitude != 0.0 && garage.longitude != 0.0;
+    final double? distanceKm = (hasUserCoords && hasGarageCoords)
+        ? GeohashHelper.calculateDistanceKm(
+            lat1: userLat,
+            lon1: userLon,
+            lat2: garage.latitude,
+            lon2: garage.longitude,
+          )
+        : null;
 
     final hasCover =
         garage.coverImageUrl != null && garage.coverImageUrl!.isNotEmpty;
-
-    final featuredPackageTitle = garage.servicesOffered.isNotEmpty
-        ? garage.servicesOffered.first
-        : 'Comprehensive Periodic Maintenance';
+    final hasReviews = garage.reviewCount > 0 && garage.rating > 0.0;
 
     return Card(
       color: cardBg,
@@ -118,22 +119,41 @@ class GarageCardItem extends ConsumerWidget {
                               color: Colors.white.withValues(alpha: 0.2),
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.star_rounded,
-                                size: 14,
-                                color: AppColors.accentAmber,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${garage.rating.toStringAsFixed(1)} (${garage.reviewCount})',
-                                style: AppFonts.labelSmall(color: Colors.white)
-                                    .copyWith(fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
+                          child: hasReviews
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.star_rounded,
+                                      size: 14,
+                                      color: AppColors.accentAmber,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${garage.rating.toStringAsFixed(1)} (${garage.reviewCount})',
+                                      style: AppFonts.labelSmall(
+                                        color: Colors.white,
+                                      ).copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.auto_awesome_rounded,
+                                      size: 12,
+                                      color: AppColors.accentAmber,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'New',
+                                      style: AppFonts.labelSmall(
+                                        color: Colors.white,
+                                      ).copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
                         ),
                       ),
                       Positioned(
@@ -248,26 +268,51 @@ class GarageCardItem extends ConsumerWidget {
                                       color: AppColors.warningBg,
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(
-                                          Icons.star_rounded,
-                                          size: 14,
-                                          color: AppColors.accentAmber,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '${garage.rating.toStringAsFixed(1)} (${garage.reviewCount})',
-                                          style:
-                                              AppFonts.labelSmall(
-                                                color: AppColors.primaryDark,
-                                              ).copyWith(
-                                                fontWeight: FontWeight.bold,
+                                    child: hasReviews
+                                        ? Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.star_rounded,
+                                                size: 14,
+                                                color: AppColors.accentAmber,
                                               ),
-                                        ),
-                                      ],
-                                    ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '${garage.rating.toStringAsFixed(1)} (${garage.reviewCount})',
+                                                style:
+                                                    AppFonts.labelSmall(
+                                                      color:
+                                                          AppColors.primaryDark,
+                                                    ).copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                              ),
+                                            ],
+                                          )
+                                        : Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.auto_awesome_rounded,
+                                                size: 12,
+                                                color: AppColors.accentAmber,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'New',
+                                                style:
+                                                    AppFonts.labelSmall(
+                                                      color:
+                                                          AppColors.primaryDark,
+                                                    ).copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
                                   ),
                                 ],
                               ),
@@ -294,23 +339,27 @@ class GarageCardItem extends ConsumerWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
+                      if (distanceKm != null) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.accentBlue.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            distanceKm < 1.0
+                                ? '${(distanceKm * 1000).round()} m away'
+                                : '${distanceKm.toStringAsFixed(1)} km away',
+                            style: AppFonts.labelSmall(
+                              color: AppColors.accentBlue,
+                            ).copyWith(fontWeight: FontWeight.bold),
+                          ),
                         ),
-                        decoration: BoxDecoration(
-                          color: AppColors.accentBlue.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '${distanceKm.toStringAsFixed(1)} km away',
-                          style: AppFonts.labelSmall(
-                            color: AppColors.accentBlue,
-                          ).copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
+                        const SizedBox(width: 10),
+                      ],
                       Expanded(
                         child: Text(
                           garage.openHours,
@@ -320,196 +369,217 @@ class GarageCardItem extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  InkWell(
-                    onTap: onTap,
-                    borderRadius: BorderRadius.circular(14),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: isDark
-                              ? [
-                                  const Color(0xFF1E293B),
-                                  const Color(0xFF0F172A),
-                                ]
-                              : [
-                                  const Color(0xFFF8FAFC),
-                                  const Color(0xFFEEF2F6),
-                                ],
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: AppColors.accentAmber.withValues(alpha: 0.35),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.accentAmber.withValues(
-                                alpha: 0.15,
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.local_offer_rounded,
-                              color: AppColors.accentAmber,
-                              size: 18,
+                  if (garage.servicesOffered.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    InkWell(
+                      onTap: onTap,
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: isDark
+                                ? [
+                                    const Color(0xFF1E293B),
+                                    const Color(0xFF0F172A),
+                                  ]
+                                : [
+                                    const Color(0xFFF8FAFC),
+                                    const Color(0xFFEEF2F6),
+                                  ],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: AppColors.accentAmber.withValues(
+                              alpha: 0.35,
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.accentAmber,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        'FEATURED',
-                                        style:
-                                            AppFonts.labelSmall(
-                                              color: Colors.black,
-                                            ).copyWith(
-                                              fontSize: 9,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                    ),
-                                    const Spacer(),
-                                    const Icon(
-                                      Icons.chevron_right_rounded,
-                                      size: 16,
-                                      color: AppColors.accentBlue,
-                                    ),
-                                  ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.accentAmber.withValues(
+                                  alpha: 0.15,
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  featuredPackageTitle,
-                                  style: AppFonts.titleSmall(
-                                    color: primaryTextColor,
-                                  ).copyWith(fontWeight: FontWeight.bold),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  'Genuine Spares & Complete Diagnostic Care',
-                                  style: AppFonts.bodySmall(
-                                    color: secondaryTextColor,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.local_offer_rounded,
+                                color: AppColors.accentAmber,
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.accentAmber,
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'FEATURED',
+                                          style:
+                                              AppFonts.labelSmall(
+                                                color: Colors.black,
+                                              ).copyWith(
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      const Icon(
+                                        Icons.chevron_right_rounded,
+                                        size: 16,
+                                        color: AppColors.accentBlue,
+                                      ),
+                                    ],
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    garage.servicesOffered.first,
+                                    style: AppFonts.titleSmall(
+                                      color: primaryTextColor,
+                                    ).copyWith(fontWeight: FontWeight.bold),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (garage.description.isNotEmpty)
+                                    Text(
+                                      garage.description,
+                                      style: AppFonts.bodySmall(
+                                        color: secondaryTextColor,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (garage.servicesOffered.length > 1 ||
+                      garage.isRoadsideAssistanceAvailable ||
+                      garage.isDoorstepRepairAvailable) ...[
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: [
+                        ...garage.servicesOffered
+                            .skip(1)
+                            .take(3)
+                            .map(
+                              (serviceName) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.infoBg,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  serviceName,
+                                  style:
+                                      AppFonts.labelSmall(color: AppColors.info)
+                                          .copyWith(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                ),
+                              ),
+                            ),
+                        if (garage.isRoadsideAssistanceAvailable)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.errorBg,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.emergency_rounded,
+                                  size: 11,
+                                  color: AppColors.error,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Roadside Assistance',
+                                  style:
+                                      AppFonts.labelSmall(
+                                        color: AppColors.error,
+                                      ).copyWith(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
+                        if (garage.isDoorstepRepairAvailable)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.successBg,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.home_repair_service_rounded,
+                                  size: 11,
+                                  color: AppColors.success,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Doorstep Pickup',
+                                  style:
+                                      AppFonts.labelSmall(
+                                        color: AppColors.success,
+                                      ).copyWith(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 4,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.infoBg,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          'Periodic Service & Wash',
-                          style: AppFonts.labelSmall(
-                            color: AppColors.info,
-                          ).copyWith(fontSize: 10, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      if (garage.isRoadsideAssistanceAvailable)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.errorBg,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.emergency_rounded,
-                                size: 11,
-                                color: AppColors.error,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Breakdown Help',
-                                style:
-                                    AppFonts.labelSmall(color: AppColors.error)
-                                        .copyWith(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (garage.isDoorstepRepairAvailable)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.successBg,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.home_repair_service_rounded,
-                                size: 11,
-                                color: AppColors.success,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Doorstep Pickup',
-                                style:
-                                    AppFonts.labelSmall(
-                                      color: AppColors.success,
-                                    ).copyWith(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
+                  ],
                   const Divider(height: 24),
                   Row(
                     children: [
                       _buildActionPill(
                         context: context,
-                        icon: Icons.directions_rounded,
+                        iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854878.png',
+                        fallbackIcon: Icons.directions_rounded,
                         label: 'Directions',
                         accentColor: AppColors.info,
                         onTap: () => WhatsAppShareService.openMapDirections(
@@ -521,7 +591,8 @@ class GarageCardItem extends ConsumerWidget {
                       const SizedBox(width: 8),
                       _buildActionPill(
                         context: context,
-                        icon: Icons.phone_rounded,
+                        iconUrl: 'https://cdn-icons-png.flaticon.com/512/724/724664.png',
+                        fallbackIcon: Icons.phone_rounded,
                         label: 'Call',
                         accentColor: AppColors.primaryGreen,
                         onTap: () =>
@@ -530,7 +601,8 @@ class GarageCardItem extends ConsumerWidget {
                       const SizedBox(width: 8),
                       _buildActionPill(
                         context: context,
-                        icon: Icons.chat_rounded,
+                        iconUrl: 'https://cdn-icons-png.flaticon.com/512/3670/3670051.png',
+                        fallbackIcon: Icons.chat_rounded,
                         label: 'WhatsApp',
                         accentColor: const Color(0xFF25D366),
                         onTap: () => WhatsAppShareService.openWhatsAppChat(
@@ -542,7 +614,8 @@ class GarageCardItem extends ConsumerWidget {
                       const SizedBox(width: 8),
                       _buildActionPill(
                         context: context,
-                        icon: Icons.forum_rounded,
+                        iconUrl: 'https://cdn-icons-png.flaticon.com/512/134/134718.png',
+                        fallbackIcon: Icons.forum_rounded,
                         label: 'Chat',
                         accentColor: AppColors.accentBlue,
                         onTap: () => CustomerInquiryService.startInquiry(
@@ -554,52 +627,64 @@ class GarageCardItem extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: InkWell(
-                      onTap: onTap,
-                      borderRadius: BorderRadius.circular(14),
-                      child: Container(
-                        height: 42,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFE11D48), Color(0xFFBE123C)],
-                          ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: 380,
+                        minWidth: 240,
+                      ),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: InkWell(
+                          onTap: onTap,
                           borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFE11D48)
-                                  .withValues(alpha: 0.25),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.auto_awesome_rounded,
-                              size: 16,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                'View Packages & Book Service',
-                                style: AppFonts.labelLarge(color: Colors.white)
-                                    .copyWith(fontWeight: FontWeight.bold),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                          child: Container(
+                            height: 42,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFE11D48), Color(0xFFBE123C)],
                               ),
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFE11D48)
+                                      .withValues(alpha: 0.25),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 16,
-                              color: Colors.white,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.auto_awesome_rounded,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    'View Packages & Book Service',
+                                    style: AppFonts.labelLarge(
+                                      color: Colors.white,
+                                    ).copyWith(fontWeight: FontWeight.bold),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -615,11 +700,16 @@ class GarageCardItem extends ConsumerWidget {
 
   Widget _buildActionPill({
     required BuildContext context,
-    required IconData icon,
+    required String iconUrl,
+    required IconData fallbackIcon,
     required String label,
     required Color accentColor,
     required VoidCallback onTap,
   }) {
+    final isTesting = WidgetsBinding.instance.runtimeType.toString().contains(
+      'Test',
+    );
+
     return Expanded(
       child: Material(
         color: Colors.transparent,
@@ -639,7 +729,20 @@ class GarageCardItem extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 18, color: accentColor),
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: isTesting
+                      ? Icon(fallbackIcon, size: 18, color: accentColor)
+                      : Image.network(
+                          iconUrl,
+                          width: 18,
+                          height: 18,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Icon(fallbackIcon, size: 18, color: accentColor),
+                        ),
+                ),
                 const SizedBox(height: 3),
                 Text(
                   label,

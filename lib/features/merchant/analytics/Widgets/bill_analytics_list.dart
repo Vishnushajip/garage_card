@@ -40,11 +40,15 @@ class BillAnalyticsList extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Bill-by-Bill Revenue & Settlement Log',
@@ -104,8 +108,11 @@ class BillAnalyticsList extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 4),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 4,
                             children: [
                               Text(
                                 inv.issuedAt != null
@@ -115,7 +122,10 @@ class BillAnalyticsList extends StatelessWidget {
                                   color: secondaryTextColor,
                                 ),
                               ),
-                              Row(
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 2,
+                                crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
                                   if (hasDiscount) ...[
                                     Text(
@@ -129,7 +139,6 @@ class BillAnalyticsList extends StatelessWidget {
                                         color: secondaryTextColor,
                                       ),
                                     ),
-                                    const SizedBox(width: 6),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 4,
@@ -150,7 +159,6 @@ class BillAnalyticsList extends StatelessWidget {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
                                   ],
                                   Text(
                                     CurrencyFormatter.format(
@@ -166,8 +174,11 @@ class BillAnalyticsList extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 4),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 4,
                             children: [
                               Text(
                                 'Paid: ${CurrencyFormatter.format(inv.paidAmount, currencyCode: inv.currencyCode)}',

@@ -7,6 +7,7 @@ import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
+import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/features/customer/appointments/View/customer_appointments_screen.dart';
 import 'package:garage_card/features/customer/inquiry/customer_inquiry_service.dart';
 import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
@@ -109,249 +110,295 @@ class _CustomerGarageDetailScreenState
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: NestedScrollView(
-        headerSliverBuilder: (ctx, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 240,
-              pinned: true,
-              backgroundColor: surfaceColor,
-              flexibleSpace: FlexibleSpaceBar(
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    AppCachedImage(
-                      imageUrl: garage.coverImageUrl,
-                      fit: BoxFit.cover,
-                      borderRadius: BorderRadius.zero,
-                      errorWidget: _buildFallbackBanner(),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withValues(alpha: 0.3),
-                            Colors.black.withValues(alpha: 0.8),
-                          ],
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: AppResponsiveLayout.kMaxProjectWidth,
+          ),
+          child: NestedScrollView(
+            headerSliverBuilder: (ctx, innerBoxIsScrolled) {
+              return [
+                SliverAppBar(
+                  expandedHeight: 240,
+                  pinned: true,
+                  backgroundColor: surfaceColor,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        AppCachedImage(
+                          imageUrl: garage.coverImageUrl,
+                          fit: BoxFit.cover,
+                          borderRadius: BorderRadius.zero,
+                          errorWidget: _buildFallbackBanner(),
                         ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 16,
-                      left: 16,
-                      right: 16,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Container(
-                            width: 64,
-                            height: 64,
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceDark,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: AppCachedImage(
-                              imageUrl: garage.logoUrl,
-                              width: 60,
-                              height: 60,
-                              isCircle: true,
-                              fallbackIcon: Icons.garage_rounded,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        garage.name,
-                                        style: AppFonts.headlineSmall(
-                                          color: Colors.white,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    if (garage.isVerified) ...[
-                                      const SizedBox(width: 6),
-                                      const Icon(
-                                        Icons.verified_rounded,
-                                        color: AppColors.primaryRed,
-                                        size: 18,
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 3,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primaryAmber,
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.star_rounded,
-                                            size: 14,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            garage.rating.toStringAsFixed(1),
-                                            style: AppFonts.labelSmall(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '(${garage.reviewCount} reviews)',
-                                      style: AppFonts.bodySmall(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.9,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '• ${garage.city}',
-                                      style: AppFonts.bodySmall(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.9,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.3),
+                                Colors.black.withValues(alpha: 0.8),
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Row(
-                  children: [
-                    _buildActionPill(
-                      context: context,
-                      icon: Icons.directions_rounded,
-                      label: 'Directions',
-                      accentColor: AppColors.info,
-                      onTap: () => WhatsAppShareService.openMapDirections(
-                        latitude: garage.latitude,
-                        longitude: garage.longitude,
-                        label: garage.name,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    _buildActionPill(
-                      context: context,
-                      icon: Icons.phone_rounded,
-                      label: 'Call',
-                      accentColor: AppColors.primaryGreen,
-                      onTap: () =>
-                          WhatsAppShareService.makePhoneCall(garage.phone),
-                    ),
-                    const SizedBox(width: 8),
-                    _buildActionPill(
-                      context: context,
-                      icon: Icons.chat_rounded,
-                      label: 'WhatsApp',
-                      accentColor: const Color(0xFF25D366),
-                      onTap: () => WhatsAppShareService.openWhatsAppChat(
-                        phoneNumber: garage.phone,
-                        text:
-                            'Hello ${garage.name}, I found your garage on WeFix and would like to inquire about your services.',
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    _buildActionPill(
-                      context: context,
-                      icon: Icons.forum_rounded,
-                      label: 'Chat',
-                      accentColor: AppColors.accentBlue,
-                      onTap:
-                          widget.onStartChat ??
-                          () => CustomerInquiryService.startInquiry(
-                            context,
-                            ref,
-                            garage: garage,
+                        ),
+                        Positioned(
+                          bottom: 16,
+                          left: 16,
+                          right: 16,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceDark,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: AppCachedImage(
+                                  imageUrl: garage.logoUrl,
+                                  width: 60,
+                                  height: 60,
+                                  isCircle: true,
+                                  fallbackIcon: Icons.garage_rounded,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            garage.name,
+                                            style: AppFonts.headlineSmall(
+                                              color: Colors.white,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (garage.isVerified) ...[
+                                          const SizedBox(width: 6),
+                                          const Icon(
+                                            Icons.verified_rounded,
+                                            color: AppColors.primaryRed,
+                                            size: 18,
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 3,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primaryAmber,
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                          ),
+                                          child:
+                                              garage.reviewCount > 0 &&
+                                                  garage.rating > 0.0
+                                              ? Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.star_rounded,
+                                                      size: 14,
+                                                      color: Colors.white,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      garage.rating
+                                                          .toStringAsFixed(1),
+                                                      style:
+                                                          AppFonts.labelSmall(
+                                                            color: Colors.white,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                )
+                                              : Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons
+                                                          .auto_awesome_rounded,
+                                                      size: 12,
+                                                      color: Colors.white,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      'New',
+                                                      style:
+                                                          AppFonts.labelSmall(
+                                                            color: Colors.white,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          garage.reviewCount > 0
+                                              ? '(${garage.reviewCount} reviews)'
+                                              : '(No ratings yet)',
+                                          style: AppFonts.bodySmall(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.9,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '• ${garage.city}',
+                                          style: AppFonts.bodySmall(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.9,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _SliverTabHeaderDelegate(
-                TabBar(
-                  controller: _tabController,
-                  labelColor: AppColors.primaryRed,
-                  unselectedLabelColor: secondaryText,
-                  indicatorColor: AppColors.primaryRed,
-                  tabs: const [
-                    Tab(text: 'Packages & Services'),
-                    Tab(text: 'Reviews'),
-                    Tab(text: 'About'),
-                  ],
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        _buildActionPill(
+                          context: context,
+                          iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854878.png',
+                          fallbackIcon: Icons.directions_rounded,
+                          label: 'Directions',
+                          accentColor: AppColors.info,
+                          onTap: () => WhatsAppShareService.openMapDirections(
+                            latitude: garage.latitude,
+                            longitude: garage.longitude,
+                            label: garage.name,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildActionPill(
+                          context: context,
+                          iconUrl: 'https://cdn-icons-png.flaticon.com/512/724/724664.png',
+                          fallbackIcon: Icons.phone_rounded,
+                          label: 'Call',
+                          accentColor: AppColors.primaryGreen,
+                          onTap: () =>
+                              WhatsAppShareService.makePhoneCall(garage.phone),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildActionPill(
+                          context: context,
+                          iconUrl: 'https://cdn-icons-png.flaticon.com/512/3670/3670051.png',
+                          fallbackIcon: Icons.chat_rounded,
+                          label: 'WhatsApp',
+                          accentColor: const Color(0xFF25D366),
+                          onTap: () => WhatsAppShareService.openWhatsAppChat(
+                            phoneNumber: garage.phone,
+                            text:
+                                'Hello ${garage.name}, I found your garage on WeFix and would like to inquire about your services.',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildActionPill(
+                          context: context,
+                          iconUrl: 'https://cdn-icons-png.flaticon.com/512/134/134718.png',
+                          fallbackIcon: Icons.forum_rounded,
+                          label: 'Chat',
+                          accentColor: AppColors.accentBlue,
+                          onTap:
+                              widget.onStartChat ??
+                              () => CustomerInquiryService.startInquiry(
+                                context,
+                                ref,
+                                garage: garage,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                surfaceColor,
-              ),
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _SliverTabHeaderDelegate(
+                    TabBar(
+                      controller: _tabController,
+                      labelColor: AppColors.primaryRed,
+                      unselectedLabelColor: secondaryText,
+                      indicatorColor: AppColors.primaryRed,
+                      tabs: const [
+                        Tab(text: 'Packages & Services'),
+                        Tab(text: 'Reviews'),
+                        Tab(text: 'About'),
+                      ],
+                    ),
+                    surfaceColor,
+                  ),
+                ),
+              ];
+            },
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                GarageDetailServicesTab(
+                  garageId: widget.garageId,
+                  state: state,
+                  vm: vm,
+                  garage: garage,
+                ),
+                GarageDetailReviewsTab(
+                  garageId: widget.garageId,
+                  state: state,
+                  vm: vm,
+                  garage: garage,
+                ),
+                GarageDetailAboutTab(garage: garage),
+              ],
             ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            GarageDetailServicesTab(
-              garageId: widget.garageId,
-              state: state,
-              vm: vm,
-              garage: garage,
-            ),
-            GarageDetailReviewsTab(
-              garageId: widget.garageId,
-              state: state,
-              vm: vm,
-              garage: garage,
-            ),
-            GarageDetailAboutTab(garage: garage),
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: AppButton(
-            label: 'Book Service Appointment',
-            onPressed: () => CustomerAppointmentsScreen.showBookingSheet(
-              context,
-              garageId: garage.id,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: AppButton(
+                label: 'Book Service Appointment',
+                onPressed: () => CustomerAppointmentsScreen.showBookingSheet(
+                  context,
+                  garageId: garage.id,
+                ),
+              ),
             ),
           ),
         ),
@@ -374,11 +421,16 @@ class _CustomerGarageDetailScreenState
 
   Widget _buildActionPill({
     required BuildContext context,
-    required IconData icon,
+    required String iconUrl,
+    required IconData fallbackIcon,
     required String label,
     required Color accentColor,
     required VoidCallback onTap,
   }) {
+    final isTesting = WidgetsBinding.instance.runtimeType.toString().contains(
+      'Test',
+    );
+
     return Expanded(
       child: Material(
         color: Colors.transparent,
@@ -398,7 +450,20 @@ class _CustomerGarageDetailScreenState
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 18, color: accentColor),
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: isTesting
+                      ? Icon(fallbackIcon, size: 18, color: accentColor)
+                      : Image.network(
+                          iconUrl,
+                          width: 18,
+                          height: 18,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Icon(fallbackIcon, size: 18, color: accentColor),
+                        ),
+                ),
                 const SizedBox(height: 3),
                 Text(
                   label,

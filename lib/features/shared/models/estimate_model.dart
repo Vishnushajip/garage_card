@@ -1,3 +1,5 @@
+import 'package:garage_card/core/formatting/date_formatter.dart';
+
 import 'line_item_model.dart';
 
 class EstimateModel {
@@ -90,15 +92,9 @@ class EstimateModel {
       status: data['status'] as String? ?? 'sent',
       rejectionReason: data['rejectionReason'] as String?,
       version: (data['version'] as num?)?.toInt() ?? 1,
-      expiresAt: data['expiresAt'] != null
-          ? DateTime.tryParse(data['expiresAt'] as String)
-          : null,
-      approvedAt: data['approvedAt'] != null
-          ? DateTime.tryParse(data['approvedAt'] as String)
-          : null,
-      createdAt: data['createdAt'] != null
-          ? DateTime.tryParse(data['createdAt'] as String)
-          : null,
+      expiresAt: DateFormatter.parse(data['expiresAt']),
+      approvedAt: DateFormatter.parse(data['approvedAt']),
+      createdAt: DateFormatter.parse(data['createdAt']),
     );
   }
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/firebase/firebase_config.dart';
@@ -22,7 +23,8 @@ mixin EstimateRepository on GarageRepositoryStore {
       return [];
     }
 
-    if (FirebaseConfig.isInitialized) {
+    if (FirebaseConfig.isInitialized &&
+        FirebaseAuth.instance.currentUser != null) {
       try {
         Query<Map<String, dynamic>> query;
         if (hasGarage) {
@@ -127,7 +129,8 @@ mixin EstimateRepository on GarageRepositoryStore {
       );
     }
 
-    if (FirebaseConfig.isInitialized) {
+    if (FirebaseConfig.isInitialized &&
+        FirebaseAuth.instance.currentUser != null) {
       try {
         final query = await FirebaseFirestore.instance
             .collectionGroup('estimates')
@@ -169,7 +172,8 @@ mixin EstimateRepository on GarageRepositoryStore {
       );
     }
 
-    if (FirebaseConfig.isInitialized) {
+    if (FirebaseConfig.isInitialized &&
+        FirebaseAuth.instance.currentUser != null) {
       try {
         final query = await FirebaseFirestore.instance
             .collectionGroup('estimates')

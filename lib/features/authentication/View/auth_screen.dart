@@ -98,7 +98,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
     final isCustomer = _selectedRole == 'customer';
-    final deepRed = Color.lerp(AppColors.primaryRed, Colors.black, 0.38)!;
 
     return Scaffold(
       backgroundColor: isDark
@@ -125,19 +124,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           vertical: 28,
                         ),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [AppColors.primaryRed, deepRed],
-                          ),
+                          color: cardBg,
                           borderRadius: BorderRadius.circular(28),
+                          border: Border.all(color: borderColor, width: 1.2),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primaryRed.withValues(
-                                alpha: 0.35,
-                              ),
-                              blurRadius: 28,
-                              offset: const Offset(0, 12),
+                              color: isDark
+                                  ? Colors.black.withValues(alpha: 0.3)
+                                  : Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 24,
+                              offset: const Offset(0, 10),
                             ),
                           ],
                         ),
@@ -150,7 +146,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                               child: PhosphorIcon(
                                 PhosphorIcons.gear(PhosphorIconsStyle.duotone),
                                 size: 110,
-                                color: Colors.white.withValues(alpha: 0.08),
+                                color: primaryTextColor.withValues(alpha: 0.03),
                               ),
                             ),
                             Positioned(
@@ -161,7 +157,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                                   PhosphorIconsStyle.duotone,
                                 ),
                                 size: 84,
-                                color: Colors.white.withValues(alpha: 0.07),
+                                color: primaryTextColor.withValues(
+                                  alpha: 0.025,
+                                ),
                               ),
                             ),
                             Column(
@@ -169,38 +167,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                               children: [
                                 Row(
                                   children: [
-                                    Container(
-                                      width: 58,
-                                      height: 58,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(18),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.2,
-                                            ),
-                                            blurRadius: 14,
-                                            offset: const Offset(0, 6),
-                                          ),
-                                        ],
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(18),
-                                        child: Image.asset(
-                                          'assets/branding/wefix_app_icon.png',
-                                          width: 58,
-                                          height: 58,
-                                          fit: BoxFit.contain,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  const AppLogo(
-                                                    size: 58,
-                                                    showBadge: true,
-                                                  ),
-                                        ),
-                                      ),
-                                    ),
+                                    const AppLogo(size: 58, showBadge: true),
                                     const SizedBox(width: 14),
                                     Expanded(
                                       child: Column(
@@ -211,8 +178,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                                             'Welcome to',
                                             style:
                                                 AppFonts.labelSmall(
-                                                  color: Colors.white
-                                                      .withValues(alpha: 0.85),
+                                                  color: secondaryTextColor,
                                                 ).copyWith(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w600,
@@ -224,11 +190,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                                             AppBranding.appName,
                                             style:
                                                 AppFonts.displayLarge(
-                                                  color: Colors.white,
+                                                  color: primaryTextColor,
                                                 ).copyWith(
                                                   fontSize: 28,
                                                   fontWeight: FontWeight.w800,
                                                   letterSpacing: -0.6,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Smarter Garage Management',
+                                            style:
+                                                AppFonts.labelSmall(
+                                                  color: secondaryTextColor,
+                                                ).copyWith(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w500,
                                                 ),
                                           ),
                                         ],
@@ -240,7 +217,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                                 Text(
                                   'Automotive service & smart garage management platform',
                                   style: AppFonts.bodyMedium(
-                                    color: Colors.white.withValues(alpha: 0.92),
+                                    color: secondaryTextColor,
                                   ).copyWith(fontSize: 13.5, height: 1.35),
                                 ),
                                 const SizedBox(height: 18),
@@ -526,15 +503,22 @@ class _FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final cardBg = isDark ? AppColors.cardDark : AppColors.backgroundLight;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
+        color: cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-          width: 1.0,
-        ),
+        border: Border.all(color: borderColor, width: 1.0),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -543,10 +527,10 @@ class _FeatureCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: AppColors.primaryRed.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
-            child: PhosphorIcon(icon, size: 15, color: Colors.white),
+            child: PhosphorIcon(icon, size: 15, color: AppColors.primaryRed),
           ),
           const SizedBox(height: 6),
           Text(
@@ -554,7 +538,7 @@ class _FeatureCard extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppFonts.labelSmall(color: Colors.white)
+            style: AppFonts.labelSmall(color: primaryTextColor)
                 .copyWith(fontSize: 11.5, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 1),
@@ -563,9 +547,8 @@ class _FeatureCard extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppFonts.labelSmall(
-              color: Colors.white.withValues(alpha: 0.8),
-            ).copyWith(fontSize: 9.5, fontWeight: FontWeight.w500),
+            style: AppFonts.labelSmall(color: secondaryTextColor)
+                .copyWith(fontSize: 9.5, fontWeight: FontWeight.w500),
           ),
         ],
       ),

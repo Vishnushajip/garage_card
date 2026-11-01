@@ -33,10 +33,14 @@ class ProfitLossCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(8),
@@ -53,22 +57,25 @@ class ProfitLossCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isProfit ? 'Net Profit' : 'Net Loss',
-                          style: AppFonts.labelLarge(
-                            color: isDark
-                                ? AppColors.textSecondaryDark
-                                : AppColors.textSecondaryLight,
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            isProfit ? 'Net Profit' : 'Net Loss',
+                            style: AppFonts.labelLarge(
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
+                            ),
                           ),
-                        ),
-                        Text(
-                          '${isProfit ? "+" : ""}${CurrencyFormatter.format(metrics.netProfit, currencyCode: metrics.currencyCode)}',
-                          style: AppFonts.displayMedium(color: statusColor),
-                        ),
-                      ],
+                          Text(
+                            '${isProfit ? "+" : ""}${CurrencyFormatter.format(metrics.netProfit, currencyCode: metrics.currencyCode)}',
+                            style: AppFonts.displayMedium(color: statusColor),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

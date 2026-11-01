@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/firebase/firebase_config.dart';
@@ -26,7 +27,8 @@ mixin InvoiceRepository on GarageRepositoryStore {
       return [];
     }
 
-    if (FirebaseConfig.isInitialized) {
+    if (FirebaseConfig.isInitialized &&
+        FirebaseAuth.instance.currentUser != null) {
       try {
         Query<Map<String, dynamic>> query;
         if (hasGarage) {
@@ -48,9 +50,15 @@ mixin InvoiceRepository on GarageRepositoryStore {
             .get()
             .timeout(const Duration(seconds: 4));
 
-        return snapshot.docs
+        final items = snapshot.docs
             .map((d) => InvoiceModel.fromFirestore(d.data(), d.id))
             .toList();
+        items.sort(
+          (a, b) => (b.createdAt ?? b.issuedAt ?? DateTime.now()).compareTo(
+            a.createdAt ?? a.issuedAt ?? DateTime.now(),
+          ),
+        );
+        return items;
       } catch (e) {
         debugPrint('GARAGE_REPO_GET_INVOICES_ERROR: $e');
         return [];
@@ -255,7 +263,8 @@ mixin InvoiceRepository on GarageRepositoryStore {
       ),
     );
 
-    if (FirebaseConfig.isInitialized) {
+    if (FirebaseConfig.isInitialized &&
+        FirebaseAuth.instance.currentUser != null) {
       try {
         await FirebaseFirestore.instance
             .collection('garages')
@@ -327,7 +336,8 @@ mixin InvoiceRepository on GarageRepositoryStore {
       return [];
     }
 
-    if (FirebaseConfig.isInitialized) {
+    if (FirebaseConfig.isInitialized &&
+        FirebaseAuth.instance.currentUser != null) {
       try {
         Query<Map<String, dynamic>> query;
         if (hasGarage) {

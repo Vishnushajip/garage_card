@@ -2,13 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:garage_card/core/branding/app_logo.dart';
-import 'package:garage_card/core/colors/app_colors.dart';
-import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
-import 'package:garage_card/features/splash/Widgets/splash_reveal_painter.dart';
-import 'package:garage_card/features/splash/Widgets/splash_tachometer_painter.dart';
 import 'package:go_router/go_router.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -21,15 +16,7 @@ class SplashScreen extends ConsumerStatefulWidget {
 class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _tachometerAnimation;
-  late final Animation<double> _badgeScaleAnimation;
-  late final Animation<double> _badgeFadeAnimation;
-  late final Animation<double> _sparkRippleAnimation;
-  late final Animation<double> _textSlideAnimation;
-  late final Animation<double> _textFadeAnimation;
-  late final Animation<double> _taglineFadeAnimation;
-  late final Animation<double> _taglineTrackingAnimation;
-  late final Animation<double> _revealAnimation;
+  late final Animation<double> _progressAnimation;
   bool _hasNavigated = false;
 
   @override
@@ -37,59 +24,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1400),
     );
 
-    _tachometerAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.32, curve: Curves.easeInOutCubic),
-    );
-
-    _badgeScaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.08, 0.36, curve: Curves.easeOutBack),
-      ),
-    );
-
-    _badgeFadeAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.24, curve: Curves.easeOut),
-    );
-
-    _sparkRippleAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.30, 0.60, curve: Curves.easeOutQuad),
-    );
-
-    _textSlideAnimation = Tween<double>(begin: 18.0, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.24, 0.52, curve: Curves.easeOutCubic),
-      ),
-    );
-
-    _textFadeAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.24, 0.50, curve: Curves.easeOut),
-    );
-
-    _taglineFadeAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.36, 0.60, curve: Curves.easeOut),
-    );
-
-    _taglineTrackingAnimation = Tween<double>(begin: 1.5, end: 3.2).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.36, 0.68, curve: Curves.easeOutCubic),
-      ),
-    );
-
-    _revealAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.74, 1.0, curve: Curves.easeInOutCubic),
-    );
+    _progressAnimation = Tween<double>(
+      begin: -0.4,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -133,159 +74,110 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) {
-              final breathValue = math.sin(_controller.value * math.pi * 3);
-              final auraOpacity = (0.04 + 0.03 * breathValue).clamp(0.0, 0.08);
+      body: Center(
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) {
+            final pulse =
+                1.0 + 0.05 * math.sin(_controller.value * math.pi * 2);
+            final glowAlpha =
+                (0.30 + 0.12 * math.sin(_controller.value * math.pi * 2)).clamp(
+                  0.2,
+                  0.48,
+                );
 
-              return Container(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: Alignment.center,
-                    radius: 0.9,
-                    colors: [
-                      AppColors.primaryRed.withValues(alpha: auraOpacity),
-                      Colors.transparent,
-                    ],
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Transform.scale(
+                  scale: pulse,
+                  child: Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFDC2626)
+                              .withValues(alpha: glowAlpha * 0.7),
+                          blurRadius: 28,
+                          offset: const Offset(0, 10),
+                        ),
+                        BoxShadow(
+                          color: const Color(0xFF2563EB)
+                              .withValues(alpha: glowAlpha * 0.4),
+                          blurRadius: 30,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        'assets/branding/wefix_logo_120x120.png',
+                        width: 72,
+                        height: 72,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                   ),
                 ),
-              );
-            },
-          ),
-          Center(
-            child: AnimatedBuilder(
-              animation: _controller,
-              builder: (context, _) {
-                final breathScale =
-                    _controller.value >= 0.25 && _controller.value <= 0.74
-                    ? 1.0 +
-                          0.02 *
-                              math.sin((_controller.value - 0.25) * math.pi * 4)
-                    : 1.0;
-
-                final totalScale = _badgeScaleAnimation.value * breathScale;
-                final sparkVal = _sparkRippleAnimation.value;
-
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      width: 148,
-                      height: 148,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          CustomPaint(
-                            size: const Size(144, 144),
-                            painter: SplashTachometerPainter(
-                              arcProgress: _tachometerAnimation.value,
-                              pulseValue: breathScale,
-                              sparkRippleProgress: sparkVal,
-                            ),
-                          ),
-                          Opacity(
-                            opacity: _badgeFadeAnimation.value,
-                            child: Transform.scale(
-                              scale: totalScale,
-                              child: Container(
-                                width: 88,
-                                height: 88,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(
-                                    88 * 0.28,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.primaryRed.withValues(
-                                        alpha:
-                                            0.28 + 0.08 * (breathScale - 1.0),
-                                      ),
-                                      blurRadius: 28,
-                                      offset: const Offset(0, 10),
-                                    ),
-                                  ],
-                                ),
-                                child: const AppLogo(size: 88, showBadge: true),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    Transform.translate(
-                      offset: Offset(0, _textSlideAnimation.value),
-                      child: Opacity(
-                        opacity: _textFadeAnimation.value,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            RichText(
-                              text: TextSpan(
-                                style:
-                                    AppFonts.displayLarge(
-                                      color: AppColors.textPrimaryLight,
-                                    ).copyWith(
-                                      fontSize: 36,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: -1.2,
-                                    ),
-                                children: const [
-                                  TextSpan(text: 'We'),
-                                  TextSpan(
-                                    text: 'Fix',
-                                    style: TextStyle(
-                                      color: AppColors.primaryRed,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Opacity(
-                              opacity: _taglineFadeAnimation.value,
-                              child: Text(
-                                'VEHICLE SERVICE PLATFORM',
-                                style:
-                                    AppFonts.labelSmall(
-                                      color: AppColors.textMutedLight,
-                                    ).copyWith(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing:
-                                          _taglineTrackingAnimation.value,
-                                    ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-          AnimatedBuilder(
-            animation: _revealAnimation,
-            builder: (context, _) {
-              return CustomPaint(
-                size: Size.infinite,
-                painter: SplashRevealPainter(
-                  progress: _revealAnimation.value,
-                  revealColor: AppColors.primaryRed,
-                  deepColor: AppColors.primaryRedDark,
-                  glowColor: AppColors.primaryRedLight,
+                const SizedBox(height: 20),
+                const Text(
+                  'WeFix',
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
+                    letterSpacing: -0.5,
+                  ),
                 ),
-              );
-            },
-          ),
-        ],
+                const SizedBox(height: 6),
+                const Text(
+                  'Smarter Garage Management',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+                const SizedBox(height: 28),
+                Container(
+                  width: 140,
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: Stack(
+                      children: [
+                        FractionalTranslation(
+                          translation: Offset(
+                            _progressAnimation.value * 2.5 - 0.5,
+                            0,
+                          ),
+                          child: Container(
+                            width: 56,
+                            height: 3,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(3),
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF2563EB), Color(0xFFDC2626)],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

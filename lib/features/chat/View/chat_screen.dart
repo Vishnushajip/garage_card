@@ -69,7 +69,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(chatViewModelProvider(widget.conversationId));
-    final authUser = ref.watch(authViewModelProvider).userProfile;
+    final authState = ref.watch(authViewModelProvider);
+    final authUser = authState.userProfile;
+    final activeExperience = authState.activeExperience;
     final currentUserId = authUser?.uid ?? '';
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -174,8 +176,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   itemCount: state.messages.length,
                   itemBuilder: (ctx, index) {
                     final msg = state.messages[index];
-                    final isMe = msg.senderId == currentUserId;
-                    return ChatBubble(message: msg, isMe: isMe);
+                    final isMe = (activeExperience == 'merchant')
+                        ? (msg.senderRole == 'merchant')
+                        : (activeExperience == 'customer')
+                        ? (msg.senderRole == 'customer')
+                        : (msg.senderId == currentUserId);
+                    return ChatBubble(
+                      message: msg,
+                      isMe: isMe,
+                      recipientName: widget.recipientName,
+                    );
                   },
                 ),
         ),

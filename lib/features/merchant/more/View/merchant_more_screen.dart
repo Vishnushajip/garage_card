@@ -19,15 +19,15 @@ class MerchantMoreScreen extends ConsumerWidget {
   Widget _buildLogoFallback(String name) {
     final initial = name.isNotEmpty ? name[0].toUpperCase() : 'G';
     return Container(
-      width: 54,
-      height: 54,
+      width: 58,
+      height: 58,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.accentBlue, AppColors.primaryRed],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Center(
         child: Text(
@@ -35,6 +35,30 @@ class MerchantMoreScreen extends ConsumerWidget {
           style: AppFonts.titleLarge(color: Colors.white)
               .copyWith(fontWeight: FontWeight.bold),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String text, Color primaryColor) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 16,
+            decoration: BoxDecoration(
+              color: AppColors.primaryRed,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: AppFonts.titleSmall(color: primaryColor)
+                .copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.2),
+          ),
+        ],
       ),
     );
   }
@@ -51,25 +75,26 @@ class MerchantMoreScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 8),
-          child: Text(
-            context.tr(title),
-            style: AppFonts.titleSmall(color: primaryColor)
-                .copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
+        _buildSectionTitle(context.tr(title), primaryColor),
         Card(
           color: cardBg,
           elevation: 0,
+          margin: EdgeInsets.zero,
+          clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(20),
             side: BorderSide(color: borderColor),
           ),
           child: Column(
             children: [
               for (int i = 0; i < items.length; i++) ...[
-                if (i > 0) Divider(height: 1, color: borderColor),
+                if (i > 0)
+                  Divider(
+                    height: 1,
+                    indent: 72,
+                    endIndent: 16,
+                    color: borderColor,
+                  ),
                 _buildListTile(
                   context,
                   data: items[i],
@@ -80,7 +105,7 @@ class MerchantMoreScreen extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
       ],
     );
   }
@@ -91,32 +116,66 @@ class MerchantMoreScreen extends ConsumerWidget {
     required Color primaryColor,
     required Color secondaryColor,
   }) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: data.color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(data.icon, color: data.color, size: 20),
-      ),
-      title: Text(
-        context.tr(data.title),
-        style: AppFonts.bodyMedium(color: primaryColor)
-            .copyWith(fontWeight: FontWeight.w600),
-      ),
-      subtitle: Text(
-        context.tr(data.subtitle),
-        style: AppFonts.labelSmall(color: secondaryColor),
-      ),
-      trailing: Icon(
-        Icons.chevron_right_rounded,
-        size: 20,
-        color: secondaryColor,
-      ),
+    return InkWell(
       onTap: () => data.onTap(context),
+      hoverColor: data.color.withValues(alpha: 0.04),
+      splashColor: data.color.withValues(alpha: 0.08),
+      highlightColor: data.color.withValues(alpha: 0.04),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    data.color.withValues(alpha: 0.2),
+                    data.color.withValues(alpha: 0.08),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(13),
+              ),
+              child: Icon(data.icon, color: data.color, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.tr(data.title),
+                    style: AppFonts.bodyMedium(color: primaryColor)
+                        .copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    context.tr(data.subtitle),
+                    style: AppFonts.labelSmall(color: secondaryColor),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: secondaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: secondaryColor,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -222,22 +281,50 @@ class MerchantMoreScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Card(
-                color: cardBg,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(color: borderColor),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.accentBlue.withValues(
+                        alpha: isDark ? 0.22 : 0.1,
+                      ),
+                      AppColors.primaryRed.withValues(
+                        alpha: isDark ? 0.16 : 0.06,
+                      ),
+                    ],
+                  ),
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: borderColor),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(18),
                   child: Row(
                     children: [
-                      AppCachedImage(
-                        imageUrl: garage?.logoUrl,
-                        width: 54,
-                        height: 54,
-                        borderRadius: BorderRadius.circular(16),
-                        errorWidget: _buildLogoFallback(garageName),
+                      Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          color: cardBg,
+                          borderRadius: BorderRadius.circular(21),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.accentBlue.withValues(
+                                alpha: 0.2,
+                              ),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: AppCachedImage(
+                          imageUrl: garage?.logoUrl,
+                          width: 58,
+                          height: 58,
+                          borderRadius: BorderRadius.circular(18),
+                          errorWidget: _buildLogoFallback(garageName),
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -246,9 +333,12 @@ class MerchantMoreScreen extends ConsumerWidget {
                           children: [
                             Text(
                               garageName,
-                              style: AppFonts.titleMedium(
-                                color: primaryTextColor,
-                              ).copyWith(fontWeight: FontWeight.bold),
+                              style:
+                                  AppFonts.titleMedium(color: primaryTextColor)
+                                      .copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: -0.3,
+                                      ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -261,42 +351,60 @@ class MerchantMoreScreen extends ConsumerWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
+                                horizontal: 10,
+                                vertical: 4,
                               ),
                               decoration: BoxDecoration(
                                 color: AppColors.accentBlue.withValues(
-                                  alpha: 0.12,
+                                  alpha: 0.14,
                                 ),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                              child: Text(
-                                'Merchant Workspace',
-                                style: AppFonts.labelSmall(
-                                  color: AppColors.accentBlue,
-                                ).copyWith(fontWeight: FontWeight.w600),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.verified_rounded,
+                                    size: 12,
+                                    color: AppColors.accentBlue,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Merchant Workspace',
+                                    style: AppFonts.labelSmall(
+                                      color: AppColors.accentBlue,
+                                    ).copyWith(fontWeight: FontWeight.w700),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          size: 16,
+                      const SizedBox(width: 8),
+                      Material(
+                        color: cardBg,
+                        shape: CircleBorder(
+                          side: BorderSide(color: borderColor),
                         ),
-                        color: secondaryTextColor,
-                        onPressed: () =>
-                            context.push(RoutePaths.merchantSettings),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 15,
+                          ),
+                          color: secondaryTextColor,
+                          onPressed: () =>
+                              context.push(RoutePaths.merchantSettings),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               _buildMenuSection(
                 context,
                 title: 'Operations & Records',
@@ -315,18 +423,13 @@ class MerchantMoreScreen extends ConsumerWidget {
                 primaryColor: primaryTextColor,
                 secondaryColor: secondaryTextColor,
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 8),
-                child: Text(
-                  'Account Switching',
-                  style: AppFonts.titleSmall(color: primaryTextColor)
-                      .copyWith(fontWeight: FontWeight.bold),
-                ),
-              ),
+              _buildSectionTitle('Account Switching', primaryTextColor),
               Card(
                 color: cardBg,
+                elevation: 0,
+                margin: EdgeInsets.zero,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(20),
                   side: BorderSide(color: borderColor),
                 ),
                 child: Padding(
@@ -344,70 +447,107 @@ class MerchantMoreScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 12,
+                  vertical: 14,
                 ),
                 decoration: BoxDecoration(
                   color: cardBg,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: borderColor),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
                       children: [
-                        Text(
-                          'WeFix Garage',
-                          style: AppFonts.labelSmall(color: primaryTextColor)
-                              .copyWith(fontWeight: FontWeight.bold),
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryRed.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(11),
+                          ),
+                          child: const Icon(
+                            Icons.build_circle_rounded,
+                            size: 20,
+                            color: AppColors.primaryRed,
+                          ),
                         ),
-                        Text(
-                          'Version 1.0.0 (Build 2026.1)',
-                          style: AppFonts.labelSmall(color: secondaryTextColor)
-                              .copyWith(fontSize: 10),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'WeFix Garage',
+                                style: AppFonts.labelSmall(
+                                  color: primaryTextColor,
+                                ).copyWith(fontWeight: FontWeight.w800),
+                              ),
+                              Text(
+                                'Version 1.0.0 (Build 2026.1)',
+                                style: AppFonts.labelSmall(
+                                  color: secondaryTextColor,
+                                ).copyWith(fontSize: 10),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.error,
-                        side: BorderSide(
-                          color: AppColors.error.withValues(alpha: 0.4),
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
+                    const SizedBox(height: 14),
+                    Divider(height: 1, color: borderColor),
+                    const SizedBox(height: 14),
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 300),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.error,
+                              backgroundColor: AppColors.error.withValues(
+                                alpha: 0.06,
+                              ),
+                              side: BorderSide(
+                                color: AppColors.error.withValues(alpha: 0.4),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
+                            icon: const Icon(
+                              Icons.power_settings_new_rounded,
+                              size: 18,
+                            ),
+                            label: Text(
+                              context.tr('signOut'),
+                              style: AppFonts.labelSmall(color: AppColors.error)
+                                  .copyWith(fontWeight: FontWeight.w700),
+                            ),
+                            onPressed: () async {
+                              final confirm = await AppDialog.confirm(
+                                context,
+                                title: context.tr('signOut'),
+                                message: 'Are you sure you want to securely exit your merchant workspace?',
+                                confirmLabel: context.tr('signOut'),
+                                isDestructive: true,
+                              );
+                              if (confirm == true) {
+                                ref
+                                    .read(authViewModelProvider.notifier)
+                                    .signOut();
+                              }
+                            },
+                          ),
                         ),
                       ),
-                      icon: const Icon(
-                        Icons.power_settings_new_rounded,
-                        size: 16,
-                      ),
-                      label: Text(
-                        context.tr('signOut'),
-                        style: AppFonts.labelSmall(color: AppColors.error)
-                            .copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      onPressed: () async {
-                        final confirm = await AppDialog.confirm(
-                          context,
-                          title: context.tr('signOut'),
-                          message: 'Are you sure you want to securely exit your merchant workspace?',
-                          confirmLabel: context.tr('signOut'),
-                          isDestructive: true,
-                        );
-                        if (confirm == true) {
-                          ref.read(authViewModelProvider.notifier).signOut();
-                        }
-                      },
                     ),
                   ],
                 ),

@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/firebase/firebase_config.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
@@ -175,19 +178,32 @@ class ImageUploadService {
           );
         });
 
-        await uploadTask.timeout(const Duration(seconds: 45));
-        await subscription.cancel();
+        try {
+          await uploadTask.timeout(const Duration(seconds: 90));
+        } finally {
+          await subscription.cancel();
+        }
 
-        downloadUrl = await ref.getDownloadURL();
-      } catch (e) {
-        onProgress?.call(
-          ImageUploadProgress(
-            status: ImageUploadStatus.error,
-            errorMessage: e.toString(),
-            statusMessage: 'Upload failed',
-          ),
+        downloadUrl = await ref.getDownloadURL().timeout(
+          const Duration(seconds: 15),
         );
-        rethrow;
+      } catch (e) {
+        try {
+          downloadUrl = await _uploadViaRest(
+            bytes: processed.bytes,
+            storagePath: storagePath,
+            contentType: processed.contentType,
+          );
+        } catch (_) {
+          onProgress?.call(
+            ImageUploadProgress(
+              status: ImageUploadStatus.error,
+              errorMessage: e.toString(),
+              statusMessage: 'Upload failed',
+            ),
+          );
+          rethrow;
+        }
       }
     }
 
@@ -270,6 +286,41 @@ class ImageUploadService {
         previousUrl.contains('firebasestorage.googleapis.com')) {
       await deleteImageByUrl(previousUrl);
     }
+  }
+
+  Future<String> _uploadViaRest({
+    required Uint8List bytes,
+    required String storagePath,
+    required String contentType,
+  }) async {
+    final bucket = _storage.bucket.isNotEmpty
+        ? _storage.bucket
+        : 'garage-b7ed1.firebasestorage.app';
+    final uri = Uri.parse(
+      'https://firebasestorage.googleapis.com/v0/b/$bucket/o?name=${Uri.encodeComponent(storagePath)}',
+    );
+    final headers = <String, String>{'Content-Type': contentType};
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final token = await user.getIdToken();
+        if (token != null && token.isNotEmpty) {
+          headers['Authorization'] = 'Bearer $token';
+        }
+      } catch (_) {}
+    }
+    final response = await http
+        .post(uri, headers: headers, body: bytes)
+        .timeout(const Duration(seconds: 60));
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final downloadTokens = json['downloadTokens'] as String?;
+      if (downloadTokens != null && downloadTokens.isNotEmpty) {
+        return 'https://firebasestorage.googleapis.com/v0/b/$bucket/o/${Uri.encodeComponent(storagePath)}?alt=media&token=$downloadTokens';
+      }
+      return 'https://firebasestorage.googleapis.com/v0/b/$bucket/o/${Uri.encodeComponent(storagePath)}?alt=media';
+    }
+    throw StateError('REST upload failed with status ${response.statusCode}');
   }
 }
 

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -139,6 +142,20 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
       );
 
       await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('members')
+            .doc(ownerUid)
+            .set({
+              'uid': ownerUid,
+              'role': 'owner',
+              'name': name,
+              'joinedAt': DateTime.now().toIso8601String(),
+            }, SetOptions(merge: true))
+            .timeout(const Duration(seconds: 5));
+      } catch (_) {}
       if (user != null && (user.garageId == null || user.garageId!.isEmpty)) {
         try {
           await ref
@@ -221,8 +238,14 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
           );
 
       final updated = base.copyWith(logoUrl: uploaded.downloadUrl);
-      await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
       state = state.copyWith(isSaving: false, garage: updated);
+      try {
+        await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
+      } catch (_) {
+        unawaited(
+          ref.read(garageRepositoryProvider).updateGarageProfile(updated),
+        );
+      }
       return null;
     } catch (e) {
       final err = e.toString();
@@ -278,8 +301,14 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
           );
 
       final updated = base.copyWith(coverImageUrl: uploaded.downloadUrl);
-      await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
       state = state.copyWith(isSaving: false, garage: updated);
+      try {
+        await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
+      } catch (_) {
+        unawaited(
+          ref.read(garageRepositoryProvider).updateGarageProfile(updated),
+        );
+      }
       return null;
     } catch (e) {
       final err = e.toString();

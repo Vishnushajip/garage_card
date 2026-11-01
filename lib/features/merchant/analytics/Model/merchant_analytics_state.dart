@@ -1,3 +1,5 @@
+import 'package:garage_card/features/shared/models/invoice_model.dart';
+
 import 'daily_todo_item_model.dart';
 import 'financial_metrics_model.dart';
 
@@ -7,6 +9,7 @@ class MerchantAnalyticsState {
     this.customStartDate,
     this.customEndDate,
     this.metrics,
+    this.filteredInvoices = const [],
     this.todoItems = const [],
     this.yesterdayCompletedCount = 0,
     this.todayDeliveriesCount = 0,
@@ -20,6 +23,7 @@ class MerchantAnalyticsState {
   final DateTime? customStartDate;
   final DateTime? customEndDate;
   final FinancialMetricsModel? metrics;
+  final List<InvoiceModel> filteredInvoices;
   final List<DailyTodoItemModel> todoItems;
   final int yesterdayCompletedCount;
   final int todayDeliveriesCount;
@@ -33,6 +37,7 @@ class MerchantAnalyticsState {
     DateTime? customStartDate,
     DateTime? customEndDate,
     FinancialMetricsModel? metrics,
+    List<InvoiceModel>? filteredInvoices,
     List<DailyTodoItemModel>? todoItems,
     int? yesterdayCompletedCount,
     int? todayDeliveriesCount,
@@ -46,6 +51,7 @@ class MerchantAnalyticsState {
       customStartDate: customStartDate ?? this.customStartDate,
       customEndDate: customEndDate ?? this.customEndDate,
       metrics: metrics ?? this.metrics,
+      filteredInvoices: filteredInvoices ?? this.filteredInvoices,
       todoItems: todoItems ?? this.todoItems,
       yesterdayCompletedCount:
           yesterdayCompletedCount ?? this.yesterdayCompletedCount,

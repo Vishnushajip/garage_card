@@ -63,7 +63,9 @@ class GarageDetailReviewsTab extends StatelessWidget {
                         Column(
                           children: [
                             Text(
-                              garage.rating.toStringAsFixed(1),
+                              garage.reviewCount > 0 && garage.rating > 0.0
+                                  ? garage.rating.toStringAsFixed(1)
+                                  : '—',
                               style: AppFonts.displaySmall(
                                 color: AppColors.primaryAmber,
                               ),
@@ -71,16 +73,22 @@ class GarageDetailReviewsTab extends StatelessWidget {
                             Row(
                               children: List.generate(
                                 5,
-                                (i) => const Icon(
+                                (i) => Icon(
                                   Icons.star_rounded,
                                   size: 16,
-                                  color: AppColors.primaryAmber,
+                                  color:
+                                      garage.reviewCount > 0 &&
+                                          i < garage.rating.round()
+                                      ? AppColors.primaryAmber
+                                      : Colors.grey.withValues(alpha: 0.3),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${garage.reviewCount} total reviews',
+                              garage.reviewCount > 0
+                                  ? '${garage.reviewCount} total reviews'
+                                  : 'No reviews yet',
                               style: AppFonts.labelSmall(color: secondaryText),
                             ),
                           ],

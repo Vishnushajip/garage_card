@@ -11,6 +11,7 @@ import 'package:garage_card/features/authentication/ViewModel/auth_view_model.da
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 import 'package:go_router/go_router.dart';
 
+import '../Model/financial_metrics_model.dart';
 import '../Services/tax_export_service.dart';
 import '../ViewModel/merchant_analytics_view_model.dart';
 import '../Widgets/bill_analytics_list.dart';
@@ -98,7 +99,7 @@ class MerchantAnalyticsScreen extends ConsumerWidget {
                   customEnd: state.customEndDate,
                   onSelect: (range) => vm.setTimeRange(range),
                   onSelectCustomRange: (start, end) => vm.setTimeRange(
-                    state.selectedRange,
+                    AnalyticsTimeRange.custom,
                     customStart: start,
                     customEnd: end,
                   ),
@@ -128,16 +129,10 @@ class MerchantAnalyticsScreen extends ConsumerWidget {
                       context.push(RoutePaths.merchantInvoices),
                 ),
                 const SizedBox(height: 16),
-                FutureBuilder(
-                  future: repo.getInvoices(garageId: garageId, limit: 50),
-                  builder: (context, snapshot) {
-                    final invoices = snapshot.data ?? [];
-                    return BillAnalyticsList(
-                      invoices: invoices,
-                      onSelectInvoice: (_) =>
-                          context.push(RoutePaths.merchantInvoices),
-                    );
-                  },
+                BillAnalyticsList(
+                  invoices: state.filteredInvoices,
+                  onSelectInvoice: (_) =>
+                      context.push(RoutePaths.merchantInvoices),
                 ),
                 const SizedBox(height: 32),
               ],

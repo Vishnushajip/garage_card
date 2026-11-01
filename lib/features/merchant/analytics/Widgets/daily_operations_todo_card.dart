@@ -70,10 +70,14 @@ class DailyOperationsTodoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(8),
@@ -88,18 +92,25 @@ class DailyOperationsTodoCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Daily Operations & Deliveries To-Do',
-                          style: AppFonts.titleMedium(color: primaryTextColor),
-                        ),
-                        Text(
-                          'Auto-generated from scheduled vehicle logs & bills',
-                          style: AppFonts.labelSmall(color: secondaryTextColor),
-                        ),
-                      ],
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Daily Operations & Deliveries To-Do',
+                            style: AppFonts.titleMedium(
+                              color: primaryTextColor,
+                            ),
+                          ),
+                          Text(
+                            'Auto-generated from scheduled vehicle logs & bills',
+                            style: AppFonts.labelSmall(
+                              color: secondaryTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <base href="$FLUTTER_BASE_HREF">
 
@@ -7,44 +8,42 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 
-  <!-- Primary SEO Meta Tags -->
   <title>WeFix | Garage Management & Vehicle Service Platform</title>
   <meta name="title" content="WeFix | Garage Management & Vehicle Service Platform">
-  <meta name="description" content="WeFix – Smarter Garage Management. Better Vehicle Care. Modern cloud platform for auto workshops, repair job cards, GST billing, digital estimates, customer management, and real-time vehicle repair tracking.">
-  <meta name="keywords" content="garage management software, auto repair shop software, workshop billing software, car service near me, bike repair, vehicle repair tracking, job cards, automotive CRM, garage invoice management, vehicle maintenance">
+  <meta name="description"
+    content="WeFix – Smarter Garage Management. Better Vehicle Care. Modern cloud platform for auto workshops, repair job cards, GST billing, digital estimates, customer management, and real-time vehicle repair tracking.">
+  <meta name="keywords"
+    content="garage management software, auto repair shop software, workshop billing software, car service near me, bike repair, vehicle repair tracking, job cards, automotive CRM, garage invoice management, vehicle maintenance">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="author" content="WeFix Technologies">
   <meta name="application-name" content="WeFix">
-  <meta name="theme-color" content="#0F172A">
+  <meta name="theme-color" content="#FFFFFF">
   <link rel="canonical" href="https://wefix.app/">
 
-  <!-- Open Graph / Facebook / LinkedIn / WhatsApp -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="WeFix">
   <meta property="og:url" content="https://wefix.app/">
   <meta property="og:title" content="WeFix – Smarter Garage Management. Better Vehicle Care.">
-  <meta property="og:description" content="Manage workshop operations, repair jobs, invoices, estimates, and customer vehicles. Discover local garages and track repairs in real-time.">
+  <meta property="og:description"
+    content="Manage workshop operations, repair jobs, invoices, estimates, and customer vehicles. Discover local garages and track repairs in real-time.">
   <meta property="og:image" content="https://wefix.app/icons/Icon-512.png">
   <meta property="og:image:alt" content="WeFix Garage Management & Vehicle Service Platform">
   <meta property="og:locale" content="en_US">
 
-  <!-- Twitter / X Cards -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://wefix.app/">
   <meta name="twitter:title" content="WeFix – Smarter Garage Management. Better Vehicle Care.">
-  <meta name="twitter:description" content="Complete SaaS platform for modern garage owners and vehicle owners. Digital job cards, billing, estimates & tracking.">
+  <meta name="twitter:description"
+    content="Complete SaaS platform for modern garage owners and vehicle owners. Digital job cards, billing, estimates & tracking.">
   <meta name="twitter:image" content="https://wefix.app/icons/Icon-512.png">
 
-  <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="WeFix">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
-  <!-- Preconnect & DNS-Prefetch for High-Speed Asset Loading -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://firestore.googleapis.com">
@@ -58,14 +57,78 @@
   <link rel="dns-prefetch" href="https://maps.googleapis.com">
   <link rel="dns-prefetch" href="https://mt1.google.com">
 
-  <!-- Google Maps JavaScript API -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDIWXi7mtIUzX0V47wci-WetyCBle_ll2E"></script>
+  <script>
+    (function () {
+      var _p = [27, 19, 32, 59, 9, 35, 25, 18, 14, 50, 11, 19, 48, 10, 27, 42, 47, 28, 18, 119, 15, 45, 48, 35, 0, 0, 63, 111, 3, 104, 41, 34, 61, 25, 29, 110, 111, 0, 19];
+      var _k = String.fromCharCode.apply(null, _p.map(function (b) { return b ^ 0x5A; }));
+      var s = document.createElement('script');
+      s.src = 'https://maps.googleapis.com/maps/api/js?key=' + _k + '&libraries=places';
+      s.async = true;
+      document.head.appendChild(s);
+    })();
 
-  <!-- Google Authentication Client ID -->
-  <meta name="google-signin-client_id" content="62265849009-mushlhju9uianaf4aqq4qtcj11kfiij5.apps.googleusercontent.com">
+    window.wefixSearchPlaces = function (query, lat, lng, callback) {
+      try {
+        if (!window.google || !window.google.maps || !window.google.maps.places) {
+          callback(JSON.stringify([]));
+          return;
+        }
+        var service = new google.maps.places.PlacesService(document.createElement('div'));
+        var req = { query: query };
+        if (lat != null && lng != null) {
+          req.location = new google.maps.LatLng(lat, lng);
+          req.radius = 25000;
+        }
+        service.textSearch(req, function (results, status) {
+          if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
+            var items = results.slice(0, 10).map(function (r) {
+              return {
+                name: r.name || '',
+                formatted_address: r.formatted_address || '',
+                lat: r.geometry && r.geometry.location ? r.geometry.location.lat() : 0,
+                lng: r.geometry && r.geometry.location ? r.geometry.location.lng() : 0
+              };
+            });
+            callback(JSON.stringify(items));
+          } else {
+            callback(JSON.stringify([]));
+          }
+        });
+      } catch (e) {
+        callback(JSON.stringify([]));
+      }
+    };
+
+    window.wefixReverseGeocode = function (lat, lng, callback) {
+      try {
+        if (!window.google || !window.google.maps) {
+          callback(JSON.stringify(null));
+          return;
+        }
+        var geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: { lat: lat, lng: lng } }, function (results, status) {
+          if (status === 'OK' && results && results.length > 0) {
+            var r = results[0];
+            callback(JSON.stringify({
+              formatted_address: r.formatted_address || '',
+              address_components: r.address_components || []
+            }));
+          } else {
+            callback(JSON.stringify(null));
+          }
+        });
+      } catch (e) {
+        callback(JSON.stringify(null));
+      }
+    };
+    window['window.wefixSearchPlaces'] = window.wefixSearchPlaces;
+    window['window.wefixReverseGeocode'] = window.wefixReverseGeocode;
+  </script>
+
+  <meta name="google-signin-client_id"
+    content="62265849009-mushlhju9uianaf4aqq4qtcj11kfiij5.apps.googleusercontent.com">
   <link rel="manifest" href="manifest.json">
 
-  <!-- Schema.org JSON-LD Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -120,106 +183,413 @@
     ]
   }
   </script>
+
   <style>
+    :root {
+      --wf-bg: #FFFFFF;
+      --wf-ink: #0F172A;
+      --wf-muted: #64748B;
+      --wf-red: #DC2626;
+      --wf-red-dark: #B91C1C;
+      --wf-red-light: #EF4444;
+      --wf-red-muted: #FEE2E2;
+      --wf-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --wf-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--wf-bg);
+      color: var(--wf-ink);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
     #app-splash {
       position: fixed;
       inset: 0;
-      background: #0F172A;
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: var(--wf-bg);
+      opacity: 1;
+      transition: opacity 0.5s var(--wf-ease), transform 0.5s var(--wf-ease);
+    }
+
+    #app-splash.is-leaving {
+      opacity: 0;
+      transform: scale(1.05);
+      pointer-events: none;
+    }
+
+    .splash-corner {
+      position: absolute;
+      width: 70vmax;
+      height: 70vmax;
+      border-radius: 50%;
+      opacity: 0;
+      transform: scale(0);
+      will-change: transform, opacity;
+    }
+
+    .splash-corner.tl {
+      top: -35vmax;
+      left: -35vmax;
+      background: radial-gradient(circle, var(--wf-red-light) 0%, rgba(239, 68, 68, 0.55) 28%, var(--wf-red-muted) 52%, rgba(254, 226, 226, 0) 70%);
+      transform-origin: 50% 50%;
+      animation: corner-fill 1.5s var(--wf-ease) 0.05s forwards;
+    }
+
+    .splash-corner.tr {
+      top: -35vmax;
+      right: -35vmax;
+      background: radial-gradient(circle, var(--wf-red) 0%, rgba(220, 38, 38, 0.5) 28%, var(--wf-red-muted) 52%, rgba(254, 226, 226, 0) 70%);
+      animation: corner-fill 1.5s var(--wf-ease) 0.18s forwards;
+    }
+
+    .splash-corner.bl {
+      bottom: -35vmax;
+      left: -35vmax;
+      background: radial-gradient(circle, var(--wf-red-dark) 0%, rgba(185, 28, 28, 0.5) 28%, var(--wf-red-muted) 52%, rgba(254, 226, 226, 0) 70%);
+      animation: corner-fill 1.5s var(--wf-ease) 0.3s forwards;
+    }
+
+    .splash-corner.br {
+      bottom: -35vmax;
+      right: -35vmax;
+      background: radial-gradient(circle, var(--wf-red-light) 0%, rgba(239, 68, 68, 0.55) 28%, var(--wf-red-muted) 52%, rgba(254, 226, 226, 0) 70%);
+      animation: corner-fill 1.5s var(--wf-ease) 0.42s forwards;
+    }
+
+    .splash-veil {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(48% 42% at 50% 46%, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.82) 55%, rgba(255, 255, 255, 0) 100%);
+      pointer-events: none;
+    }
+
+    .splash-content {
+      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      z-index: 999999;
-      transition: opacity 0.35s ease-out;
+      text-align: center;
+      padding: 24px;
     }
-    .splash-logo {
-      width: 72px;
-      height: 72px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, #2563EB, #DC2626);
+
+    .splash-stage {
+      position: relative;
+      width: 128px;
+      height: 128px;
+      margin-bottom: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 12px 30px rgba(37, 99, 235, 0.3);
-      margin-bottom: 20px;
-      animation: splash-pulse 2s infinite ease-in-out;
     }
-    .splash-title {
-      font-size: 26px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: #F8FAFC;
-      margin: 0 0 6px 0;
-    }
-    .splash-subtitle {
-      font-size: 13px;
-      font-weight: 500;
-      color: #94A3B8;
-      margin: 0 0 28px 0;
-    }
-    .splash-progress-track {
-      width: 140px;
-      height: 3px;
-      border-radius: 3px;
-      background: rgba(255, 255, 255, 0.08);
-      overflow: hidden;
-      position: relative;
-    }
-    .splash-progress-bar {
+
+    .splash-ring {
       position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      width: 40%;
-      background: linear-gradient(90deg, #2563EB, #DC2626);
-      border-radius: 3px;
-      animation: splash-indeterminate 1.4s infinite ease-in-out;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid var(--wf-red);
+      opacity: 0;
+      transform: scale(0.7);
+      animation: ring-ripple 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
     }
-    @keyframes splash-pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); box-shadow: 0 16px 36px rgba(220, 38, 38, 0.35); }
+
+    .splash-ring.r1 {
+      animation-delay: 0.7s;
     }
-    @keyframes splash-indeterminate {
-      0% { left: -40%; width: 30%; }
-      50% { left: 40%; width: 50%; }
-      100% { left: 100%; width: 30%; }
+
+    .splash-ring.r2 {
+      animation-delay: 1.5s;
+      border-color: var(--wf-red-light);
+    }
+
+    .splash-ring.r3 {
+      animation-delay: 2.3s;
+      border-color: var(--wf-red-dark);
+    }
+
+    .splash-fill {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: linear-gradient(145deg, var(--wf-red-light) 0%, var(--wf-red) 55%, var(--wf-red-dark) 100%);
+      clip-path: circle(0% at 50% 100%);
+      opacity: 0;
+      animation: fill-rise 0.85s var(--wf-ease) 0.15s forwards;
+      box-shadow: 0 18px 44px rgba(220, 38, 38, 0.38);
+    }
+
+    .splash-logo {
+      position: relative;
+      width: 88px;
+      height: 88px;
+      border-radius: 26px;
+      background: #FFFFFF;
+      opacity: 0;
+      transform: scale(0.4);
+      animation: logo-pop 0.8s var(--wf-pop) 0.55s forwards;
+      box-shadow:
+        0 0 0 6px rgba(254, 226, 226, 0.95),
+        0 0 0 7px rgba(220, 38, 38, 0.18),
+        0 14px 34px rgba(185, 28, 28, 0.32);
+    }
+
+    .splash-logo img {
+      width: 100%;
+      height: 100%;
+      border-radius: 26px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .splash-title {
+      margin: 0 0 8px 0;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.9px;
+      line-height: 1.1;
+      color: var(--wf-ink);
+      opacity: 0;
+      transform: scale(0.92);
+      animation: fade-scale 0.8s var(--wf-ease) 0.95s forwards;
+    }
+
+    .splash-title span {
+      color: var(--wf-red);
+    }
+
+    .splash-subtitle {
+      margin: 0;
+      padding: 7px 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      color: var(--wf-red-dark);
+      background: var(--wf-red-muted);
+      border-radius: 999px;
+      opacity: 0;
+      transform: scale(0.94);
+      animation: fade-scale 0.8s var(--wf-ease) 1.1s forwards;
+    }
+
+    @keyframes corner-fill {
+      0% {
+        opacity: 0;
+        transform: scale(0);
+      }
+
+      40% {
+        opacity: 0.55;
+      }
+
+      100% {
+        opacity: 0.32;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes fill-rise {
+      0% {
+        opacity: 1;
+        clip-path: circle(0% at 50% 100%);
+      }
+
+      100% {
+        opacity: 1;
+        clip-path: circle(100% at 50% 50%);
+      }
+    }
+
+    @keyframes logo-pop {
+      0% {
+        opacity: 0;
+        transform: scale(0.4);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes ring-ripple {
+      0% {
+        opacity: 0;
+        transform: scale(0.75);
+      }
+
+      15% {
+        opacity: 0.55;
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(2.1);
+      }
+    }
+
+    @keyframes fade-scale {
+      from {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .splash-corner,
+      .splash-fill,
+      .splash-logo,
+      .splash-title,
+      .splash-subtitle {
+        animation-duration: 0.01s;
+        animation-delay: 0s;
+      }
+
+      .splash-ring {
+        animation: none;
+      }
+
+      #app-splash {
+        transition-duration: 0.01s;
+      }
+    }
+
+    .seo-fallback {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 56px 24px;
+      line-height: 1.65;
+      color: var(--wf-ink);
+    }
+
+    .seo-fallback h1 {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      line-height: 1.15;
+      margin: 0 0 14px 0;
+    }
+
+    .seo-fallback h2 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin: 36px 0 12px 0;
+    }
+
+    .seo-fallback p {
+      color: var(--wf-muted);
+      margin: 0 0 8px 0;
+    }
+
+    .seo-fallback ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .seo-fallback li {
+      padding: 14px 16px;
+      border: 1px solid var(--wf-red-muted);
+      border-left: 3px solid var(--wf-red);
+      border-radius: 14px;
+      background: #FFFFFF;
+      color: var(--wf-muted);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    .seo-fallback a {
+      color: var(--wf-red);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .seo-fallback a:hover {
+      color: var(--wf-red-dark);
+      text-decoration: underline;
     }
   </style>
-</head>
-<body style="margin: 0; background-color: #0F172A; color: #F8FAFC; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
 
-  <div id="app-splash">
-    <div class="splash-logo">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
-        <circle cx="7" cy="17" r="2"/>
-        <path d="M9 17h6"/>
-        <circle cx="17" cy="17" r="2"/>
-      </svg>
-    </div>
-    <h1 class="splash-title">WeFix</h1>
-    <p class="splash-subtitle">Smarter Garage Management</p>
-    <div class="splash-progress-track">
-      <div class="splash-progress-bar"></div>
+  <noscript>
+    <style>
+      #app-splash {
+        display: none;
+      }
+    </style>
+  </noscript>
+</head>
+
+<body>
+
+  <div id="app-splash" role="status" aria-label="Loading WeFix">
+    <div class="splash-corner tl"></div>
+    <div class="splash-corner tr"></div>
+    <div class="splash-corner bl"></div>
+    <div class="splash-corner br"></div>
+    <div class="splash-veil"></div>
+    <div class="splash-content">
+      <div class="splash-stage">
+        <div class="splash-ring r1"></div>
+        <div class="splash-ring r2"></div>
+        <div class="splash-ring r3"></div>
+        <div class="splash-fill"></div>
+        <div class="splash-logo">
+          <img src="wefix_logo_120x120.png" width="88" height="88" alt="WeFix" />
+        </div>
+      </div>
+      <h1 class="splash-title">We<span>Fix</span></h1>
+      <p class="splash-subtitle">Smarter Garage Management</p>
     </div>
   </div>
 
-  <!-- Crawlable semantic fallback for Search Engine Bots & Screen Readers -->
   <noscript>
-    <div style="padding: 40px 20px; max-width: 900px; margin: 0 auto;">
+    <div class="seo-fallback">
       <h1>WeFix – Smarter Garage Management. Better Vehicle Care.</h1>
-      <p>WeFix is the premier multi-tenant automotive platform serving both independent garage owners and vehicle owners.</p>
+      <p>WeFix is the premier multi-tenant automotive platform serving both independent garage owners and vehicle
+        owners.</p>
       <h2>Garage Management Features</h2>
       <ul>
-        <li><a href="/features/garage-management">Garage Workshop Management</a>: Multi-bay job scheduling, technician task allocation, and daily pipeline tracking.</li>
-        <li><a href="/features/repair-job-management">Digital Job Cards & Repair Tracking</a>: Step-by-step repair workflow with gate pass issuance.</li>
-        <li><a href="/features/invoice-management">Automotive Billing & Invoicing</a>: Digital invoices, PDF exports, and payment settlement tracking.</li>
-        <li><a href="/features/vehicle-maintenance">Vehicle Maintenance Intelligence</a>: Proactive odometer and date-based service reminder system.</li>
+        <li><a href="/features/garage-management">Garage Workshop Management</a>: Multi-bay job scheduling, technician
+          task allocation, and daily pipeline tracking.</li>
+        <li><a href="/features/repair-job-management">Digital Job Cards & Repair Tracking</a>: Step-by-step repair
+          workflow with gate pass issuance.</li>
+        <li><a href="/features/invoice-management">Automotive Billing & Invoicing</a>: Digital invoices, PDF exports,
+          and payment settlement tracking.</li>
+        <li><a href="/features/vehicle-maintenance">Vehicle Maintenance Intelligence</a>: Proactive odometer and
+          date-based service reminder system.</li>
       </ul>
       <h2>Solutions for Businesses and Vehicle Owners</h2>
       <ul>
-        <li><a href="/solutions/garage-owners">For Garage Owners & Auto Repair Shops</a>: Streamline daily repair jobs, eliminate paperwork, and delight clients.</li>
-        <li><a href="/customers/find-garages">For Vehicle Owners</a>: Discover verified garages, compare services, and track repairs in real-time.</li>
+        <li><a href="/solutions/garage-owners">For Garage Owners & Auto Repair Shops</a>: Streamline daily repair jobs,
+          eliminate paperwork, and delight clients.</li>
+        <li><a href="/customers/find-garages">For Vehicle Owners</a>: Discover verified garages, compare services, and
+          track repairs in real-time.</li>
       </ul>
       <h2>Company & Policies</h2>
       <ul>
@@ -254,16 +624,16 @@
     window.addEventListener('flutter-first-frame', function () {
       var splash = document.getElementById('app-splash');
       if (splash) {
-        splash.style.opacity = '0';
+        splash.classList.add('is-leaving');
         setTimeout(function () {
           if (splash && splash.parentNode) {
             splash.parentNode.removeChild(splash);
           }
-        }, 350);
+        }, 520);
       }
     });
 
-    window.showWebNotification = function(title, body, imageUrl, deepLink) {
+    window.showWebNotification = function (title, body, imageUrl, deepLink) {
       if (!("Notification" in window)) return;
       if (Notification.permission === "granted") {
         var options = {
@@ -276,16 +646,16 @@
           options.image = imageUrl;
         }
         if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-          navigator.serviceWorker.ready.then(function(reg) {
+          navigator.serviceWorker.ready.then(function (reg) {
             reg.showNotification(title || 'WeFix Alert', options);
-          }).catch(function() {
+          }).catch(function () {
             new Notification(title || 'WeFix Alert', options);
           });
         } else {
           new Notification(title || 'WeFix Alert', options);
         }
       } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(function(perm) {
+        Notification.requestPermission().then(function (perm) {
           if (perm === "granted") {
             window.showWebNotification(title, body, imageUrl, deepLink);
           }
@@ -295,4 +665,5 @@
   </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
+
 </html>

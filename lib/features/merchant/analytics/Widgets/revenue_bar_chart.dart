@@ -34,17 +34,9 @@ class _RevenueBarChartState extends State<RevenueBarChart> {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
 
-    if (widget.dataPoints.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            'No transaction activity for selected period',
-            style: AppFonts.bodyMedium(color: secondaryTextColor),
-          ),
-        ),
-      );
-    }
+    final hasData = widget.dataPoints.any(
+      (dp) => dp.billed > 0 || dp.collected > 0 || dp.cost > 0,
+    );
 
     double maxVal = 0.0;
     for (final dp in widget.dataPoints) {
@@ -69,11 +61,15 @@ class _RevenueBarChartState extends State<RevenueBarChart> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Revenue, Collections & Costs',
@@ -89,82 +85,116 @@ class _RevenueBarChartState extends State<RevenueBarChart> {
                 _buildLegend(isDark),
               ],
             ),
-            if (_selectedIndex != null &&
-                _selectedIndex! < widget.dataPoints.length) ...[
-              const SizedBox(height: 12),
-              _buildSelectedTooltip(widget.dataPoints[_selectedIndex!], isDark),
-            ],
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 180,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: widget.dataPoints.asMap().entries.map((entry) {
-                  final idx = entry.key;
-                  final dp = entry.value;
-                  final isSelected = _selectedIndex == idx;
-
-                  final billedHeight = (dp.billed / maxVal * 140).clamp(
-                    4.0,
-                    140.0,
-                  );
-                  final collectedHeight = (dp.collected / maxVal * 140).clamp(
-                    4.0,
-                    140.0,
-                  );
-                  final costHeight = (dp.cost / maxVal * 140).clamp(4.0, 140.0);
-
-                  return Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          _selectedIndex = _selectedIndex == idx ? null : idx;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: isSelected
-                            ? BoxDecoration(
-                                color: AppColors.accentBlue.withValues(
-                                  alpha: 0.1,
-                                ),
-                                borderRadius: BorderRadius.circular(8),
-                              )
-                            : null,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                _buildBar(billedHeight, AppColors.accentBlue),
-                                const SizedBox(width: 2),
-                                _buildBar(collectedHeight, AppColors.success),
-                                const SizedBox(width: 2),
-                                _buildBar(costHeight, AppColors.accentAmber),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              dp.label,
-                              style: AppFonts.labelSmall(
-                                color: isSelected
-                                    ? AppColors.accentBlue
-                                    : secondaryTextColor,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+            if (!hasData) ...[
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 160,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.bar_chart_rounded,
+                        size: 40,
+                        color: secondaryTextColor.withValues(alpha: 0.35),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No transaction activity for selected period',
+                        style: AppFonts.bodyMedium(color: secondaryTextColor),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Revenue, collections and cost charts will appear when bills are created.',
+                        style: AppFonts.labelSmall(
+                          color: secondaryTextColor.withValues(alpha: 0.7),
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ] else ...[
+              if (_selectedIndex != null &&
+                  _selectedIndex! < widget.dataPoints.length) ...[
+                const SizedBox(height: 12),
+                _buildSelectedTooltip(
+                  widget.dataPoints[_selectedIndex!],
+                  isDark,
+                ),
+              ],
+              const SizedBox(height: 24),
+              SizedBox(
+                height: 180,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: widget.dataPoints.asMap().entries.map((entry) {
+                    final idx = entry.key;
+                    final dp = entry.value;
+                    final isSelected = _selectedIndex == idx;
+
+                    final billedHeight = dp.billed > 0
+                        ? (dp.billed / maxVal * 140).clamp(4.0, 140.0)
+                        : 0.0;
+                    final collectedHeight = dp.collected > 0
+                        ? (dp.collected / maxVal * 140).clamp(4.0, 140.0)
+                        : 0.0;
+                    final costHeight = dp.cost > 0
+                        ? (dp.cost / maxVal * 140).clamp(4.0, 140.0)
+                        : 0.0;
+
+                    return Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            _selectedIndex = _selectedIndex == idx ? null : idx;
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: isSelected
+                              ? BoxDecoration(
+                                  color: AppColors.accentBlue.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                )
+                              : null,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  _buildBar(billedHeight, AppColors.accentBlue),
+                                  const SizedBox(width: 2),
+                                  _buildBar(collectedHeight, AppColors.success),
+                                  const SizedBox(width: 2),
+                                  _buildBar(costHeight, AppColors.accentAmber),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                dp.label,
+                                style: AppFonts.labelSmall(
+                                  color: isSelected
+                                      ? AppColors.accentBlue
+                                      : secondaryTextColor,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -172,6 +202,9 @@ class _RevenueBarChartState extends State<RevenueBarChart> {
   }
 
   Widget _buildBar(double height, Color color) {
+    if (height <= 0.0) {
+      return const SizedBox(width: 7);
+    }
     return Container(
       width: 7,
       height: height,
@@ -183,13 +216,13 @@ class _RevenueBarChartState extends State<RevenueBarChart> {
   }
 
   Widget _buildLegend(bool isDark) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
+      spacing: 8,
+      runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         _legendDot(AppColors.accentBlue, 'Billed'),
-        const SizedBox(width: 8),
         _legendDot(AppColors.success, 'Paid'),
-        const SizedBox(width: 8),
         _legendDot(AppColors.accentAmber, 'Cost'),
       ],
     );
@@ -220,8 +253,11 @@ class _RevenueBarChartState extends State<RevenueBarChart> {
         color: AppColors.accentBlue.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 6,
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Text(
             '${dp.label} Breakdown:',

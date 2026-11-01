@@ -32,7 +32,7 @@ mixin GarageDataRepository on GarageRepositoryStore {
         final snapshot = await collection
             .limit(50)
             .get()
-            .timeout(const Duration(seconds: 4));
+            .timeout(const Duration(seconds: 12));
         source = snapshot.docs
             .map((d) => GarageModel.fromFirestore(d.data(), d.id))
             .toList();
@@ -44,6 +44,8 @@ mixin GarageDataRepository on GarageRepositoryStore {
       source = garages;
     }
 
+    final hasUserCoords = latitude != 0.0 && longitude != 0.0;
+
     final list = source.where((g) {
       if (searchQuery != null && searchQuery.isNotEmpty) {
         final query = searchQuery.toLowerCase();
@@ -52,29 +54,39 @@ mixin GarageDataRepository on GarageRepositoryStore {
         final matchAddress = g.address.toLowerCase().contains(query);
         if (!matchName && !matchCity && !matchAddress) return false;
       }
-      final dist = GeohashHelper.calculateDistanceKm(
-        lat1: latitude,
-        lon1: longitude,
-        lat2: g.latitude,
-        lon2: g.longitude,
-      );
-      return dist <= radiusKm * 2;
+      if (hasUserCoords && g.latitude != 0.0 && g.longitude != 0.0) {
+        final dist = GeohashHelper.calculateDistanceKm(
+          lat1: latitude,
+          lon1: longitude,
+          lat2: g.latitude,
+          lon2: g.longitude,
+        );
+        return dist <= radiusKm * 2;
+      }
+      return true;
     }).toList();
 
     list.sort((a, b) {
-      final distA = GeohashHelper.calculateDistanceKm(
-        lat1: latitude,
-        lon1: longitude,
-        lat2: a.latitude,
-        lon2: a.longitude,
-      );
-      final distB = GeohashHelper.calculateDistanceKm(
-        lat1: latitude,
-        lon1: longitude,
-        lat2: b.latitude,
-        lon2: b.longitude,
-      );
-      return distA.compareTo(distB);
+      if (hasUserCoords &&
+          a.latitude != 0.0 &&
+          a.longitude != 0.0 &&
+          b.latitude != 0.0 &&
+          b.longitude != 0.0) {
+        final distA = GeohashHelper.calculateDistanceKm(
+          lat1: latitude,
+          lon1: longitude,
+          lat2: a.latitude,
+          lon2: a.longitude,
+        );
+        final distB = GeohashHelper.calculateDistanceKm(
+          lat1: latitude,
+          lon1: longitude,
+          lat2: b.latitude,
+          lon2: b.longitude,
+        );
+        return distA.compareTo(distB);
+      }
+      return b.isVerified ? 1 : -1;
     });
 
     return list.take(limit).toList();
@@ -87,7 +99,7 @@ mixin GarageDataRepository on GarageRepositoryStore {
             .collection('garages')
             .doc(garageId)
             .get()
-            .timeout(const Duration(seconds: 4));
+            .timeout(const Duration(seconds: 12));
         if (doc.exists && doc.data() != null) {
           return GarageModel.fromFirestore(doc.data()!, doc.id);
         }
@@ -111,7 +123,7 @@ mixin GarageDataRepository on GarageRepositoryStore {
             .where('ownerUid', isEqualTo: ownerUid)
             .limit(1)
             .get()
-            .timeout(const Duration(seconds: 4));
+            .timeout(const Duration(seconds: 12));
         if (query.docs.isNotEmpty) {
           final doc = query.docs.first;
           return GarageModel.fromFirestore(doc.data(), doc.id);
@@ -139,7 +151,7 @@ mixin GarageDataRepository on GarageRepositoryStore {
           .collection('garages')
           .doc(docId)
           .set(toSave.toFirestore(), SetOptions(merge: true))
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 20));
     }
 
     final index = garages.indexWhere((g) => g.id == toSave.id);
@@ -159,7 +171,7 @@ mixin GarageDataRepository on GarageRepositoryStore {
             .doc(garageId)
             .collection('services')
             .get()
-            .timeout(const Duration(seconds: 4));
+            .timeout(const Duration(seconds: 12));
         if (snap.docs.isNotEmpty) {
           return snap.docs
               .map((d) => GarageServiceModel.fromFirestore(d.data(), d.id))
@@ -171,7 +183,7 @@ mixin GarageDataRepository on GarageRepositoryStore {
             .doc(garageId)
             .collection('serviceCatalog')
             .get()
-            .timeout(const Duration(seconds: 4));
+            .timeout(const Duration(seconds: 12));
         if (catSnap.docs.isNotEmpty) {
           return catSnap.docs
               .map((d) => GarageServiceModel.fromFirestore(d.data(), d.id))
@@ -426,7 +438,7 @@ mixin GarageDataRepository on GarageRepositoryStore {
           if (gSnap.exists) {
             final data = gSnap.data()!;
             final currentCount = (data['reviewCount'] as num?)?.toInt() ?? 0;
-            final currentRating = (data['rating'] as num?)?.toDouble() ?? 4.8;
+            final currentRating = (data['rating'] as num?)?.toDouble() ?? 0.0;
             final newCount = currentCount + 1;
             final newRating =
                 ((currentRating * currentCount) + review.rating) / newCount;

@@ -53,6 +53,12 @@ class AppException implements Exception {
             'Firebase service is initializing. Please try again in a moment.',
       );
     }
+    if (str.contains('unauthorized-domain')) {
+      return const AppException(
+        code: 'unauthorized-domain',
+        message: 'This web domain is not authorized for Google Sign-In. Please add it to Firebase and Google Cloud Console.',
+      );
+    }
     if (str.contains('popup-closed-by-user') ||
         str.contains('cancelled') ||
         str.contains('canceled')) {

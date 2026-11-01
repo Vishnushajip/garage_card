@@ -42,10 +42,14 @@ class ImageCompressionProcessor {
 
   bool _hasTransparentPixels(img.Image image) {
     if (!image.hasAlpha) return false;
+    final totalPixels = image.width * image.height;
+    final step = totalPixels > 250000 ? 5 : 1;
+    var index = 0;
     for (final pixel in image) {
-      if (pixel.a < 250) {
+      if (index % step == 0 && pixel.a < 250) {
         return true;
       }
+      index++;
     }
     return false;
   }

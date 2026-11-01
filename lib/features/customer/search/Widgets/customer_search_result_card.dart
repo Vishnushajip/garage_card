@@ -113,23 +113,48 @@ class CustomerSearchResultCard extends StatelessWidget {
                                 ),
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.star_rounded,
-                                    size: 14,
-                                    color: AppColors.accentAmber,
-                                  ),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    garage.rating.toStringAsFixed(1),
-                                    style: AppFonts.labelSmall(
-                                      color: AppColors.accentAmber,
-                                    ).copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
+                              child:
+                                  garage.reviewCount > 0 && garage.rating > 0.0
+                                  ? Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.star_rounded,
+                                          size: 14,
+                                          color: AppColors.accentAmber,
+                                        ),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          garage.rating.toStringAsFixed(1),
+                                          style:
+                                              AppFonts.labelSmall(
+                                                color: AppColors.accentAmber,
+                                              ).copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                      ],
+                                    )
+                                  : Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.auto_awesome_rounded,
+                                          size: 12,
+                                          color: AppColors.accentAmber,
+                                        ),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          'New',
+                                          style:
+                                              AppFonts.labelSmall(
+                                                color: AppColors.accentAmber,
+                                              ).copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
                             ),
                             const SizedBox(width: 8),
                             Container(

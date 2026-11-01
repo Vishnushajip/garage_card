@@ -25,18 +25,25 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
     try {
       final user = ref.read(authViewModelProvider).userProfile;
       final repo = ref.read(garageRepositoryProvider);
-      final garageId = (user?.garageId != null && user!.garageId!.isNotEmpty)
+      var garageId = (user?.garageId != null && user!.garageId!.isNotEmpty)
           ? user.garageId!
           : '';
 
+      if (garageId.isEmpty && user != null && user.uid.isNotEmpty) {
+        final garage = await repo.getGarageByOwnerUid(user.uid);
+        if (garage != null) {
+          garageId = garage.id;
+        }
+      }
+
       final results = await Future.wait([
-        repo.getInvoices(garageId: garageId, limit: 100),
-        repo.getServiceJobs(garageId: garageId, limit: 100),
-        repo.getPayments(garageId: garageId, limit: 100),
+        repo.getInvoices(garageId: garageId, limit: 200),
+        repo.getServiceJobs(garageId: garageId, limit: 200),
+        repo.getPayments(garageId: garageId, limit: 200),
       ]);
 
-      final invoices = results[0] as List<InvoiceModel>;
-      final jobs = results[1] as List<ServiceJobModel>;
+      final allInvoices = results[0] as List<InvoiceModel>;
+      final allJobs = results[1] as List<ServiceJobModel>;
       final payments = results[2];
 
       final now = DateTime.now();
@@ -47,25 +54,35 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
         state.customEndDate,
       );
 
+      final start = dateRange.$1;
+      final end = dateRange.$2;
+
+      final filteredInvoices = allInvoices.where((inv) {
+        final date = inv.issuedAt ?? inv.createdAt ?? now;
+        return (date.isAfter(start) || date.isAtSameMomentAs(start)) &&
+            (date.isBefore(end) || date.isAtSameMomentAs(end));
+      }).toList();
+
       final metrics = _calculateFinancialMetrics(
-        invoices: invoices,
-        jobs: jobs,
+        invoices: filteredInvoices,
+        jobs: allJobs,
         payments: payments,
         range: state.selectedRange,
-        start: dateRange.$1,
-        end: dateRange.$2,
+        start: start,
+        end: end,
         now: now,
       );
 
       final todoData = _buildDailyTodoAndPipeline(
-        jobs: jobs,
-        invoices: invoices,
+        jobs: allJobs,
+        invoices: filteredInvoices,
         now: now,
       );
 
       state = state.copyWith(
         isLoading: false,
         metrics: metrics,
+        filteredInvoices: filteredInvoices,
         todoItems: todoData.items,
         yesterdayCompletedCount: todoData.yesterdayCompleted,
         todayDeliveriesCount: todoData.todayDeliveries,
@@ -75,6 +92,7 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
 
       _checkAndTriggerMorningBriefing(
         now: now,
+        userUid: user?.uid ?? '',
         todayDeliveries: todoData.todayDeliveries,
         pendingDues: todoData.pendingDues,
       ).then((shouldShow) {
@@ -117,7 +135,10 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
         final start =
             customStart ?? todayStart.subtract(const Duration(days: 7));
         final end = customEnd ?? todayEnd;
-        return (start, end);
+        return (
+          DateTime(start.year, start.month, start.day),
+          DateTime(end.year, end.month, end.day, 23, 59, 59),
+        );
     }
   }
 
@@ -130,12 +151,6 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
     required DateTime end,
     required DateTime now,
   }) {
-    final filteredInvoices = invoices.where((inv) {
-      final date = inv.issuedAt ?? inv.createdAt ?? now;
-      return date.isAfter(start.subtract(const Duration(seconds: 1))) &&
-          date.isBefore(end.add(const Duration(seconds: 1)));
-    }).toList();
-
     double gross = 0.0;
     double discounts = 0.0;
     double net = 0.0;
@@ -144,7 +159,7 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
     double partsCost = 0.0;
     double laborCost = 0.0;
 
-    for (final inv in filteredInvoices) {
+    for (final inv in invoices) {
       discounts += inv.discountAmount;
       net += inv.totalAmount;
       gross += (inv.totalAmount + inv.discountAmount);
@@ -171,8 +186,8 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
 
     final filteredJobs = jobs.where((j) {
       final date = j.createdAt ?? now;
-      return date.isAfter(start.subtract(const Duration(seconds: 1))) &&
-          date.isBefore(end.add(const Duration(seconds: 1)));
+      return (date.isAfter(start) || date.isAtSameMomentAs(start)) &&
+          (date.isBefore(end) || date.isAtSameMomentAs(end));
     }).toList();
 
     final completedCount = filteredJobs
@@ -194,7 +209,7 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
         .length;
     final newCount = filteredJobs.where((j) => j.isPendingRequest).length;
 
-    final chartPoints = _buildChartDataPoints(range, filteredInvoices, now);
+    final chartPoints = _buildChartDataPoints(range, invoices, now, start, end);
 
     return FinancialMetricsModel(
       timeRange: range,
@@ -223,199 +238,216 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
     AnalyticsTimeRange range,
     List<InvoiceModel> invoices,
     DateTime now,
+    DateTime start,
+    DateTime end,
   ) {
-    if (range == AnalyticsTimeRange.today) {
-      return [
-        const ChartDataPoint(
-          label: '9 AM',
-          billed: 1200,
-          collected: 1200,
-          cost: 700,
-          profit: 500,
-        ),
-        const ChartDataPoint(
-          label: '12 PM',
-          billed: 2500,
-          collected: 2300,
-          cost: 1300,
-          profit: 1000,
-        ),
-        const ChartDataPoint(
-          label: '3 PM',
-          billed: 4600,
-          collected: 2000,
-          cost: 2600,
-          profit: -600,
-        ),
-        const ChartDataPoint(
-          label: '6 PM',
-          billed: 1800,
-          collected: 1800,
-          cost: 950,
-          profit: 850,
-        ),
-      ];
-    }
+    switch (range) {
+      case AnalyticsTimeRange.today:
+        final slots = [
+          ('9 AM', 0, 9),
+          ('12 PM', 9, 12),
+          ('3 PM', 12, 15),
+          ('6 PM', 15, 18),
+          ('9 PM', 18, 24),
+        ];
+        return slots.map((slot) {
+          final slotInvoices = invoices.where((inv) {
+            final d = inv.issuedAt ?? inv.createdAt ?? now;
+            return d.hour >= slot.$2 && d.hour < slot.$3;
+          }).toList();
+          double billed = 0.0;
+          double collected = 0.0;
+          double cost = 0.0;
+          for (final inv in slotInvoices) {
+            billed += (inv.totalAmount + inv.discountAmount);
+            collected += inv.paidAmount;
+            cost += _computeInvoiceCost(inv);
+          }
+          return ChartDataPoint(
+            label: slot.$1,
+            billed: billed,
+            collected: collected,
+            cost: cost,
+            profit: collected - cost,
+          );
+        }).toList();
 
-    if (range == AnalyticsTimeRange.thisWeek) {
-      return [
-        const ChartDataPoint(
-          label: 'Mon',
-          billed: 4200,
-          collected: 4200,
-          cost: 2200,
-          profit: 2000,
-        ),
-        const ChartDataPoint(
-          label: 'Tue',
-          billed: 6100,
-          collected: 5500,
-          cost: 3100,
-          profit: 2400,
-        ),
-        const ChartDataPoint(
-          label: 'Wed',
-          billed: 8500,
-          collected: 8150,
-          cost: 4400,
-          profit: 3750,
-        ),
-        const ChartDataPoint(
-          label: 'Thu',
-          billed: 3800,
-          collected: 3800,
-          cost: 2100,
-          profit: 1700,
-        ),
-        const ChartDataPoint(
-          label: 'Fri',
-          billed: 1800,
-          collected: 1800,
-          cost: 900,
-          profit: 900,
-        ),
-        const ChartDataPoint(
-          label: 'Sat',
-          billed: 7100,
-          collected: 4300,
-          cost: 3900,
-          profit: 400,
-        ),
-        const ChartDataPoint(
-          label: 'Sun',
-          billed: 0,
-          collected: 0,
-          cost: 0,
-          profit: 0,
-        ),
-      ];
-    }
+      case AnalyticsTimeRange.thisWeek:
+        final weekStart = start;
+        final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        return List.generate(7, (i) {
+          final currentDay = weekStart.add(Duration(days: i));
+          final dayInvoices = invoices.where((inv) {
+            final d = inv.issuedAt ?? inv.createdAt ?? now;
+            return d.year == currentDay.year &&
+                d.month == currentDay.month &&
+                d.day == currentDay.day;
+          }).toList();
+          double billed = 0.0;
+          double collected = 0.0;
+          double cost = 0.0;
+          for (final inv in dayInvoices) {
+            billed += (inv.totalAmount + inv.discountAmount);
+            collected += inv.paidAmount;
+            cost += _computeInvoiceCost(inv);
+          }
+          return ChartDataPoint(
+            label: days[i],
+            billed: billed,
+            collected: collected,
+            cost: cost,
+            profit: collected - cost,
+          );
+        });
 
-    if (range == AnalyticsTimeRange.thisYear) {
-      return [
-        const ChartDataPoint(
-          label: 'Jan',
-          billed: 48000,
-          collected: 46000,
-          cost: 26000,
-          profit: 20000,
-        ),
-        const ChartDataPoint(
-          label: 'Feb',
-          billed: 52000,
-          collected: 49000,
-          cost: 28000,
-          profit: 21000,
-        ),
-        const ChartDataPoint(
-          label: 'Mar',
-          billed: 68000,
-          collected: 64000,
-          cost: 34000,
-          profit: 30000,
-        ),
-        const ChartDataPoint(
-          label: 'Apr',
-          billed: 61000,
-          collected: 59000,
-          cost: 31000,
-          profit: 28000,
-        ),
-        const ChartDataPoint(
-          label: 'May',
-          billed: 57000,
-          collected: 54000,
-          cost: 29000,
-          profit: 25000,
-        ),
-        const ChartDataPoint(
-          label: 'Jun',
-          billed: 73000,
-          collected: 70000,
-          cost: 37000,
-          profit: 33000,
-        ),
-        const ChartDataPoint(
-          label: 'Jul',
-          billed: 69000,
-          collected: 66000,
-          cost: 35000,
-          profit: 31000,
-        ),
-        const ChartDataPoint(
-          label: 'Aug',
-          billed: 82000,
-          collected: 78000,
-          cost: 41000,
-          profit: 37000,
-        ),
-        const ChartDataPoint(
-          label: 'Sep',
-          billed: 88000,
-          collected: 84000,
-          cost: 45000,
-          profit: 39000,
-        ),
-        const ChartDataPoint(
-          label: 'Oct',
-          billed: 45000,
-          collected: 39950,
-          cost: 23200,
-          profit: 16750,
-        ),
-      ];
-    }
+      case AnalyticsTimeRange.thisMonth:
+        final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+        final weeks = <(String, int, int)>[
+          ('Week 1', 1, 7),
+          ('Week 2', 8, 14),
+          ('Week 3', 15, 21),
+          ('Week 4', 22, 28),
+          if (daysInMonth > 28) ('Week 5', 29, daysInMonth),
+        ];
+        return weeks.map((w) {
+          final weekInvoices = invoices.where((inv) {
+            final d = inv.issuedAt ?? inv.createdAt ?? now;
+            return d.year == now.year &&
+                d.month == now.month &&
+                d.day >= w.$2 &&
+                d.day <= w.$3;
+          }).toList();
+          double billed = 0.0;
+          double collected = 0.0;
+          double cost = 0.0;
+          for (final inv in weekInvoices) {
+            billed += (inv.totalAmount + inv.discountAmount);
+            collected += inv.paidAmount;
+            cost += _computeInvoiceCost(inv);
+          }
+          return ChartDataPoint(
+            label: w.$1,
+            billed: billed,
+            collected: collected,
+            cost: cost,
+            profit: collected - cost,
+          );
+        }).toList();
 
-    return [
-      const ChartDataPoint(
-        label: 'Week 1',
-        billed: 18500,
-        collected: 17200,
-        cost: 9800,
-        profit: 7400,
-      ),
-      const ChartDataPoint(
-        label: 'Week 2',
-        billed: 22400,
-        collected: 21800,
-        cost: 11600,
-        profit: 10200,
-      ),
-      const ChartDataPoint(
-        label: 'Week 3',
-        billed: 19800,
-        collected: 18900,
-        cost: 10400,
-        profit: 8500,
-      ),
-      const ChartDataPoint(
-        label: 'Week 4',
-        billed: 16000,
-        collected: 12250,
-        cost: 8900,
-        profit: 3350,
-      ),
-    ];
+      case AnalyticsTimeRange.thisYear:
+        final months = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
+        return List.generate(12, (i) {
+          final monthIndex = i + 1;
+          final monthInvoices = invoices.where((inv) {
+            final d = inv.issuedAt ?? inv.createdAt ?? now;
+            return d.year == now.year && d.month == monthIndex;
+          }).toList();
+          double billed = 0.0;
+          double collected = 0.0;
+          double cost = 0.0;
+          for (final inv in monthInvoices) {
+            billed += (inv.totalAmount + inv.discountAmount);
+            collected += inv.paidAmount;
+            cost += _computeInvoiceCost(inv);
+          }
+          return ChartDataPoint(
+            label: months[i],
+            billed: billed,
+            collected: collected,
+            cost: cost,
+            profit: collected - cost,
+          );
+        });
+
+      case AnalyticsTimeRange.custom:
+        final diffDays = end.difference(start).inDays + 1;
+        if (diffDays <= 7) {
+          return List.generate(diffDays, (i) {
+            final day = start.add(Duration(days: i));
+            final dayInvoices = invoices.where((inv) {
+              final d = inv.issuedAt ?? inv.createdAt ?? now;
+              return d.year == day.year &&
+                  d.month == day.month &&
+                  d.day == day.day;
+            }).toList();
+            double billed = 0.0;
+            double collected = 0.0;
+            double cost = 0.0;
+            for (final inv in dayInvoices) {
+              billed += (inv.totalAmount + inv.discountAmount);
+              collected += inv.paidAmount;
+              cost += _computeInvoiceCost(inv);
+            }
+            return ChartDataPoint(
+              label: '${day.day}/${day.month}',
+              billed: billed,
+              collected: collected,
+              cost: cost,
+              profit: collected - cost,
+            );
+          });
+        } else {
+          const bucketCount = 4;
+          final bucketDuration = diffDays / bucketCount;
+          return List.generate(bucketCount, (i) {
+            final bStart = start.add(
+              Duration(days: (i * bucketDuration).floor()),
+            );
+            final bEnd = start.add(
+              Duration(days: (((i + 1) * bucketDuration).floor()) - 1),
+            );
+            final bInvoices = invoices.where((inv) {
+              final d = inv.issuedAt ?? inv.createdAt ?? now;
+              return !d.isBefore(bStart) &&
+                  !d.isAfter(bEnd.add(const Duration(days: 1)));
+            }).toList();
+            double billed = 0.0;
+            double collected = 0.0;
+            double cost = 0.0;
+            for (final inv in bInvoices) {
+              billed += (inv.totalAmount + inv.discountAmount);
+              collected += inv.paidAmount;
+              cost += _computeInvoiceCost(inv);
+            }
+            return ChartDataPoint(
+              label:
+                  '${bStart.day}/${bStart.month} - ${bEnd.day}/${bEnd.month}',
+              billed: billed,
+              collected: collected,
+              cost: cost,
+              profit: collected - cost,
+            );
+          });
+        }
+    }
+  }
+
+  double _computeInvoiceCost(InvoiceModel inv) {
+    double cost = 0.0;
+    for (final item in inv.items) {
+      if (item.type == 'part') {
+        cost += (item.totalPrice * 0.65);
+      } else {
+        cost += (item.totalPrice * 0.40);
+      }
+    }
+    if (cost == 0.0 && inv.totalAmount > 0) {
+      cost = inv.totalAmount * 0.60;
+    }
+    return cost;
   }
 
   _TodoBuildResult _buildDailyTodoAndPipeline({
@@ -446,7 +478,7 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
               jobId: job.id,
               vehicleDisplay: job.vehicleDisplay,
               customerName: job.customerName,
-              customerPhone: '+91 98460 77112',
+              customerPhone: job.customerPhone,
               type: TodoItemType.completedYesterday,
               title: '${job.vehicleDisplay} Completed Yesterday',
               subtitle:
@@ -473,7 +505,7 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
               jobId: job.id,
               vehicleDisplay: job.vehicleDisplay,
               customerName: job.customerName,
-              customerPhone: '+91 98460 77112',
+              customerPhone: job.customerPhone,
               type: TodoItemType.deliveryToday,
               title: 'Deliver ${job.vehicleDisplay}',
               subtitle: job.status == 'readyForCollection'
@@ -495,8 +527,10 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
             id: 'todo_pay_${inv.id}',
             invoiceId: inv.id,
             vehicleDisplay: 'Invoice ${inv.invoiceNumber}',
-            customerName: 'Customer ${inv.customerId}',
-            customerPhone: '+91 98460 77112',
+            customerName: inv.customerId.isNotEmpty
+                ? 'Customer ${inv.customerId}'
+                : '',
+            customerPhone: '',
             type: TodoItemType.paymentDue,
             title: 'Collect Balance Due: ₹${inv.balanceDue.toStringAsFixed(0)}',
             subtitle:
@@ -518,6 +552,7 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
 
   Future<bool> _checkAndTriggerMorningBriefing({
     required DateTime now,
+    required String userUid,
     required int todayDeliveries,
     required int pendingDues,
   }) async {
@@ -526,13 +561,26 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
       final todayStr = '${now.year}-${now.month}-${now.day}';
       final lastBriefing = prefs.getString(_briefingPrefKey);
 
-      if (lastBriefing != todayStr) {
+      if (lastBriefing != todayStr && userUid.isNotEmpty) {
         await prefs.setString(_briefingPrefKey, todayStr);
+
+        final istNow = now.toUtc().add(const Duration(hours: 5, minutes: 30));
+        final h = istNow.hour;
+        final String briefingTitle;
+        if (h >= 5 && h < 12) {
+          briefingTitle = '🌅 Morning Operations Briefing';
+        } else if (h >= 12 && h < 17) {
+          briefingTitle = '☀️ Afternoon Operations Briefing';
+        } else if (h >= 17 && h < 21) {
+          briefingTitle = '🌆 Evening Operations Briefing';
+        } else {
+          briefingTitle = '🌙 Night Operations Briefing';
+        }
 
         final notif = NotificationModel(
           id: const Uuid().v4(),
-          recipientUid: 'merchant_demo_1',
-          title: '🌅 Daily Operations Briefing',
+          recipientUid: userUid,
+          title: briefingTitle,
           body:
               'Today: $todayDeliveries vehicle(s) scheduled for delivery. $pendingDues outstanding invoice balances to collect.',
           type: 'daily_briefing',

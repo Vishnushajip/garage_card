@@ -36,141 +36,202 @@ class GarageDetailServicesTab extends ConsumerWidget {
     final primaryText = isDark
         ? AppColors.textPrimaryDark
         : AppColors.textPrimaryLight;
+    final isWide = MediaQuery.sizeOf(context).width >= 640;
+
+    final vehicleTypes = [
+      {
+        'id': 'All',
+        'label': 'All Vehicles',
+        'icon': Icons.directions_car_rounded,
+      },
+      {
+        'id': 'car',
+        'label': 'Cars',
+        'icon': Icons.directions_car_filled_rounded,
+      },
+      {
+        'id': 'motorcycle',
+        'label': 'Motorcycles',
+        'icon': Icons.two_wheeler_rounded,
+      },
+      {'id': 'scooter', 'label': 'Scooters', 'icon': Icons.moped_rounded},
+      {
+        'id': 'electric_scooter',
+        'label': 'EV Scooters',
+        'icon': Icons.electric_moped_rounded,
+      },
+      {
+        'id': 'electric_motorcycle',
+        'label': 'EV Motorcycles',
+        'icon': Icons.electric_bike_rounded,
+      },
+    ];
+
+    final currentVehicle = vehicleTypes.firstWhere(
+      (v) => v['id'] == state.selectedVehicleType,
+      orElse: () => vehicleTypes.first,
+    );
 
     return AppRefresh(
       onRefresh: () => vm.loadGarage(garageId),
       child: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  if (garage.description.isNotEmpty) ...[
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 14),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppColors.surfaceDark
+                            : AppColors.surfaceLight,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isDark
+                              ? AppColors.borderDark
+                              : AppColors.borderLight,
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.info_outline_rounded,
+                            size: 18,
+                            color: AppColors.accentBlue,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              garage.description,
+                              style: AppFonts.bodySmall(
+                                color: isDark
+                                    ? AppColors.textSecondaryDark
+                                    : AppColors.textSecondaryLight,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryRed,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                'OFFERS & PACKAGES',
-                                style: AppFonts.labelSmall(color: Colors.white)
-                                    .copyWith(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            const Spacer(),
-                            const Icon(
-                              Icons.verified_rounded,
-                              color: AppColors.accentAmber,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Genuine Workshop Services',
-                              style: AppFonts.labelSmall(color: Colors.white70),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Explore transparent service packages with fixed charges, comprehensive checkups, and genuine spares.',
-                          style: AppFonts.bodySmall(color: Colors.white70),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children:
-                          [
-                            {'id': 'All', 'label': 'All Vehicles'},
-                            {'id': 'car', 'label': 'Cars'},
-                            {'id': 'motorcycle', 'label': 'Motorcycles'},
-                            {'id': 'scooter', 'label': 'Scooters'},
-                            {'id': 'electric_scooter', 'label': 'EV Scooters'},
-                            {
-                              'id': 'electric_motorcycle',
-                              'label': 'EV Motorcycles',
-                            },
-                          ].map((v) {
-                            final id = v['id']!;
-                            final label = v['label']!;
+                  ],
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildFilterDropdown(
+                          context: context,
+                          label: 'Vehicle Type',
+                          selectedTitle: currentVehicle['label'] as String,
+                          prefixIcon: currentVehicle['icon'] as IconData,
+                          isDark: isDark,
+                          primaryText: primaryText,
+                          menuItems: vehicleTypes.map((v) {
+                            final id = v['id'] as String;
+                            final label = v['label'] as String;
+                            final icon = v['icon'] as IconData;
                             final isSelected = state.selectedVehicleType == id;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: FilterChip(
-                                label: Text(label),
-                                selected: isSelected,
-                                selectedColor: AppColors.accentBlue.withValues(
-                                  alpha: 0.15,
-                                ),
-                                checkmarkColor: AppColors.accentBlue,
-                                labelStyle: TextStyle(
-                                  color: isSelected
-                                      ? AppColors.accentBlue
-                                      : primaryText,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                                onSelected: (_) => vm.selectVehicleType(id),
+                            return PopupMenuItem<String>(
+                              value: id,
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    icon,
+                                    size: 18,
+                                    color: isSelected
+                                        ? AppColors.primaryRed
+                                        : primaryText,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      label,
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? AppColors.primaryRed
+                                            : primaryText,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    const Icon(
+                                      Icons.check_rounded,
+                                      size: 16,
+                                      color: AppColors.primaryRed,
+                                    ),
+                                ],
                               ),
                             );
                           }).toList(),
-                    ),
+                          onSelected: (id) => vm.selectVehicleType(id),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildFilterDropdown(
+                          context: context,
+                          label: 'Service Category',
+                          selectedTitle: state.selectedCategory,
+                          prefixIcon: Icons.category_rounded,
+                          isDark: isDark,
+                          primaryText: primaryText,
+                          menuItems: state.availableCategories.map((cat) {
+                            final isSelected = state.selectedCategory == cat;
+                            return PopupMenuItem<String>(
+                              value: cat,
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.build_circle_outlined,
+                                    size: 18,
+                                    color: isSelected
+                                        ? AppColors.primaryRed
+                                        : primaryText,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      cat,
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? AppColors.primaryRed
+                                            : primaryText,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    const Icon(
+                                      Icons.check_rounded,
+                                      size: 16,
+                                      color: AppColors.primaryRed,
+                                    ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          onSelected: (cat) => vm.selectCategory(cat),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: state.availableCategories.map((cat) {
-                        final isSelected = state.selectedCategory == cat;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ChoiceChip(
-                            label: Text(cat),
-                            selected: isSelected,
-                            selectedColor: AppColors.primaryRed,
-                            labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : primaryText,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
-                            onSelected: (_) => vm.selectCategory(cat),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (state.filteredServices.isEmpty)
+                  if (state.filteredServices.isEmpty) ...[
+                    const SizedBox(height: 24),
                     const AppEmptyState(
                       title: 'No Services Available',
                       message: 'This garage has not published services in this category yet.',
                       icon: Icons.miscellaneous_services_rounded,
                     ),
+                  ],
                 ],
               ),
             ),
@@ -178,30 +239,175 @@ class GarageDetailServicesTab extends ConsumerWidget {
           if (state.filteredServices.isNotEmpty)
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverList.separated(
-                itemCount: state.filteredServices.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 14),
-                itemBuilder: (context, index) {
-                  final service = state.filteredServices[index];
-                  final evaluated = SmartPricingEngine.evaluate(
-                    service: service,
-                    vehicle: state.selectedVehicle,
-                    vehicleType: state.selectedVehicleType != 'All'
-                        ? state.selectedVehicleType
-                        : null,
-                    currencyCode: garage.currencyCode,
-                  );
-
-                  return GarageDetailServiceCard(
-                    service: service,
-                    evaluated: evaluated,
-                    garage: garage,
-                  );
-                },
-              ),
+              sliver: isWide
+                  ? _buildWideServiceGrid(state, garage)
+                  : _buildNarrowServiceList(state, garage),
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 80)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWideServiceGrid(
+    CustomerGarageDetailState state,
+    GarageModel garage,
+  ) {
+    final chunks = <List<GarageServiceModel>>[];
+    for (var i = 0; i < state.filteredServices.length; i += 2) {
+      chunks.add(
+        state.filteredServices.sublist(
+          i,
+          i + 2 > state.filteredServices.length
+              ? state.filteredServices.length
+              : i + 2,
+        ),
+      );
+    }
+
+    return SliverList.separated(
+      itemCount: chunks.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 14),
+      itemBuilder: (context, index) {
+        final pair = chunks[index];
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: GarageDetailServiceCard(
+                service: pair[0],
+                evaluated: SmartPricingEngine.evaluate(
+                  service: pair[0],
+                  vehicle: state.selectedVehicle,
+                  vehicleType: state.selectedVehicleType != 'All'
+                      ? state.selectedVehicleType
+                      : null,
+                  currencyCode: garage.currencyCode,
+                ),
+                garage: garage,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: pair.length > 1
+                  ? GarageDetailServiceCard(
+                      service: pair[1],
+                      evaluated: SmartPricingEngine.evaluate(
+                        service: pair[1],
+                        vehicle: state.selectedVehicle,
+                        vehicleType: state.selectedVehicleType != 'All'
+                            ? state.selectedVehicleType
+                            : null,
+                        currencyCode: garage.currencyCode,
+                      ),
+                      garage: garage,
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildNarrowServiceList(
+    CustomerGarageDetailState state,
+    GarageModel garage,
+  ) {
+    return SliverList.separated(
+      itemCount: state.filteredServices.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 14),
+      itemBuilder: (context, index) {
+        final service = state.filteredServices[index];
+        final evaluated = SmartPricingEngine.evaluate(
+          service: service,
+          vehicle: state.selectedVehicle,
+          vehicleType: state.selectedVehicleType != 'All'
+              ? state.selectedVehicleType
+              : null,
+          currencyCode: garage.currencyCode,
+        );
+
+        return GarageDetailServiceCard(
+          service: service,
+          evaluated: evaluated,
+          garage: garage,
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterDropdown({
+    required BuildContext context,
+    required String label,
+    required String selectedTitle,
+    required IconData prefixIcon,
+    required List<PopupMenuEntry<String>> menuItems,
+    required ValueChanged<String> onSelected,
+    required bool isDark,
+    required Color primaryText,
+  }) {
+    final bgColor = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
+
+    return Theme(
+      data: Theme.of(context).copyWith(
+        popupMenuTheme: PopupMenuThemeData(
+          color: bgColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: borderColor),
+          ),
+        ),
+      ),
+      child: PopupMenuButton<String>(
+        onSelected: onSelected,
+        itemBuilder: (context) => menuItems,
+        tooltip: label,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor),
+          ),
+          child: Row(
+            children: [
+              Icon(prefixIcon, size: 18, color: AppColors.accentBlue),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: AppFonts.labelSmall(
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
+                      ).copyWith(fontSize: 10),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      selectedTitle,
+                      style: AppFonts.labelMedium(color: primaryText)
+                          .copyWith(fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 18,
+                color: AppColors.accentBlue,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -245,7 +451,7 @@ class GarageDetailServiceCard extends ConsumerWidget {
 
     return Card(
       color: cardBg,
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: borderColor),

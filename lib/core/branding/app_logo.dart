@@ -12,6 +12,7 @@ class AppLogo extends StatelessWidget {
     this.isWhiteVariant = false,
     this.useAssetImage = false,
     this.customColor,
+    this.tagline,
   });
 
   final double size;
@@ -20,83 +21,49 @@ class AppLogo extends StatelessWidget {
   final bool isWhiteVariant;
   final bool useAssetImage;
   final Color? customColor;
+  final String? tagline;
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = isWhiteVariant
-        ? Colors.white
-        : (customColor ?? AppColors.primaryRed);
-
+    final borderRadius = BorderRadius.circular(size * (20.0 / 72.0));
     final symbol = SizedBox(
       width: size,
       height: size,
       child: Container(
         decoration: BoxDecoration(
-          gradient: showBadge
-              ? const LinearGradient(
-                  colors: [AppColors.primaryRed, AppColors.primaryRedDark],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: showBadge ? null : Colors.transparent,
-          borderRadius: BorderRadius.circular(size * 0.28),
+          borderRadius: borderRadius,
           boxShadow: showBadge
               ? [
                   BoxShadow(
-                    color: effectiveColor.withValues(alpha: 0.25),
-                    blurRadius: size * 0.25,
-                    offset: Offset(0, size * 0.1),
+                    color: const Color(0xFFDC2626).withValues(alpha: 0.35),
+                    blurRadius: size * 0.4,
+                    offset: Offset(0, size * 0.16),
                   ),
                 ]
               : null,
         ),
-        padding: EdgeInsets.all(showBadge ? size * 0.16 : 0),
-        child: CustomPaint(
-          size: Size(size, size),
-          painter: WeFixSymbolPainter(
-            color: showBadge ? Colors.white : effectiveColor,
-            showAccent: true,
+        child: ClipRRect(
+          borderRadius: borderRadius,
+          child: Image.asset(
+            'assets/branding/wefix_logo_120x120.png',
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
           ),
         ),
       ),
     );
 
-    final effectiveSymbol = (useAssetImage && showBadge)
-        ? Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(size * 0.28),
-              boxShadow: [
-                BoxShadow(
-                  color: effectiveColor.withValues(alpha: 0.28),
-                  blurRadius: size * 0.25,
-                  offset: Offset(0, size * 0.1),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(size * 0.28),
-              child: Image.asset(
-                'assets/branding/wefix_app_icon.png',
-                width: size,
-                height: size,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => symbol,
-              ),
-            ),
-          )
-        : symbol;
-
     if (!showWordmark) {
-      return effectiveSymbol;
+      return symbol;
     }
 
     final textColor = isWhiteVariant
         ? Colors.white
         : AppColors.textPrimaryLight;
-    final accentColor = isWhiteVariant ? Colors.white : AppColors.primaryRed;
+    final subtitleColor = isWhiteVariant
+        ? Colors.white.withValues(alpha: 0.75)
+        : AppColors.textSecondaryLight;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -108,45 +75,82 @@ class AppLogo extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            RichText(
-              text: TextSpan(
-                style: AppFonts.displayLarge(color: textColor).copyWith(
-                  fontSize: size * 0.54,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -1,
-                  height: 1.0,
-                ),
-                children: [
-                  const TextSpan(text: 'We'),
-                  TextSpan(
-                    text: 'Fix',
-                    style: TextStyle(
-                      color: accentColor,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ],
+            Text(
+              'WeFix',
+              style: AppFonts.displayLarge(color: textColor).copyWith(
+                fontSize: size * 0.52,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.6,
+                height: 1.1,
               ),
             ),
-            SizedBox(height: size * 0.06),
+            SizedBox(height: size * 0.05),
             Text(
-              'VEHICLE SERVICE PLATFORM',
-              style:
-                  AppFonts.labelSmall(
-                    color: isWhiteVariant
-                        ? Colors.white.withValues(alpha: 0.75)
-                        : AppColors.textMutedLight,
-                  ).copyWith(
-                    fontSize: size * 0.15,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.8,
-                  ),
+              tagline ?? 'Smarter Garage Management',
+              style: AppFonts.labelSmall(color: subtitleColor).copyWith(
+                fontSize: size * 0.19,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.2,
+              ),
             ),
           ],
         ),
       ],
     );
   }
+}
+
+class WeFixCarPainter extends CustomPainter {
+  const WeFixCarPainter({this.color = Colors.white});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / 24.0;
+    canvas.save();
+    canvas.scale(scale, scale);
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final body = Path()
+      ..moveTo(19, 17)
+      ..lineTo(21, 17)
+      ..arcToPoint(const Offset(22, 16), radius: const Radius.circular(1))
+      ..lineTo(22, 13)
+      ..cubicTo(22, 12.1, 21.3, 11.3, 20.5, 11.1)
+      ..cubicTo(18.7, 10.6, 16, 10, 16, 10)
+      ..cubicTo(16, 10, 14.7, 8.6, 13.8, 7.7)
+      ..cubicTo(13.3, 7.3, 12.7, 7, 12, 7)
+      ..lineTo(5, 7)
+      ..cubicTo(4.4, 7, 3.9, 7.4, 3.6, 7.9)
+      ..lineTo(2.2, 10.8)
+      ..arcToPoint(const Offset(2, 12), radius: const Radius.circular(3.7))
+      ..lineTo(2, 16)
+      ..arcToPoint(const Offset(3, 17), radius: const Radius.circular(1))
+      ..lineTo(5, 17);
+    canvas.drawPath(body, paint);
+
+    canvas.drawCircle(const Offset(7, 17), 2, paint);
+
+    final bottomLine = Path()
+      ..moveTo(9, 17)
+      ..lineTo(15, 17);
+    canvas.drawPath(bottomLine, paint);
+
+    canvas.drawCircle(const Offset(17, 17), 2, paint);
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant WeFixCarPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 class WeFixSymbolPainter extends CustomPainter {

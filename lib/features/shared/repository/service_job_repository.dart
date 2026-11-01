@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/firebase/firebase_config.dart';
@@ -33,7 +34,8 @@ mixin ServiceJobRepository on GarageRepositoryStore {
       return [];
     }
 
-    if (FirebaseConfig.isInitialized) {
+    if (FirebaseConfig.isInitialized &&
+        FirebaseAuth.instance.currentUser != null) {
       try {
         Query<Map<String, dynamic>> query;
         if (hasGarage) {
@@ -128,7 +130,8 @@ mixin ServiceJobRepository on GarageRepositoryStore {
       );
     }
 
-    if (FirebaseConfig.isInitialized) {
+    if (FirebaseConfig.isInitialized &&
+        FirebaseAuth.instance.currentUser != null) {
       try {
         Query<Map<String, dynamic>> query;
         if (hasGarage) {
@@ -781,7 +784,8 @@ mixin ServiceJobRepository on GarageRepositoryStore {
     bool customerOnly = false,
   }) async {
     List<JobStatusHistoryModel> list = [];
-    if (FirebaseConfig.isInitialized) {
+    if (FirebaseConfig.isInitialized &&
+        FirebaseAuth.instance.currentUser != null) {
       try {
         final snapshot = await FirebaseFirestore.instance
             .collectionGroup('history')

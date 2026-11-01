@@ -13,11 +13,13 @@ class AccountSwitcherListView extends ConsumerWidget {
     this.onSwitched,
     this.shrinkWrap = true,
     this.physics = const NeverScrollableScrollPhysics(),
+    this.collapsed = true,
   });
 
   final ValueChanged<String>? onSwitched;
   final bool shrinkWrap;
   final ScrollPhysics physics;
+  final bool collapsed;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,6 +36,7 @@ class AccountSwitcherListView extends ConsumerWidget {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     final customerName = user?.fullName.isNotEmpty == true
         ? user!.fullName
@@ -71,6 +74,141 @@ class AccountSwitcherListView extends ConsumerWidget {
         accentColor: AppColors.primaryRed,
       ),
     ];
+
+    if (collapsed) {
+      final active = accounts.firstWhere(
+        (a) => a.isActive,
+        orElse: () => accounts.first,
+      );
+
+      return Material(
+        color: cardBg,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: BorderSide(color: borderColor),
+        ),
+        child: InkWell(
+          onTap: () =>
+              AccountSwitcherBottomSheet.show(context, onSwitched: onSwitched),
+          hoverColor: active.accentColor.withValues(alpha: 0.04),
+          splashColor: active.accentColor.withValues(alpha: 0.1),
+          highlightColor: active.accentColor.withValues(alpha: 0.05),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        active.accentColor,
+                        active.accentColor.withValues(alpha: 0.72),
+                      ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: active.accentColor.withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(active.icon, color: Colors.white, size: 24),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              active.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  AppFonts.titleSmall(color: primaryTextColor)
+                                      .copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -0.2,
+                                      ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: active.accentColor.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              active.badgeLabel,
+                              style:
+                                  AppFonts.labelSmall(color: active.accentColor)
+                                      .copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 10,
+                                        letterSpacing: 0.3,
+                                      ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.alternate_email_rounded,
+                            size: 12,
+                            color: secondaryTextColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              active.email,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppFonts.labelSmall(
+                                color: secondaryTextColor,
+                              ).copyWith(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: active.accentColor.withValues(alpha: 0.12),
+                  ),
+                  child: Icon(
+                    Icons.unfold_more_rounded,
+                    color: active.accentColor,
+                    size: 20,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     Widget buildTile(_AccountItemData item) {
       return _AccountTileItem(
@@ -569,16 +707,21 @@ class _SwitchButton extends StatelessWidget {
 }
 
 class AccountSwitcherBottomSheet extends StatelessWidget {
-  const AccountSwitcherBottomSheet({super.key});
+  const AccountSwitcherBottomSheet({super.key, this.onSwitched});
 
-  static Future<void> show(BuildContext context) {
+  final ValueChanged<String>? onSwitched;
+
+  static Future<void> show(
+    BuildContext context, {
+    ValueChanged<String>? onSwitched,
+  }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       constraints: const BoxConstraints(maxWidth: 640),
-      builder: (_) => const AccountSwitcherBottomSheet(),
+      builder: (_) => AccountSwitcherBottomSheet(onSwitched: onSwitched),
     );
   }
 
@@ -704,13 +847,19 @@ class AccountSwitcherBottomSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 22),
                 AccountSwitcherListView(
+                  collapsed: false,
                   onSwitched: (target) {
+                    final router = GoRouter.of(context);
                     Navigator.of(context).pop();
-                    context.go(
-                      target == 'merchant'
-                          ? RoutePaths.merchant
-                          : RoutePaths.customer,
-                    );
+                    if (onSwitched != null) {
+                      onSwitched!(target);
+                    } else {
+                      router.go(
+                        target == 'merchant'
+                            ? RoutePaths.merchant
+                            : RoutePaths.customer,
+                      );
+                    }
                   },
                 ),
               ],

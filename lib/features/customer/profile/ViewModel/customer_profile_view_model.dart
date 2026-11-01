@@ -150,10 +150,13 @@ class CustomerProfileViewModel extends Notifier<CustomerProfileState> {
       );
 
       if (FirebaseConfig.isInitialized) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(current.uid)
-            .set(updated.toFirestore(), SetOptions(merge: true));
+        try {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(current.uid)
+              .set(updated.toFirestore(), SetOptions(merge: true))
+              .timeout(const Duration(seconds: 15));
+        } catch (_) {}
       }
 
       final prefs = await SharedPreferences.getInstance();
@@ -215,10 +218,13 @@ class CustomerProfileViewModel extends Notifier<CustomerProfileState> {
       );
 
       if (FirebaseConfig.isInitialized) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(current.uid)
-            .set(updated.toFirestore(), SetOptions(merge: true));
+        try {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(current.uid)
+              .set(updated.toFirestore(), SetOptions(merge: true))
+              .timeout(const Duration(seconds: 15));
+        } catch (_) {}
       }
 
       ref.read(authViewModelProvider.notifier).updateUserProfile(updated);

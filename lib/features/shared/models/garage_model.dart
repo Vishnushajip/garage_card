@@ -17,7 +17,7 @@ class GarageModel {
     this.latitude = 0.0,
     this.longitude = 0.0,
     this.city = '',
-    this.rating = 4.8,
+    this.rating = 0.0,
     this.reviewCount = 0,
     this.openHours = '9:00 AM - 7:00 PM',
     this.dailyWorkingHours,
@@ -108,7 +108,7 @@ class GarageModel {
       latitude: (data['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (data['longitude'] as num?)?.toDouble() ?? 0.0,
       city: data['city'] as String? ?? '',
-      rating: (data['rating'] as num?)?.toDouble() ?? 4.8,
+      rating: (data['rating'] as num?)?.toDouble() ?? 0.0,
       reviewCount: (data['reviewCount'] as num?)?.toInt() ?? 0,
       openHours: data['openHours'] as String? ?? '9:00 AM - 7:00 PM',
       dailyWorkingHours: (data['dailyWorkingHours'] as List<dynamic>?)
