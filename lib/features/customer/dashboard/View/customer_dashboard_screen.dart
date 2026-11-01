@@ -45,10 +45,11 @@ class CustomerDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(customerDashboardViewModelProvider);
     final vm = ref.read(customerDashboardViewModelProvider.notifier);
-    final notifState = ref.watch(customerNotificationsViewModelProvider);
+    final unreadNotifCount = ref.watch(
+      customerNotificationsViewModelProvider.select((s) => s.unreadCount),
+    );
     final nearbyState = ref.watch(nearbyGaragesViewModelProvider);
-    final authState = ref.watch(authViewModelProvider);
-    final user = authState.userProfile;
+    final user = ref.watch(authViewModelProvider.select((s) => s.userProfile));
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark
@@ -87,11 +88,9 @@ class CustomerDashboardScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: Badge(
-              isLabelVisible: notifState.unreadCount > 0,
+              isLabelVisible: unreadNotifCount > 0,
               label: Text(
-                notifState.unreadCount > 99
-                    ? '99+'
-                    : notifState.unreadCount.toString(),
+                unreadNotifCount > 99 ? '99+' : unreadNotifCount.toString(),
               ),
               backgroundColor: AppColors.primaryRed,
               child: const Icon(Icons.notifications_outlined, size: 22),

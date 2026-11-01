@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/localization/app_localizations.dart';
+import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
 import 'package:garage_card/features/shared/models/user_profile_model.dart';
 
 class CustomerProfileHeaderCard extends StatelessWidget {
@@ -77,18 +78,12 @@ class CustomerProfileHeaderCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: ClipOval(
-                    child:
-                        (user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty)
-                        ? Image.network(
-                            user!.avatarUrl!,
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                            errorBuilder: (ctx, err, stack) =>
-                                _buildAvatarFallback(user?.fullName),
-                          )
-                        : _buildAvatarFallback(user?.fullName),
+                  child: AppCachedImage(
+                    imageUrl: user?.avatarUrl,
+                    width: 80,
+                    height: 80,
+                    isCircle: true,
+                    errorWidget: _buildAvatarFallback(user?.fullName),
                   ),
                 ),
                 Positioned(

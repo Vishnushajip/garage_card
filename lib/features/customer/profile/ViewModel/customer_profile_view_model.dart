@@ -9,15 +9,42 @@ import 'package:garage_card/features/authentication/ViewModel/auth_view_model.da
 import '../Model/customer_profile_state.dart';
 
 class CustomerProfileViewModel extends Notifier<CustomerProfileState> {
+  String _stripCountryCode(String phone) {
+    var cleaned = phone.trim();
+    if (cleaned.startsWith('+91')) {
+      cleaned = cleaned.substring(3).trim();
+    } else if (cleaned.startsWith('+')) {
+      final match = RegExp(r'^\+\d{1,3}\s*').firstMatch(cleaned);
+      if (match != null) {
+        cleaned = cleaned.substring(match.end).trim();
+      }
+    }
+    return cleaned;
+  }
+
   @override
   CustomerProfileState build() {
     final authState = ref.watch(authViewModelProvider);
     final user = authState.userProfile;
+    final rawName = user?.fullName ?? '';
+    final cleanName = (rawName == 'User' || rawName.contains('Vishnu'))
+        ? ''
+        : rawName;
+    final rawPhone = user?.phoneNumber ?? '';
+    final cleanPhone =
+        (rawPhone.contains('98460') || rawPhone.contains('9876500000'))
+        ? ''
+        : _stripCountryCode(rawPhone);
+    final rawWhatsapp = user?.whatsappNumber ?? '';
+    final cleanWhatsapp =
+        (rawWhatsapp.contains('98460') || rawWhatsapp.contains('9876500000'))
+        ? ''
+        : _stripCountryCode(rawWhatsapp);
     return CustomerProfileState(
       userProfile: user,
-      nameInput: user?.fullName ?? '',
-      phoneInput: user?.phoneNumber ?? '',
-      whatsappInput: user?.whatsappNumber ?? '',
+      nameInput: cleanName,
+      phoneInput: cleanPhone,
+      whatsappInput: cleanWhatsapp,
     );
   }
 

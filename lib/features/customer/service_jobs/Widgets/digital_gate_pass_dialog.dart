@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
@@ -171,11 +172,9 @@ class DigitalGatePassDialog extends StatelessWidget {
                     GestureDetector(
                       onTap: () {
                         Clipboard.setData(ClipboardData(text: code));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Gate Pass OTP copied to clipboard!'),
-                            duration: Duration(seconds: 2),
-                          ),
+                        AppNotificationService.success(
+                          'Gate Pass OTP copied to clipboard!',
+                          duration: const Duration(seconds: 2),
                         );
                       },
                       child: Container(

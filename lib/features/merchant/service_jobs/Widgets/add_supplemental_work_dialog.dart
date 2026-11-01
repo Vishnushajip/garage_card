@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
 import 'package:garage_card/features/shared/models/supplemental_work_model.dart';
@@ -46,10 +47,8 @@ class _AddSupplementalWorkDialogState extends State<AddSupplementalWorkDialog> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_totalCost <= 0.0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Total additional cost must be greater than zero.'),
-        ),
+      AppNotificationService.warning(
+        'Total additional cost must be greater than zero.',
       );
       return;
     }

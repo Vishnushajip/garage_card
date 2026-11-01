@@ -4,6 +4,7 @@ import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
@@ -195,15 +196,8 @@ class MerchantEstimatesScreen extends ConsumerWidget {
                                       estimate,
                                     );
                                     if (success && context.mounted) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Estimate converted into invoice successfully!',
-                                          ),
-                                          backgroundColor: AppColors.success,
-                                        ),
+                                      AppNotificationService.success(
+                                        'Estimate converted into invoice successfully!',
                                       );
                                     }
                                   },

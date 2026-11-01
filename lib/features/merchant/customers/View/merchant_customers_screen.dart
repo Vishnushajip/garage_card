@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
@@ -174,12 +175,7 @@ class _AddCustomerSheetState extends ConsumerState<_AddCustomerSheet> {
         .then((success) {
           if (success && mounted) {
             Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Customer registered successfully!'),
-                backgroundColor: AppColors.success,
-              ),
-            );
+            AppNotificationService.success('Customer registered successfully!');
           }
         });
   }
@@ -233,7 +229,7 @@ class _AddCustomerSheetState extends ConsumerState<_AddCustomerSheet> {
               AppTextField(
                 controller: _phoneCtrl,
                 label: 'Phone Number (Calling)',
-                hint: 'e.g. +91 98460 11223',
+                hint: 'e.g. 98460 11223',
                 keyboardType: TextInputType.phone,
                 required: true,
                 validator: (v) => v == null || v.isEmpty ? 'Required' : null,
@@ -287,7 +283,7 @@ class _AddCustomerSheetState extends ConsumerState<_AddCustomerSheet> {
               const SizedBox(height: 6),
               AppTextField(
                 controller: _whatsappCtrl,
-                hint: 'e.g. +91 98460 11223',
+                hint: 'e.g. 98460 11223',
                 helperText: 'Automated status updates & estimates will be sent to this WhatsApp number',
                 keyboardType: TextInputType.phone,
                 prefixIcon: const Icon(

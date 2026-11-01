@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
+import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
@@ -119,15 +120,12 @@ class _CustomerGarageDetailScreenState
                 background: Stack(
                   fit: StackFit.expand,
                   children: [
-                    if (garage.coverImageUrl != null)
-                      Image.network(
-                        garage.coverImageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _buildFallbackBanner(),
-                      )
-                    else
-                      _buildFallbackBanner(),
+                    AppCachedImage(
+                      imageUrl: garage.coverImageUrl,
+                      fit: BoxFit.cover,
+                      borderRadius: BorderRadius.zero,
+                      errorWidget: _buildFallbackBanner(),
+                    ),
                     Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -154,20 +152,14 @@ class _CustomerGarageDetailScreenState
                               color: AppColors.surfaceDark,
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 2),
-                              image: garage.logoUrl != null
-                                  ? DecorationImage(
-                                      image: NetworkImage(garage.logoUrl!),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
                             ),
-                            child: garage.logoUrl == null
-                                ? const Icon(
-                                    Icons.garage_rounded,
-                                    color: Colors.white,
-                                    size: 32,
-                                  )
-                                : null,
+                            child: AppCachedImage(
+                              imageUrl: garage.logoUrl,
+                              width: 60,
+                              height: 60,
+                              isCircle: true,
+                              fallbackIcon: Icons.garage_rounded,
+                            ),
                           ),
                           const SizedBox(width: 14),
                           Expanded(

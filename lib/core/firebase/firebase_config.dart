@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../firebase_options.dart';
 
@@ -29,10 +30,12 @@ class FirebaseConfig {
           options: DefaultFirebaseOptions.currentPlatform,
         );
       }
-      FirebaseFirestore.instance.settings = const Settings(
-        persistenceEnabled: true,
-        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-      );
+      if (!kIsWeb) {
+        FirebaseFirestore.instance.settings = const Settings(
+          persistenceEnabled: true,
+          cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+        );
+      }
       _isInitialized = true;
     } catch (_) {
       try {

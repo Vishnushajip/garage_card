@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_dropdown.dart';
@@ -89,10 +90,10 @@ class _BookAppointmentSheet extends ConsumerStatefulWidget {
 
 class _BookAppointmentSheetState extends ConsumerState<_BookAppointmentSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _vehicleCtrl = TextEditingController(text: '2022 Hyundai Creta');
+  final _vehicleCtrl = TextEditingController();
   final _issueCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController(text: '+91 98460 77112');
-  final _nameCtrl = TextEditingController(text: 'Arjun Menon');
+  final _phoneCtrl = TextEditingController();
+  final _nameCtrl = TextEditingController();
 
   String _selectedSlot = 'Morning (9:00 AM - 1:00 PM)';
   final DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
@@ -123,11 +124,8 @@ class _BookAppointmentSheetState extends ConsumerState<_BookAppointmentSheet> {
         .then((success) {
           if (success && mounted) {
             Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Service request submitted to the garage!'),
-                backgroundColor: AppColors.success,
-              ),
+            AppNotificationService.success(
+              'Service request submitted to the garage!',
             );
           }
         });

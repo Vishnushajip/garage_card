@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/notifications/app_notification_model.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/services/image_upload_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_dropdown.dart';
@@ -716,27 +718,47 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
 
                           if (_selectedImageBytes != null ||
                               _selectedImageFile != null) {
+                            String? uploadNotifId;
                             try {
+                              final notifId = AppNotificationService.loading(
+                                'Uploading package image...',
+                              );
+                              uploadNotifId = notifId;
                               final imageService = ImageUploadService();
-                              final uploadResult = await imageService
-                                  .uploadImage(
-                                    file:
-                                        _selectedImageBytes ??
-                                        _selectedImageFile,
-                                    folder:
-                                        'garages/${widget.garageId}/services',
-                                    entityId: serviceId,
-                                    profile: ImageProfile.card,
-                                    previousImageUrl:
-                                        widget.initialService?.imageUrl,
-                                    onProgress: (p) {
-                                      if (mounted) {
-                                        setState(() => _uploadProgress = p);
-                                      }
-                                    },
+                              final uploadResult = await imageService.uploadImage(
+                                file: _selectedImageBytes ?? _selectedImageFile,
+                                folder: 'garages/${widget.garageId}/services',
+                                entityId: serviceId,
+                                profile: ImageProfile.card,
+                                previousImageUrl:
+                                    widget.initialService?.imageUrl,
+                                onProgress: (p) {
+                                  if (mounted) {
+                                    setState(() => _uploadProgress = p);
+                                  }
+                                  AppNotificationService.update(
+                                    notifId,
+                                    message:
+                                        'Uploading package image (${(p.progress * 100).toInt()}%)...',
+                                    progress: p.progress,
                                   );
+                                },
+                              );
                               finalImageUrl = uploadResult.downloadUrl;
+                              AppNotificationService.update(
+                                notifId,
+                                type: AppNotificationType.success,
+                                message: 'Image uploaded successfully!',
+                                duration: const Duration(seconds: 2),
+                              );
                             } catch (e) {
+                              if (uploadNotifId != null) {
+                                AppNotificationService.update(
+                                  uploadNotifId,
+                                  type: AppNotificationType.error,
+                                  message: 'Failed to upload package image: $e',
+                                );
+                              }
                               if (mounted) {
                                 setState(() {
                                   _isSaving = false;
@@ -850,11 +872,19 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
                           if (!mounted) return;
                           if (ok) {
                             nav.pop(true);
+                            AppNotificationService.success(
+                              widget.initialService != null
+                                  ? 'Package updated successfully!'
+                                  : 'Package created successfully!',
+                            );
                           } else {
                             setState(() {
                               _isSaving = false;
                               _error = 'Failed to save service.';
                             });
+                            AppNotificationService.error(
+                              'Failed to save service. Please try again.',
+                            );
                           }
                         },
                       ),

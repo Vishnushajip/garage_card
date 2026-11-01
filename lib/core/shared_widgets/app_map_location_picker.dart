@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/services/location_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
@@ -105,9 +106,12 @@ class _AppMapLocationPickerState extends State<AppMapLocationPicker> {
     if (mounted) {
       setState(() {
         _isReverseGeocoding = false;
-        if (details != null) {
+        if (details != null && details.shortAddress.isNotEmpty) {
           _currentAddress = details.shortAddress;
           _detectedCity = details.city;
+        } else if (_currentAddress.isEmpty) {
+          _currentAddress =
+              '${point.latitude.toStringAsFixed(4)}, ${point.longitude.toStringAsFixed(4)}';
         }
       });
     }
@@ -125,22 +129,14 @@ class _AppMapLocationPickerState extends State<AppMapLocationPicker> {
       _mapController.move(newPoint, 16.0);
       _reverseGeocodePoint(newPoint);
       if (!silent) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Current GPS location detected!'),
-            backgroundColor: AppColors.success,
-            duration: Duration(seconds: 2),
-          ),
+        AppNotificationService.success(
+          'Current GPS location detected!',
+          duration: const Duration(seconds: 2),
         );
       }
     } else if (!silent) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Could not access current GPS location. Please allow location access or pick manually on map.',
-          ),
-          backgroundColor: AppColors.error,
-        ),
+      AppNotificationService.error(
+        'Could not access current GPS location. Please allow location access or pick manually on map.',
       );
     }
   }
@@ -224,13 +220,8 @@ class _AppMapLocationPickerState extends State<AppMapLocationPicker> {
                 _mapController.move(coords, 16.0);
                 _reverseGeocodePoint(coords);
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Could not parse coordinates from this link. Try picking on map or using GPS.',
-                    ),
-                    backgroundColor: AppColors.error,
-                  ),
+                AppNotificationService.error(
+                  'Could not parse coordinates from this link. Try picking on map or using GPS.',
                 );
               }
             },
@@ -292,7 +283,9 @@ class _AppMapLocationPickerState extends State<AppMapLocationPicker> {
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate:
+                    'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${LocationService.googleMapsApiKey}',
+                fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'dev.inspirezest.wefix',
                 tileBuilder: (context, tileWidget, tile) {
                   if (isDark) {

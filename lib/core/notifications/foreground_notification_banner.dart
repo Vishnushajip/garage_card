@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
 
 class ForegroundNotificationBanner extends StatelessWidget {
   const ForegroundNotificationBanner({
@@ -56,27 +57,12 @@ class ForegroundNotificationBanner extends StatelessWidget {
               child: Row(
                 children: [
                   if (imageUrl != null && imageUrl!.isNotEmpty)
-                    ClipRRect(
+                    AppCachedImage(
+                      imageUrl: imageUrl,
+                      width: 48,
+                      height: 48,
                       borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        imageUrl!,
-                        width: 48,
-                        height: 48,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: AppColors.accentBlue.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.notifications_active_rounded,
-                            color: AppColors.accentBlue,
-                            size: 24,
-                          ),
-                        ),
-                      ),
+                      fallbackIcon: Icons.notifications_active_rounded,
                     )
                   else
                     Container(

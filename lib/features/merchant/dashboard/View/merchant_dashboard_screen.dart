@@ -5,6 +5,7 @@ import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
+import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
@@ -107,11 +108,10 @@ class MerchantDashboardScreen extends ConsumerWidget {
     final vm = ref.read(merchantDashboardViewModelProvider.notifier);
     final analyticsState = ref.watch(merchantAnalyticsViewModelProvider);
     final analyticsVm = ref.read(merchantAnalyticsViewModelProvider.notifier);
-    final merchantNotifState = ref.watch(
-      merchantNotificationsViewModelProvider,
+    final unreadNotifCount = ref.watch(
+      merchantNotificationsViewModelProvider.select((s) => s.unreadCount),
     );
-    final authState = ref.watch(authViewModelProvider);
-    final user = authState.userProfile;
+    final user = ref.watch(authViewModelProvider.select((s) => s.userProfile));
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark
@@ -156,11 +156,13 @@ class MerchantDashboardScreen extends ConsumerWidget {
       );
     }
 
+    final rawGarageName = state.garage?.name ?? '';
     final garageName =
-        state.garage?.name ??
-        (user?.fullName.isNotEmpty == true
-            ? '${user!.fullName}\'s Garage'
-            : 'Garage Operations');
+        (rawGarageName.isNotEmpty &&
+            !rawGarageName.contains('Vishnu') &&
+            !rawGarageName.endsWith('\'s Garage'))
+        ? rawGarageName
+        : 'Garage Operations';
     final pipelineJobs = state.recentJobs
         .where((j) => j.status != 'completed' && j.status != 'closed')
         .toList();
@@ -171,20 +173,13 @@ class MerchantDashboardScreen extends ConsumerWidget {
         subtitle: 'Garage Operations & Overview',
         leading: Padding(
           padding: const EdgeInsets.only(left: 16),
-          child:
-              state.garage?.logoUrl != null && state.garage!.logoUrl!.isNotEmpty
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    state.garage!.logoUrl!,
-                    width: 36,
-                    height: 36,
-                    fit: BoxFit.cover,
-                    errorBuilder: (ctx, err, stack) =>
-                        _buildAppBarLogoFallback(garageName),
-                  ),
-                )
-              : _buildAppBarLogoFallback(garageName),
+          child: AppCachedImage(
+            imageUrl: state.garage?.logoUrl,
+            width: 36,
+            height: 36,
+            borderRadius: BorderRadius.circular(10),
+            errorWidget: _buildAppBarLogoFallback(garageName),
+          ),
         ),
         actions: [
           IconButton(
@@ -194,11 +189,9 @@ class MerchantDashboardScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: Badge(
-              isLabelVisible: merchantNotifState.unreadCount > 0,
+              isLabelVisible: unreadNotifCount > 0,
               label: Text(
-                merchantNotifState.unreadCount > 99
-                    ? '99+'
-                    : merchantNotifState.unreadCount.toString(),
+                unreadNotifCount > 99 ? '99+' : unreadNotifCount.toString(),
               ),
               backgroundColor: AppColors.primaryRed,
               child: const Icon(Icons.notifications_outlined, size: 22),

@@ -4,7 +4,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/routing/app_router.dart';
+import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 
+import 'app_notification_service.dart';
+import 'app_notification_toast.dart';
 import 'foreground_notification_banner.dart';
 import 'push_notification_service.dart';
 
@@ -69,7 +72,12 @@ class _AppNotificationHostState extends ConsumerState<AppNotificationHost> {
 
   @override
   Widget build(BuildContext context) {
+    AppNotificationService.setNotifier(
+      ref.read(appNotificationListProvider.notifier),
+    );
+    final notifications = ref.watch(appNotificationListProvider);
     final activeMsg = _activeForegroundMessage;
+    final isDesktop = AppResponsiveLayout.isDesktop(context);
 
     return Stack(
       children: [
@@ -104,6 +112,39 @@ class _AppNotificationHostState extends ConsumerState<AppNotificationHost> {
                 });
                 _dismissTimer?.cancel();
               },
+            ),
+          ),
+        if (notifications.isNotEmpty)
+          Positioned(
+            top: 12,
+            right: isDesktop ? 16 : 0,
+            left: isDesktop ? null : 0,
+            child: SafeArea(
+              child: Material(
+                color: Colors.transparent,
+                type: MaterialType.transparency,
+                child: Align(
+                  alignment: isDesktop
+                      ? Alignment.topRight
+                      : Alignment.topCenter,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: isDesktop
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.center,
+                    children: [
+                      for (final item in notifications)
+                        AppNotificationToast(
+                          key: ValueKey(item.id),
+                          item: item,
+                          onDismiss: () => ref
+                              .read(appNotificationListProvider.notifier)
+                              .dismiss(item.id),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
       ],

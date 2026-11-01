@@ -23,31 +23,31 @@ service firebase.storage {
 
     match /garages/{garageId}/branding/{allPaths=**} {
       allow read: if true;
-      allow write: if isAuthenticated() && isValidImage();
+      allow write: if isValidImage();
       allow delete: if isAuthenticated();
     }
 
     match /garages/{garageId}/logo/{allPaths=**} {
       allow read: if true;
-      allow write: if isAuthenticated() && isValidImage();
+      allow write: if isValidImage();
       allow delete: if isAuthenticated();
     }
 
     match /garages/{garageId}/logos/{allPaths=**} {
       allow read: if true;
-      allow write: if isAuthenticated() && isValidImage();
+      allow write: if isValidImage();
       allow delete: if isAuthenticated();
     }
 
     match /garages/{garageId}/cover/{allPaths=**} {
       allow read: if true;
-      allow write: if isAuthenticated() && isValidImage();
+      allow write: if isValidImage();
       allow delete: if isAuthenticated();
     }
 
     match /garages/{garageId}/services/{allPaths=**} {
       allow read: if true;
-      allow write: if isAuthenticated() && isValidImage();
+      allow write: if isValidImage();
       allow delete: if isAuthenticated();
     }
 

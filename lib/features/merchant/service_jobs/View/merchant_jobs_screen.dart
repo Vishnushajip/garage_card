@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
@@ -209,11 +210,8 @@ class _NewJobSheetState extends ConsumerState<_NewJobSheet> {
         .then((success) {
           if (success && mounted) {
             Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Repair job created and logged successfully!'),
-                backgroundColor: AppColors.success,
-              ),
+            AppNotificationService.success(
+              'Repair job created and logged successfully!',
             );
           }
         });

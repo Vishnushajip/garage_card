@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/localization/app_localizations.dart';
+import 'package:garage_card/core/notifications/app_notification_model.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
@@ -54,15 +55,23 @@ class _CustomerProfileScreenState extends ConsumerState<CustomerProfileScreen> {
       imageQuality: 85,
     );
     if (picked != null) {
+      final notifId = AppNotificationService.loading(
+        'Uploading profile picture...',
+      );
       final ok = await ref
           .read(customerProfileViewModelProvider.notifier)
           .uploadAvatar(picked);
-      if (ok && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Avatar updated successfully!'),
-            backgroundColor: AppColors.success,
-          ),
+      if (ok) {
+        AppNotificationService.update(
+          notifId,
+          type: AppNotificationType.success,
+          message: 'Avatar updated successfully!',
+        );
+      } else {
+        AppNotificationService.update(
+          notifId,
+          type: AppNotificationType.error,
+          message: 'Failed to upload profile picture.',
         );
       }
     }

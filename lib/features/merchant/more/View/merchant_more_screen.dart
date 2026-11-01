@@ -5,6 +5,7 @@ import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/core/shared_widgets/account_switcher_list_view.dart';
+import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_dialog.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
@@ -136,11 +137,13 @@ class MerchantMoreScreen extends ConsumerWidget {
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
     final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
 
+    final rawGarageName = garage?.name ?? '';
     final garageName =
-        garage?.name ??
-        (user?.fullName.isNotEmpty == true
-            ? '${user!.fullName}\'s Garage'
-            : 'Workshop Management');
+        (rawGarageName.isNotEmpty &&
+            !rawGarageName.contains('Vishnu') &&
+            !rawGarageName.endsWith('\'s Garage'))
+        ? rawGarageName
+        : 'Workshop Management';
     final garageEmail = garage?.email ?? user?.email ?? '';
 
     final operationsItems = [
@@ -229,19 +232,13 @@ class MerchantMoreScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(18),
                   child: Row(
                     children: [
-                      garage?.logoUrl != null && garage!.logoUrl!.isNotEmpty
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Image.network(
-                                garage.logoUrl!,
-                                width: 54,
-                                height: 54,
-                                fit: BoxFit.cover,
-                                errorBuilder: (ctx, err, stack) =>
-                                    _buildLogoFallback(garageName),
-                              ),
-                            )
-                          : _buildLogoFallback(garageName),
+                      AppCachedImage(
+                        imageUrl: garage?.logoUrl,
+                        width: 54,
+                        height: 54,
+                        borderRadius: BorderRadius.circular(16),
+                        errorWidget: _buildLogoFallback(garageName),
+                      ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(

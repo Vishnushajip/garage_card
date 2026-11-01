@@ -99,6 +99,36 @@ class PushNotificationService {
     }
     await _configureFCMListeners();
     await _checkInitialMessage();
+
+    _listenToAuthChanges();
+
+    try {
+      final settings = await messaging!.getNotificationSettings();
+      if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional) {
+        await registerDeviceToken();
+      }
+    } catch (_) {}
+  }
+
+  void _listenToAuthChanges() {
+    auth?.authStateChanges().listen((user) async {
+      if (user != null) {
+        if (_currentToken != null) {
+          await _saveTokenToFirestore(_currentToken!);
+        } else {
+          try {
+            final settings = await messaging?.getNotificationSettings();
+            if (settings?.authorizationStatus ==
+                    AuthorizationStatus.authorized ||
+                settings?.authorizationStatus ==
+                    AuthorizationStatus.provisional) {
+              await registerDeviceToken();
+            }
+          } catch (_) {}
+        }
+      }
+    });
   }
 
   Future<void> _setupLocalNotifications() async {

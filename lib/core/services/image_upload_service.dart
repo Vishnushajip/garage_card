@@ -51,7 +51,11 @@ class ImageUploadService {
   }
 
   String _sanitizeSegment(String input) {
-    return input.replaceAll(RegExp(r'[^a-zA-Z0-9_\-]'), '_');
+    return input
+        .split('/')
+        .map((segment) => segment.replaceAll(RegExp(r'[^a-zA-Z0-9_\-.]'), '_'))
+        .where((segment) => segment.isNotEmpty)
+        .join('/');
   }
 
   String buildStoragePath({

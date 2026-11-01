@@ -43,6 +43,11 @@ class LocationService {
   static final LocationService instance = LocationService._();
 
   static const LatLng defaultKeralaCenter = LatLng(9.9674, 76.2891);
+  static const String googleMapsApiKey =
+      'AIzaSyDIWXi7mtIUzX0V47wci-WetyCBle_ll2E';
+
+  final Map<String, LocationDetails> _reverseGeocodeCache = {};
+  final Map<String, List<LocationDetails>> _searchCache = {};
 
   Future<Position?> getCurrentPosition() async {
     try {
@@ -84,10 +89,101 @@ class LocationService {
     }
   }
 
+  LocationDetails _parseGoogleGeocodeResult(
+    Map<String, dynamic> result, {
+    double? fallbackLat,
+    double? fallbackLng,
+  }) {
+    final formattedAddress = result['formatted_address'] as String? ?? '';
+    final geometry = result['geometry'] as Map<String, dynamic>?;
+    final location = geometry?['location'] as Map<String, dynamic>?;
+    final lat = (location?['lat'] as num?)?.toDouble() ?? fallbackLat ?? 0.0;
+    final lng = (location?['lng'] as num?)?.toDouble() ?? fallbackLng ?? 0.0;
+
+    final components = result['address_components'] as List<dynamic>? ?? [];
+    String? street;
+    String? city;
+    String? state;
+    String? country;
+    String? postalCode;
+
+    for (final comp in components) {
+      if (comp is! Map<String, dynamic>) continue;
+      final types =
+          (comp['types'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [];
+      final longName = comp['long_name'] as String? ?? '';
+
+      if (types.contains('route') ||
+          types.contains('sublocality_level_1') ||
+          types.contains('sublocality')) {
+        street = street == null ? longName : '$street, $longName';
+      } else if (types.contains('locality')) {
+        city = longName;
+      } else if (city == null &&
+          (types.contains('administrative_area_level_2') ||
+              types.contains('sublocality_level_2'))) {
+        city = longName;
+      } else if (types.contains('administrative_area_level_1')) {
+        state = longName;
+      } else if (types.contains('country')) {
+        country = longName;
+      } else if (types.contains('postal_code')) {
+        postalCode = longName;
+      }
+    }
+
+    return LocationDetails(
+      latitude: lat,
+      longitude: lng,
+      displayName: formattedAddress,
+      street: street,
+      city: city,
+      state: state,
+      country: country,
+      postalCode: postalCode,
+    );
+  }
+
   Future<LocationDetails?> reverseGeocode({
     required double latitude,
     required double longitude,
   }) async {
+    final cacheKey =
+        '${latitude.toStringAsFixed(4)},${longitude.toStringAsFixed(4)}';
+    if (_reverseGeocodeCache.containsKey(cacheKey)) {
+      return _reverseGeocodeCache[cacheKey];
+    }
+
+    try {
+      final googleUri = Uri.parse(
+        'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latitude,$longitude&key=$googleMapsApiKey',
+      );
+      final client = http.Client();
+      final response = await client
+          .get(googleUri)
+          .timeout(const Duration(seconds: 4));
+      client.close();
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final status = data['status'] as String?;
+        final results = data['results'] as List<dynamic>?;
+        if (status == 'OK' && results != null && results.isNotEmpty) {
+          final first = results.first as Map<String, dynamic>;
+          final parsed = _parseGoogleGeocodeResult(
+            first,
+            fallbackLat: latitude,
+            fallbackLng: longitude,
+          );
+          _reverseGeocodeCache[cacheKey] = parsed;
+          return parsed;
+        }
+      }
+    } catch (_) {}
+
     try {
       final uri = Uri.parse(
         'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json&addressdetails=1',
@@ -126,7 +222,7 @@ class LocationService {
           street = suburb;
         }
 
-        return LocationDetails(
+        final details = LocationDetails(
           latitude: latitude,
           longitude: longitude,
           displayName: displayName,
@@ -136,6 +232,8 @@ class LocationService {
           country: country,
           postalCode: postcode,
         );
+        _reverseGeocodeCache[cacheKey] = details;
+        return details;
       }
     } catch (_) {}
     return null;
@@ -144,6 +242,40 @@ class LocationService {
   Future<List<LocationDetails>> searchPlaces(String query) async {
     final trimmed = query.trim();
     if (trimmed.length < 3) return [];
+
+    final cacheKey = trimmed.toLowerCase();
+    if (_searchCache.containsKey(cacheKey)) {
+      return _searchCache[cacheKey]!;
+    }
+
+    try {
+      final googleUri = Uri.parse(
+        'https://maps.googleapis.com/maps/api/geocode/json?address=${Uri.encodeComponent(trimmed)}&key=$googleMapsApiKey',
+      );
+      final client = http.Client();
+      final response = await client
+          .get(googleUri)
+          .timeout(const Duration(seconds: 4));
+      client.close();
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final status = data['status'] as String?;
+        final results = data['results'] as List<dynamic>?;
+        if (status == 'OK' && results != null && results.isNotEmpty) {
+          final list = <LocationDetails>[];
+          for (final item in results) {
+            if (item is Map<String, dynamic>) {
+              list.add(_parseGoogleGeocodeResult(item));
+            }
+          }
+          if (list.isNotEmpty) {
+            _searchCache[cacheKey] = list;
+            return list;
+          }
+        }
+      }
+    } catch (_) {}
 
     try {
       final uri = Uri.parse(
@@ -194,6 +326,7 @@ class LocationService {
             }
           }
         }
+        _searchCache[cacheKey] = results;
         return results;
       }
     } catch (_) {}

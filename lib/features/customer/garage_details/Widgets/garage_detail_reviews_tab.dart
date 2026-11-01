@@ -3,6 +3,7 @@ import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
+import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/features/shared/models/garage_model.dart';
@@ -38,76 +39,99 @@ class GarageDetailReviewsTab extends StatelessWidget {
 
     return AppRefresh(
       onRefresh: () => vm.loadGarage(garageId),
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.cardDark : AppColors.cardLight,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDark ? AppColors.borderDark : AppColors.borderLight,
-              ),
-            ),
-            child: Row(
-              children: [
-                Column(
-                  children: [
-                    Text(
-                      garage.rating.toStringAsFixed(1),
-                      style: AppFonts.displaySmall(
-                        color: AppColors.primaryAmber,
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.cardDark : AppColors.cardLight,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isDark
+                            ? AppColors.borderDark
+                            : AppColors.borderLight,
                       ),
                     ),
-                    Row(
-                      children: List.generate(
-                        5,
-                        (i) => const Icon(
-                          Icons.star_rounded,
-                          size: 16,
-                          color: AppColors.primaryAmber,
+                    child: Row(
+                      children: [
+                        Column(
+                          children: [
+                            Text(
+                              garage.rating.toStringAsFixed(1),
+                              style: AppFonts.displaySmall(
+                                color: AppColors.primaryAmber,
+                              ),
+                            ),
+                            Row(
+                              children: List.generate(
+                                5,
+                                (i) => const Icon(
+                                  Icons.star_rounded,
+                                  size: 16,
+                                  color: AppColors.primaryAmber,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${garage.reviewCount} total reviews',
+                              style: AppFonts.labelSmall(color: secondaryText),
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${garage.reviewCount} total reviews',
-                      style: AppFonts.labelSmall(color: secondaryText),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 24),
-                Expanded(
-                  child: AppButton(
-                    label: 'Write a Review',
-                    icon: const Icon(Icons.rate_review_outlined, size: 18),
-                    onPressed: () => WriteReviewDialog.show(
-                      context,
-                      garageName: garage.name,
-                      garagePhone: garage.phone,
-                      onSubmit: vm.submitReview,
+                        const SizedBox(width: 24),
+                        Expanded(
+                          child: AppButton(
+                            label: 'Write a Review',
+                            icon: const Icon(
+                              Icons.rate_review_outlined,
+                              size: 18,
+                            ),
+                            onPressed: () => WriteReviewDialog.show(
+                              context,
+                              garageName: garage.name,
+                              garagePhone: garage.phone,
+                              onSubmit: vm.submitReview,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  Text(
+                    'Verified Customer Reviews',
+                    style: AppFonts.titleMedium(color: primaryText),
+                  ),
+                  const SizedBox(height: 12),
+                  if (state.reviews.isEmpty)
+                    const AppEmptyState(
+                      title: 'No Reviews Yet',
+                      message: 'Be the first to rate your service experience at this garage!',
+                      icon: Icons.star_border_rounded,
+                    ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            'Verified Customer Reviews',
-            style: AppFonts.titleMedium(color: primaryText),
-          ),
-          const SizedBox(height: 12),
-          if (state.reviews.isEmpty)
-            const AppEmptyState(
-              title: 'No Reviews Yet',
-              message: 'Be the first to rate your service experience at this garage!',
-              icon: Icons.star_border_rounded,
-            )
-          else
-            ...state.reviews.map((r) => GarageDetailReviewItem(review: r)),
-          const SizedBox(height: 80),
+          if (state.reviews.isNotEmpty)
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverList.separated(
+                itemCount: state.reviews.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  return GarageDetailReviewItem(review: state.reviews[index]);
+                },
+              ),
+            ),
+          const SliverToBoxAdapter(child: SizedBox(height: 80)),
         ],
       ),
     );
@@ -133,7 +157,7 @@ class GarageDetailReviewItem extends StatelessWidget {
     final publicReviewImage = review.publicReviewImageUrl;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -142,23 +166,27 @@ class GarageDetailReviewItem extends StatelessWidget {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: AppColors.primaryRed.withValues(alpha: 0.1),
-                  backgroundImage: publicPhoto != null
-                      ? NetworkImage(publicPhoto)
-                      : null,
-                  child: publicPhoto == null
-                      ? Text(
-                          review.displayCustomerName.isNotEmpty
-                              ? review.displayCustomerName[0].toUpperCase()
-                              : 'C',
-                          style: AppFonts.labelMedium(
-                            color: AppColors.primaryRed,
-                          ),
-                        )
-                      : null,
-                ),
+                if (publicPhoto != null && publicPhoto.isNotEmpty)
+                  AppCachedImage(
+                    imageUrl: publicPhoto,
+                    width: 36,
+                    height: 36,
+                    isCircle: true,
+                    fallbackIcon: Icons.person_rounded,
+                  )
+                else
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: AppColors.primaryRed.withValues(
+                      alpha: 0.1,
+                    ),
+                    child: Text(
+                      review.displayCustomerName.isNotEmpty
+                          ? review.displayCustomerName[0].toUpperCase()
+                          : 'C',
+                      style: AppFonts.labelMedium(color: AppColors.primaryRed),
+                    ),
+                  ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -195,18 +223,13 @@ class GarageDetailReviewItem extends StatelessWidget {
               review.reviewText,
               style: AppFonts.bodyMedium(color: primaryText),
             ),
-            if (publicReviewImage != null) ...[
+            if (publicReviewImage != null && publicReviewImage.isNotEmpty) ...[
               const SizedBox(height: 10),
-              ClipRRect(
+              AppCachedImage(
+                imageUrl: publicReviewImage,
+                height: 140,
+                width: double.infinity,
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  publicReviewImage,
-                  height: 140,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const SizedBox.shrink(),
-                ),
               ),
             ],
           ],

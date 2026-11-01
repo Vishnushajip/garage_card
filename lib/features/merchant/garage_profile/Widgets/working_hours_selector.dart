@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/localization/app_localizations.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/features/shared/models/working_hours_model.dart';
 
 class WorkingHoursSelector extends StatefulWidget {
@@ -108,15 +109,9 @@ class _WorkingHoursSelectorState extends State<WorkingHoursSelector> {
     }).toList();
     setState(() => _currentSchedule = next);
     widget.onChanged(next);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Copied ${sourceDay.dayLabel}\'s hours to all open days',
-          style: AppFonts.bodySmall(color: Colors.white),
-        ),
-        duration: const Duration(seconds: 2),
-        backgroundColor: AppColors.surfaceDark,
-      ),
+    AppNotificationService.info(
+      'Copied ${sourceDay.dayLabel}\'s hours to all open days',
+      duration: const Duration(seconds: 2),
     );
   }
 

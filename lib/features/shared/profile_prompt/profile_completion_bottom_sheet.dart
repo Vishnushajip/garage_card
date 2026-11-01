@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
 import 'package:garage_card/features/customer/profile/ViewModel/customer_profile_view_model.dart';
@@ -25,20 +26,46 @@ class _ProfileCompletionBottomSheetState
   late final TextEditingController _phoneController;
   late final TextEditingController _whatsappController;
 
+  String _stripCountryCode(String phone) {
+    var cleaned = phone.trim();
+    if (cleaned.startsWith('+91')) {
+      cleaned = cleaned.substring(3).trim();
+    } else if (cleaned.startsWith('+')) {
+      final match = RegExp(r'^\+\d{1,3}\s*').firstMatch(cleaned);
+      if (match != null) {
+        cleaned = cleaned.substring(match.end).trim();
+      }
+    }
+    return cleaned;
+  }
+
   @override
   void initState() {
     super.initState();
     final profile = widget.userProfile;
-    final initialName = profile.fullName == 'User' ? '' : profile.fullName;
+    final initialName =
+        (profile.fullName == 'User' || profile.fullName.contains('Vishnu'))
+        ? ''
+        : profile.fullName;
+    final rawPhone = profile.phoneNumber;
+    final rawWhatsapp = profile.whatsappNumber;
+    final cleanPhone =
+        (rawPhone.contains('98460') || rawPhone.contains('9876500000'))
+        ? ''
+        : _stripCountryCode(rawPhone);
+    final cleanWhatsapp =
+        (rawWhatsapp.contains('98460') || rawWhatsapp.contains('9876500000'))
+        ? ''
+        : _stripCountryCode(rawWhatsapp);
     _nameController = TextEditingController(text: initialName);
-    _phoneController = TextEditingController(text: profile.phoneNumber);
-    _whatsappController = TextEditingController(text: profile.whatsappNumber);
+    _phoneController = TextEditingController(text: cleanPhone);
+    _whatsappController = TextEditingController(text: cleanWhatsapp);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vm = ref.read(customerProfileViewModelProvider.notifier);
       vm.setName(initialName);
-      vm.setPhone(profile.phoneNumber);
-      vm.setWhatsApp(profile.whatsappNumber);
+      vm.setPhone(cleanPhone);
+      vm.setWhatsApp(cleanWhatsapp);
     });
   }
 
@@ -243,7 +270,7 @@ class _ProfileCompletionBottomSheetState
             const SizedBox(height: 12),
             AppTextField(
               label: 'Phone Number (Calling)',
-              hint: 'e.g. +91 98765 43210',
+              hint: 'e.g. 98765 43210',
               controller: _phoneController,
               prefixIcon: const Icon(Icons.phone_outlined, size: 20),
               keyboardType: TextInputType.phone,
@@ -302,7 +329,7 @@ class _ProfileCompletionBottomSheetState
             ),
             const SizedBox(height: 6),
             AppTextField(
-              hint: 'e.g. +91 98765 43210',
+              hint: 'e.g. 98765 43210',
               helperText: 'Repair status and estimates will be sent to this WhatsApp number',
               controller: _whatsappController,
               prefixIcon: const Icon(
@@ -340,7 +367,6 @@ class _ProfileCompletionBottomSheetState
               isLoading: state.isSaving,
               onPressed: () async {
                 final navigator = Navigator.of(context);
-                final messenger = ScaffoldMessenger.of(context);
                 final success = await vm.saveProfile();
                 if (success && mounted) {
                   final promptService = ref.read(
@@ -350,11 +376,8 @@ class _ProfileCompletionBottomSheetState
                     widget.userProfile.uid,
                   );
                   navigator.pop();
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Profile completed successfully!'),
-                      backgroundColor: AppColors.success,
-                    ),
+                  AppNotificationService.success(
+                    'Profile completed successfully!',
                   );
                 }
               },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/notifications/fcm_notification_sender.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
@@ -82,27 +83,9 @@ class CustomerInquiryService {
     );
 
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(
-                Icons.check_circle_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Inquiry sent to ${garage.name}! Opening chat...',
-                  style: AppFonts.bodySmall(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: AppColors.success,
-          duration: const Duration(seconds: 2),
-        ),
+      AppNotificationService.success(
+        'Inquiry sent to ${garage.name}! Opening chat...',
+        duration: const Duration(seconds: 2),
       );
 
       final encodedGarageName = Uri.encodeComponent(garage.name);
@@ -116,7 +99,7 @@ class CustomerInquiryService {
     BuildContext context,
     String customerName,
   ) async {
-    final phoneCtrl = TextEditingController(text: '+91 ');
+    final phoneCtrl = TextEditingController();
     return showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
@@ -183,7 +166,7 @@ class CustomerInquiryService {
                 AppTextField(
                   controller: phoneCtrl,
                   label: 'Your Mobile Number',
-                  hint: '+91 98765 43210',
+                  hint: '98765 43210',
                   keyboardType: TextInputType.phone,
                 ),
                 const SizedBox(height: 20),

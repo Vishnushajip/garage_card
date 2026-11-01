@@ -425,3 +425,26 @@ Before completing any task, verify:
    - Never leave orphaned references if an upload fails mid-way.
 6. **Frontend Memory Management with `AppCachedImage`:**
    - Network images must be rendered with `AppCachedImage`, utilizing `memCacheWidth` and `memCacheHeight` constraints to prevent uncompressed raster textures from bloating browser or device GPU memory.
+
+---
+
+## 10. Centralized Custom Application Feedback & Notification Rules
+
+### Rule 18: MANDATORY CENTRALIZED APPLICATION FEEDBACK & NOTIFICATION SYSTEM
+1. **Absolute Prohibition of Default ScaffoldMessenger & SnackBar:**
+   - Under NO circumstance may any engineer or AI agent introduce `ScaffoldMessenger`, `ScaffoldMessenger.of(context).showSnackBar(...)`, `SnackBar`, or `SnackBarAction` into any feature, view, dialog, or ViewModel.
+   - All temporary application feedback (success alerts, error messages, warnings, operational notices, and long-running progress indicators) must strictly use `AppNotificationService` (`lib/core/notifications/app_notification_service.dart`).
+2. **Centralized Notification API Standards:**
+   - **Success:** `AppNotificationService.success('Message')` (Emerald green accent, check icon).
+   - **Error:** `AppNotificationService.error('Error description')` (Crimson rose accent, error icon).
+   - **Warning:** `AppNotificationService.warning('Warning message')` (Racing amber accent, warning icon).
+   - **Info:** `AppNotificationService.info('Informational alert')` (Electric cobalt accent, info icon).
+   - **Loading / Long-Running Operations:** `final id = AppNotificationService.loading('Uploading...');` followed by `AppNotificationService.update(id, type: AppNotificationType.success, message: 'Done');` upon completion.
+3. **Floating Responsive Overlay Placement:**
+   - Rendered globally via `AppNotificationHost` wrapped at the root builder level in `lib/app.dart`.
+   - **Mobile / Tablet:** Floats at the top center below the status bar safe area.
+   - **Desktop / Web:** Floats at the top-right corner (`maxWidth: 440px`), elevated cleanly above page content and dialogs without stretching across widescreen monitors.
+4. **Queue Control & Safe Context-Free Dispatch:**
+   - Managed via Riverpod `appNotificationListProvider` capped at 3 active items with automated decay timers (default 4 seconds).
+   - Can be dispatched safely with or without a `BuildContext` parameter, preventing "BuildContext across async gap" crashes and allowing background ViewModels and callbacks to trigger notifications seamlessly.
+

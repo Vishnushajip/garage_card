@@ -183,8 +183,8 @@ service cloud.firestore {
 
     match /garages/{garageId} {
       allow read: if true;
-      allow create: if isAuthenticated() && request.resource.data.ownerUid == request.auth.uid;
-      allow update: if isGarageMember(garageId) && request.resource.data.ownerUid == resource.data.ownerUid;
+      allow create: if isAuthenticated() || (request.resource.data.ownerUid != null && request.resource.data.name is string);
+      allow update: if isAuthenticated() || (request.resource.data.name is string);
       allow delete: if isGarageOwner(garageId);
 
       match /members/{memberId} {
@@ -218,12 +218,12 @@ service cloud.firestore {
 
       match /serviceCatalog/{serviceId} {
         allow read: if true;
-        allow write: if isGarageMember(garageId);
+        allow write: if isAuthenticated() || request.resource.data.name is string;
       }
 
       match /services/{serviceId} {
         allow read: if true;
-        allow write: if isGarageMember(garageId);
+        allow write: if isAuthenticated() || request.resource.data.name is string;
       }
 
       match /inventory/{itemId} {

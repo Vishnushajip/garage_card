@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/notifications/app_notification_model.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
+import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 
@@ -98,15 +101,12 @@ class GarageProfileHeaderCard extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                state.garage?.coverImageUrl != null &&
-                        state.garage!.coverImageUrl!.isNotEmpty
-                    ? Image.network(
-                        state.garage!.coverImageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (ctx, err, stack) =>
-                            _buildCoverFallback(),
-                      )
-                    : _buildCoverFallback(),
+                AppCachedImage(
+                  imageUrl: state.garage?.coverImageUrl,
+                  fit: BoxFit.cover,
+                  borderRadius: BorderRadius.zero,
+                  errorWidget: _buildCoverFallback(),
+                ),
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -148,15 +148,21 @@ class GarageProfileHeaderCard extends StatelessWidget {
                         imageQuality: 85,
                       );
                       if (picked != null && context.mounted) {
-                        final ok = await vm.uploadGarageCover(picked);
-                        if (ok && context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Garage banner updated successfully!',
-                              ),
-                              backgroundColor: AppColors.success,
-                            ),
+                        final notifId = AppNotificationService.loading(
+                          'Uploading garage banner...',
+                        );
+                        final error = await vm.uploadGarageCover(picked);
+                        if (error == null) {
+                          AppNotificationService.update(
+                            notifId,
+                            type: AppNotificationType.success,
+                            message: 'Garage banner updated successfully!',
+                          );
+                        } else {
+                          AppNotificationService.update(
+                            notifId,
+                            type: AppNotificationType.error,
+                            message: 'Failed to upload garage banner: $error',
                           );
                         }
                       }
@@ -176,20 +182,13 @@ class GarageProfileHeaderCard extends StatelessWidget {
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        state.garage?.logoUrl != null &&
-                                state.garage!.logoUrl!.isNotEmpty
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: Image.network(
-                                  state.garage!.logoUrl!,
-                                  width: 64,
-                                  height: 64,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (ctx, err, stack) =>
-                                      _buildLogoFallback(displayName),
-                                ),
-                              )
-                            : _buildLogoFallback(displayName),
+                        AppCachedImage(
+                          imageUrl: state.garage?.logoUrl,
+                          width: 64,
+                          height: 64,
+                          borderRadius: BorderRadius.circular(16),
+                          errorWidget: _buildLogoFallback(displayName),
+                        ),
                         Positioned(
                           bottom: -4,
                           right: -4,
@@ -206,15 +205,26 @@ class GarageProfileHeaderCard extends StatelessWidget {
                                   imageQuality: 85,
                                 );
                                 if (picked != null && context.mounted) {
-                                  final ok = await vm.uploadGarageLogo(picked);
-                                  if (ok && context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
+                                  final notifId =
+                                      AppNotificationService.loading(
+                                        'Uploading garage logo...',
+                                      );
+                                  final error = await vm.uploadGarageLogo(
+                                    picked,
+                                  );
+                                  if (error == null) {
+                                    AppNotificationService.update(
+                                      notifId,
+                                      type: AppNotificationType.success,
+                                      message:
                                           'Garage logo updated successfully!',
-                                        ),
-                                        backgroundColor: AppColors.success,
-                                      ),
+                                    );
+                                  } else {
+                                    AppNotificationService.update(
+                                      notifId,
+                                      type: AppNotificationType.error,
+                                      message:
+                                          'Failed to upload garage logo: $error',
                                     );
                                   }
                                 }

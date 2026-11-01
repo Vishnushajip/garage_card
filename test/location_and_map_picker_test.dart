@@ -52,5 +52,25 @@ void main() {
       expect(details.shortAddress, equals('Marine Drive, Kochi, Kerala'));
       expect(details.latLng, equals(const LatLng(9.9674, 76.2891)));
     });
+
+    test('LocationService has configured Google Maps API Key', () {
+      expect(
+        LocationService.googleMapsApiKey,
+        equals('AIzaSyDIWXi7mtIUzX0V47wci-WetyCBle_ll2E'),
+      );
+    });
+
+    test('LocationDetails fallback to displayName when components empty', () {
+      const details = LocationDetails(
+        latitude: 11.3567,
+        longitude: 75.8076,
+        displayName: 'Chelannur, Kozhikode, Kerala, India',
+      );
+
+      expect(
+        details.shortAddress,
+        equals('Chelannur, Kozhikode, Kerala, India'),
+      );
+    });
   });
 }

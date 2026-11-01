@@ -205,7 +205,7 @@ class _JobStatusDialogState extends State<JobStatusDialog> {
             AppTextField(
               controller: _phoneCtrl,
               label: 'Customer WhatsApp Number / വാട്സ്ആപ്പ് നമ്പർ',
-              hint: '+91 98460 77112',
+              hint: '98460 77112',
               helperText:
                   'Repair status updates will be sent to this WhatsApp number',
               keyboardType: TextInputType.phone,

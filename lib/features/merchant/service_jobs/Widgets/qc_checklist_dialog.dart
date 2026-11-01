@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
 import 'package:garage_card/features/shared/models/qc_checklist_model.dart';
@@ -55,9 +56,7 @@ class _QCChecklistDialogState extends State<QCChecklistDialog> {
   Future<void> _submit() async {
     final name = _inspectorCtrl.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter inspector name.')),
-      );
+      AppNotificationService.warning('Please enter inspector name.');
       return;
     }
 

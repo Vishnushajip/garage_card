@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/location/geohash_helper.dart';
+import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
 import 'package:garage_card/features/customer/inquiry/customer_inquiry_service.dart';
 import 'package:garage_card/features/shared/models/garage_model.dart';
 import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
@@ -43,7 +44,6 @@ class GarageCardItem extends ConsumerWidget {
 
     final hasCover =
         garage.coverImageUrl != null && garage.coverImageUrl!.isNotEmpty;
-    final hasLogo = garage.logoUrl != null && garage.logoUrl!.isNotEmpty;
 
     final featuredPackageTitle = garage.servicesOffered.isNotEmpty
         ? garage.servicesOffered.first
@@ -72,10 +72,11 @@ class GarageCardItem extends ConsumerWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.network(
-                        garage.coverImageUrl!,
+                      AppCachedImage(
+                        imageUrl: garage.coverImageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (ctx, err, stack) => Container(
+                        borderRadius: BorderRadius.zero,
+                        errorWidget: Container(
                           decoration: const BoxDecoration(
                             gradient: LinearGradient(
                               colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
@@ -151,20 +152,14 @@ class GarageCardItem extends ConsumerWidget {
                                   color: Colors.white,
                                   width: 2,
                                 ),
-                                image: hasLogo
-                                    ? DecorationImage(
-                                        image: NetworkImage(garage.logoUrl!),
-                                        fit: BoxFit.cover,
-                                      )
-                                    : null,
                               ),
-                              child: !hasLogo
-                                  ? const Icon(
-                                      Icons.garage_rounded,
-                                      color: Colors.white,
-                                      size: 24,
-                                    )
-                                  : null,
+                              child: AppCachedImage(
+                                imageUrl: garage.logoUrl,
+                                width: 40,
+                                height: 40,
+                                isCircle: true,
+                                fallbackIcon: Icons.garage_rounded,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
@@ -222,26 +217,12 @@ class GarageCardItem extends ConsumerWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
+                        AppCachedImage(
+                          imageUrl: garage.logoUrl,
                           width: 48,
                           height: 48,
-                          decoration: BoxDecoration(
-                            color: AppColors.accentBlue.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(14),
-                            image: hasLogo
-                                ? DecorationImage(
-                                    image: NetworkImage(garage.logoUrl!),
-                                    fit: BoxFit.cover,
-                                  )
-                                : null,
-                          ),
-                          child: !hasLogo
-                              ? const Icon(
-                                  Icons.car_repair_rounded,
-                                  color: AppColors.accentBlue,
-                                  size: 26,
-                                )
-                              : null,
+                          borderRadius: BorderRadius.circular(14),
+                          fallbackIcon: Icons.car_repair_rounded,
                         ),
                         const SizedBox(width: 12),
                         Expanded(

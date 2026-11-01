@@ -5,6 +5,7 @@ import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
 import 'package:garage_card/core/localization/app_localizations.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_dialog.dart';
@@ -43,12 +44,7 @@ class CustomerEstimatesScreen extends ConsumerWidget {
           .read(customerEstimatesViewModelProvider.notifier)
           .approveEstimate(estimate.id);
       if (success && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Estimate approved successfully!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
+        AppNotificationService.success('Estimate approved successfully!');
       }
     }
   }

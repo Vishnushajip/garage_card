@@ -44,6 +44,23 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
+  <!-- Preconnect & DNS-Prefetch for High-Speed Asset Loading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://firestore.googleapis.com">
+  <link rel="preconnect" href="https://firebasestorage.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+  <link rel="dns-prefetch" href="https://firestore.googleapis.com">
+  <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com">
+  <link rel="dns-prefetch" href="https://nominatim.openstreetmap.org">
+  <link rel="preconnect" href="https://maps.googleapis.com">
+  <link rel="dns-prefetch" href="https://maps.googleapis.com">
+  <link rel="dns-prefetch" href="https://mt1.google.com">
+
+  <!-- Google Maps JavaScript API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDIWXi7mtIUzX0V47wci-WetyCBle_ll2E"></script>
+
   <!-- Google Authentication Client ID -->
   <meta name="google-signin-client_id" content="62265849009-mushlhju9uianaf4aqq4qtcj11kfiij5.apps.googleusercontent.com">
   <link rel="manifest" href="manifest.json">
@@ -103,8 +120,89 @@
     ]
   }
   </script>
+  <style>
+    #app-splash {
+      position: fixed;
+      inset: 0;
+      background: #0F172A;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999999;
+      transition: opacity 0.35s ease-out;
+    }
+    .splash-logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #2563EB, #DC2626);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 12px 30px rgba(37, 99, 235, 0.3);
+      margin-bottom: 20px;
+      animation: splash-pulse 2s infinite ease-in-out;
+    }
+    .splash-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #F8FAFC;
+      margin: 0 0 6px 0;
+    }
+    .splash-subtitle {
+      font-size: 13px;
+      font-weight: 500;
+      color: #94A3B8;
+      margin: 0 0 28px 0;
+    }
+    .splash-progress-track {
+      width: 140px;
+      height: 3px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      position: relative;
+    }
+    .splash-progress-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 40%;
+      background: linear-gradient(90deg, #2563EB, #DC2626);
+      border-radius: 3px;
+      animation: splash-indeterminate 1.4s infinite ease-in-out;
+    }
+    @keyframes splash-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); box-shadow: 0 16px 36px rgba(220, 38, 38, 0.35); }
+    }
+    @keyframes splash-indeterminate {
+      0% { left: -40%; width: 30%; }
+      50% { left: 40%; width: 50%; }
+      100% { left: 100%; width: 30%; }
+    }
+  </style>
 </head>
 <body style="margin: 0; background-color: #0F172A; color: #F8FAFC; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+
+  <div id="app-splash">
+    <div class="splash-logo">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+        <circle cx="7" cy="17" r="2"/>
+        <path d="M9 17h6"/>
+        <circle cx="17" cy="17" r="2"/>
+      </svg>
+    </div>
+    <h1 class="splash-title">WeFix</h1>
+    <p class="splash-subtitle">Smarter Garage Management</p>
+    <div class="splash-progress-track">
+      <div class="splash-progress-bar"></div>
+    </div>
+  </div>
 
   <!-- Crawlable semantic fallback for Search Engine Bots & Screen Readers -->
   <noscript>
@@ -137,16 +235,33 @@
 
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('firebase-messaging-sw.js')
+      var registerFcmSw = function () {
+        navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' })
           .then(function (registration) {
             console.log('Firebase Messaging ServiceWorker registered with scope: ', registration.scope);
           })
           .catch(function (err) {
             console.log('Firebase Messaging ServiceWorker registration failed: ', err);
           });
-      });
+      };
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        registerFcmSw();
+      } else {
+        window.addEventListener('load', registerFcmSw);
+      }
     }
+
+    window.addEventListener('flutter-first-frame', function () {
+      var splash = document.getElementById('app-splash');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(function () {
+          if (splash && splash.parentNode) {
+            splash.parentNode.removeChild(splash);
+          }
+        }, 350);
+      }
+    });
 
     window.showWebNotification = function(title, body, imageUrl, deepLink) {
       if (!("Notification" in window)) return;

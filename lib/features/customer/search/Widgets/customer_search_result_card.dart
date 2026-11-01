@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
+import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
 import 'package:garage_card/core/shared_widgets/app_whatsapp_button.dart';
 import 'package:garage_card/features/shared/models/garage_search_result_model.dart';
 
@@ -58,18 +59,12 @@ class CustomerSearchResultCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClipRRect(
+                  AppCachedImage(
+                    imageUrl: garage.logoUrl,
+                    width: 52,
+                    height: 52,
                     borderRadius: BorderRadius.circular(12),
-                    child: garage.logoUrl != null && garage.logoUrl!.isNotEmpty
-                        ? Image.network(
-                            garage.logoUrl!,
-                            width: 52,
-                            height: 52,
-                            fit: BoxFit.cover,
-                            errorBuilder: (ctx, err, stack) =>
-                                _buildFallbackLogo(),
-                          )
-                        : _buildFallbackLogo(),
+                    errorWidget: _buildFallbackLogo(),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

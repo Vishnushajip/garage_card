@@ -15,7 +15,6 @@ class GarageProfilePreferencesCard extends StatelessWidget {
     required this.isRoadsideAssistanceAvailable,
     required this.onRoadsideAssistanceChanged,
     required this.onEnablePushNotifications,
-    required this.onSendTestAlert,
   });
 
   final String languageCode;
@@ -25,7 +24,6 @@ class GarageProfilePreferencesCard extends StatelessWidget {
   final bool isRoadsideAssistanceAvailable;
   final ValueChanged<bool> onRoadsideAssistanceChanged;
   final VoidCallback onEnablePushNotifications;
-  final VoidCallback onSendTestAlert;
 
   @override
   Widget build(BuildContext context) {
@@ -123,22 +121,12 @@ class GarageProfilePreferencesCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             side: BorderSide(color: borderColor),
           ),
-          child: Column(
-            children: [
-              PreferenceTile(
-                icon: Icons.notifications_active_rounded,
-                title: 'Enable Push Notifications',
-                subtitle: 'Receive customer bookings, status updates and approval alerts',
-                onTap: onEnablePushNotifications,
-              ),
-              const Divider(height: 1),
-              PreferenceTile(
-                icon: Icons.image_rounded,
-                title: 'Send Test Alert with Image',
-                subtitle: 'Preview a rich merchant alert with estimate breakdown image',
-                onTap: onSendTestAlert,
-              ),
-            ],
+          child: PreferenceTile(
+            icon: Icons.notifications_active_rounded,
+            title: 'Enable Push Notifications',
+            subtitle:
+                'Receive customer bookings, status updates and approval alerts',
+            onTap: onEnablePushNotifications,
           ),
         ),
       ],

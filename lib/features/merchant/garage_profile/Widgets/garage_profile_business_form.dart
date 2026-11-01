@@ -14,6 +14,7 @@ class GarageProfileBusinessForm extends StatelessWidget {
     super.key,
     required this.nameCtrl,
     required this.addressCtrl,
+    this.googleAddress,
     required this.phoneCtrl,
     required this.emailCtrl,
     required this.taxCtrl,
@@ -34,6 +35,7 @@ class GarageProfileBusinessForm extends StatelessWidget {
 
   final TextEditingController nameCtrl;
   final TextEditingController addressCtrl;
+  final String? googleAddress;
   final TextEditingController phoneCtrl;
   final TextEditingController emailCtrl;
   final TextEditingController taxCtrl;
@@ -78,6 +80,7 @@ class GarageProfileBusinessForm extends StatelessWidget {
             AppTextField(
               controller: nameCtrl,
               label: 'Garage Trading Name',
+              hint: 'e.g. Apex Auto Care & Services',
               required: true,
               onChanged: (_) => onChanged(),
               validator: (v) => v == null || v.isEmpty ? 'Required' : null,
@@ -120,7 +123,7 @@ class GarageProfileBusinessForm extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          Icons.map_rounded,
+                          Icons.location_on_rounded,
                           size: 18,
                           color: hasCoordinates
                               ? AppColors.primaryGreen
@@ -133,16 +136,23 @@ class GarageProfileBusinessForm extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Workshop Map Location',
+                              googleAddress != null &&
+                                      googleAddress!.trim().isNotEmpty
+                                  ? googleAddress!.trim()
+                                  : (hasCoordinates
+                                        ? 'GPS Location Pinned'
+                                        : 'Garage GPS & Map Location'),
                               style: AppFonts.labelMedium(
                                 color: primaryTextColor,
                               ).copyWith(fontWeight: FontWeight.bold),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 2),
                             Text(
                               hasCoordinates
-                                  ? 'Coordinates: ${detectedLat!.toStringAsFixed(5)}, ${detectedLng!.toStringAsFixed(5)}'
-                                  : 'Pin your exact location on the map so customers can reach you',
+                                  ? 'Coordinates: ${detectedLat!.toStringAsFixed(4)}, ${detectedLng!.toStringAsFixed(4)}'
+                                  : 'Auto-detect GPS or select on map to store your exact garage coordinates',
                               style: AppFonts.bodySmall(
                                 color: hasCoordinates
                                     ? AppColors.primaryGreen
@@ -223,7 +233,9 @@ class GarageProfileBusinessForm extends StatelessWidget {
                   child: AppTextField(
                     controller: phoneCtrl,
                     label: 'Contact Phone',
+                    hint: '98765 43210',
                     required: true,
+                    keyboardType: TextInputType.phone,
                     onChanged: (_) => onChanged(),
                   ),
                 ),

@@ -129,20 +129,24 @@ mixin GarageDataRepository on GarageRepositoryStore {
   }
 
   Future<void> updateGarageProfile(GarageModel updated) async {
+    final docId = updated.id.trim().isNotEmpty
+        ? updated.id.trim()
+        : 'garage_default';
+    final toSave = updated.id == docId ? updated : updated.copyWith(id: docId);
+
     if (FirebaseConfig.isInitialized) {
-      try {
-        await FirebaseFirestore.instance
-            .collection('garages')
-            .doc(updated.id)
-            .set(updated.toFirestore(), SetOptions(merge: true));
-      } catch (_) {}
+      await FirebaseFirestore.instance
+          .collection('garages')
+          .doc(docId)
+          .set(toSave.toFirestore(), SetOptions(merge: true))
+          .timeout(const Duration(seconds: 10));
     }
 
-    final index = garages.indexWhere((g) => g.id == updated.id);
+    final index = garages.indexWhere((g) => g.id == toSave.id);
     if (index >= 0) {
-      garages[index] = updated;
+      garages[index] = toSave;
     } else {
-      garages.add(updated);
+      garages.add(toSave);
     }
   }
 

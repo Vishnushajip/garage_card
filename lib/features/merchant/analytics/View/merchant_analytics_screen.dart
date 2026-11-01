@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
@@ -59,10 +60,8 @@ class MerchantAnalyticsScreen extends ConsumerWidget {
               final invoices = await repo.getInvoicesForTaxExport(garageId);
               if (invoices.isEmpty) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('No invoices found for tax export.'),
-                    ),
+                  AppNotificationService.warning(
+                    'No invoices found for tax export.',
                   );
                 }
                 return;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
 
 enum WhatsAppButtonVariant { primary, outline, iconOnly }
@@ -37,13 +38,9 @@ class AppWhatsAppButton extends StatelessWidget {
       message: text,
     );
     if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Could not open WhatsApp. Please check if app is installed.',
-          ),
-          duration: Duration(seconds: 2),
-        ),
+      AppNotificationService.warning(
+        'Could not open WhatsApp. Please check if app is installed.',
+        duration: const Duration(seconds: 3),
       );
     }
   }

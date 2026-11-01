@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
 import 'package:garage_card/features/shared/models/chat_message_model.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -58,16 +59,12 @@ class ChatBubble extends StatelessWidget {
             children: [
               if (message.attachmentUrl != null &&
                   message.attachmentUrl!.isNotEmpty) ...[
-                ClipRRect(
+                AppCachedImage(
+                  imageUrl: message.attachmentUrl,
+                  height: 160,
+                  width: double.infinity,
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    message.attachmentUrl!,
-                    height: 160,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const SizedBox.shrink(),
-                  ),
+                  errorWidget: const SizedBox.shrink(),
                 ),
                 const SizedBox(height: 6),
               ],

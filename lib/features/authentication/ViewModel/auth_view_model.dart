@@ -22,11 +22,21 @@ class AuthViewModel extends Notifier<AuthState> {
         if (cachedUid != null &&
             cachedUid.isNotEmpty &&
             state.userProfile == null) {
+          final rawName = prefs.getString('cached_session_name') ?? '';
+          final rawPhone = prefs.getString('cached_session_phone') ?? '';
+          final cleanName = (rawName == 'User' || rawName.contains('Vishnu'))
+              ? ''
+              : rawName;
+          final cleanPhone =
+              (rawPhone.contains('98460') || rawPhone.contains('9876500000'))
+              ? ''
+              : rawPhone;
+
           final cachedProfile = UserProfileModel(
             uid: cachedUid,
             email: prefs.getString('cached_session_email') ?? '',
-            fullName: prefs.getString('cached_session_name') ?? 'User',
-            phoneNumber: prefs.getString('cached_session_phone') ?? '',
+            fullName: cleanName,
+            phoneNumber: cleanPhone,
             role: prefs.getString('cached_session_role') ?? 'customer',
             garageId: prefs.getString('cached_session_garage_id'),
             avatarUrl: prefs.getString('cached_session_avatar'),
@@ -123,19 +133,21 @@ class AuthViewModel extends Notifier<AuthState> {
     final cachedAvatar =
         prefs.getString('cached_session_avatar') ?? user.photoURL;
 
-    final isVishnu =
-        user.email?.toLowerCase() == 'vishnushaji431@gmail.com' ||
-        user.email?.toLowerCase() == '318@gmail.com';
+    final rawName = cachedName ?? (user.displayName ?? '');
+    final cleanName = (rawName == 'User' || rawName.contains('Vishnu'))
+        ? ''
+        : rawName;
+    final rawPhone = cachedPhone ?? (user.phoneNumber ?? '');
+    final cleanPhone =
+        (rawPhone.contains('98460') || rawPhone.contains('9876500000'))
+        ? ''
+        : rawPhone;
 
     final fallbackProfile = UserProfileModel(
       uid: user.uid.isNotEmpty ? user.uid : (cachedUid ?? 'user_fallback'),
       email: user.email ?? (cachedEmail ?? 'user@garagecard.app'),
-      fullName:
-          cachedName ??
-          (user.displayName ?? (isVishnu ? 'Vishnu Shaji' : 'Customer User')),
-      phoneNumber:
-          cachedPhone ??
-          (user.phoneNumber ?? (isVishnu ? '+91 98460 77889' : '')),
+      fullName: cleanName,
+      phoneNumber: cleanPhone,
       role: cachedRole ?? 'customer',
       garageId: cachedGarageId,
       avatarUrl: cachedAvatar,
@@ -180,14 +192,8 @@ class AuthViewModel extends Notifier<AuthState> {
       final uid = credential?.user?.uid ?? email.hashCode.abs().toString();
       UserProfileModel profile;
 
-      final isVishnu =
-          email.toLowerCase() == 'vishnushaji431@gmail.com' ||
-          email.toLowerCase() == '318@gmail.com' ||
-          email.toLowerCase().contains('vishnu');
-      final defaultName = isVishnu
-          ? 'Vishnu Shaji'
-          : email.split('@').first.toUpperCase();
-      final defaultPhone = isVishnu ? '+91 98460 77889' : '+91 98765 00000';
+      final defaultName = email.split('@').first;
+      const defaultPhone = '';
       const String? initialGarageId = null;
 
       try {
@@ -369,18 +375,18 @@ class AuthViewModel extends Notifier<AuthState> {
                 .collection('users')
                 .doc(user.uid)
                 .set(profile.toFirestore(), SetOptions(merge: true))
-                .timeout(const Duration(seconds: 2));
+                .timeout(const Duration(seconds: 5));
           }
         } else {
-          final isVishnu =
-              user.email?.toLowerCase() == 'vishnushaji431@gmail.com' ||
-              user.email?.toLowerCase() == '318@gmail.com';
-          final defaultName =
-              user.displayName ?? (isVishnu ? 'Vishnu Shaji' : 'Google User');
+          final rawName = user.displayName ?? '';
+          final defaultName = (rawName == 'User' || rawName.contains('Vishnu'))
+              ? ''
+              : rawName;
+          final rawPhone = user.phoneNumber ?? '';
           final defaultPhone =
-              (user.phoneNumber != null && user.phoneNumber!.isNotEmpty)
-              ? user.phoneNumber!
-              : (isVishnu ? '+91 98460 77889' : '');
+              (rawPhone.contains('98460') || rawPhone.contains('9876500000'))
+              ? ''
+              : rawPhone;
 
           profile = UserProfileModel(
             uid: user.uid,
@@ -399,15 +405,15 @@ class AuthViewModel extends Notifier<AuthState> {
               .timeout(const Duration(seconds: 2));
         }
       } catch (_) {
-        final isVishnu =
-            user.email?.toLowerCase() == 'vishnushaji431@gmail.com' ||
-            user.email?.toLowerCase() == '318@gmail.com';
-        final defaultName =
-            user.displayName ?? (isVishnu ? 'Vishnu Shaji' : 'Google User');
+        final rawName = user.displayName ?? '';
+        final defaultName = (rawName == 'User' || rawName.contains('Vishnu'))
+            ? ''
+            : rawName;
+        final rawPhone = user.phoneNumber ?? '';
         final defaultPhone =
-            (user.phoneNumber != null && user.phoneNumber!.isNotEmpty)
-            ? user.phoneNumber!
-            : (isVishnu ? '+91 98460 77889' : '');
+            (rawPhone.contains('98460') || rawPhone.contains('9876500000'))
+            ? ''
+            : rawPhone;
 
         profile = UserProfileModel(
           uid: user.uid,

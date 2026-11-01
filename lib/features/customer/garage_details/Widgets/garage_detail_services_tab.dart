@@ -39,148 +39,168 @@ class GarageDetailServicesTab extends ConsumerWidget {
 
     return AppRefresh(
       onRefresh: () => vm.loadGarage(garageId),
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryRed,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        'OFFERS & PACKAGES',
-                        style: AppFonts.labelSmall(color: Colors.white)
-                            .copyWith(fontWeight: FontWeight.bold),
-                      ),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    const Spacer(),
-                    const Icon(
-                      Icons.verified_rounded,
-                      color: AppColors.accentAmber,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Genuine Workshop Services',
-                      style: AppFonts.labelSmall(color: Colors.white70),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Explore transparent service packages with fixed charges, comprehensive checkups, and genuine spares.',
-                  style: AppFonts.bodySmall(color: Colors.white70),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children:
-                  [
-                    {'id': 'All', 'label': 'All Vehicles'},
-                    {'id': 'car', 'label': 'Cars'},
-                    {'id': 'motorcycle', 'label': 'Motorcycles'},
-                    {'id': 'scooter', 'label': 'Scooters'},
-                    {'id': 'electric_scooter', 'label': 'EV Scooters'},
-                    {'id': 'electric_motorcycle', 'label': 'EV Motorcycles'},
-                  ].map((v) {
-                    final id = v['id']!;
-                    final label = v['label']!;
-                    final isSelected = state.selectedVehicleType == id;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        label: Text(label),
-                        selected: isSelected,
-                        selectedColor: AppColors.accentBlue.withValues(
-                          alpha: 0.15,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryRed,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'OFFERS & PACKAGES',
+                                style: AppFonts.labelSmall(color: Colors.white)
+                                    .copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const Spacer(),
+                            const Icon(
+                              Icons.verified_rounded,
+                              color: AppColors.accentAmber,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Genuine Workshop Services',
+                              style: AppFonts.labelSmall(color: Colors.white70),
+                            ),
+                          ],
                         ),
-                        checkmarkColor: AppColors.accentBlue,
-                        labelStyle: TextStyle(
-                          color: isSelected
-                              ? AppColors.accentBlue
-                              : primaryText,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                        const SizedBox(height: 8),
+                        Text(
+                          'Explore transparent service packages with fixed charges, comprehensive checkups, and genuine spares.',
+                          style: AppFonts.bodySmall(color: Colors.white70),
                         ),
-                        onSelected: (_) => vm.selectVehicleType(id),
-                      ),
-                    );
-                  }).toList(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: state.availableCategories.map((cat) {
-                final isSelected = state.selectedCategory == cat;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(cat),
-                    selected: isSelected,
-                    selectedColor: AppColors.primaryRed,
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : primaryText,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+                      ],
                     ),
-                    onSelected: (_) => vm.selectCategory(cat),
                   ),
-                );
-              }).toList(),
+                  const SizedBox(height: 16),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children:
+                          [
+                            {'id': 'All', 'label': 'All Vehicles'},
+                            {'id': 'car', 'label': 'Cars'},
+                            {'id': 'motorcycle', 'label': 'Motorcycles'},
+                            {'id': 'scooter', 'label': 'Scooters'},
+                            {'id': 'electric_scooter', 'label': 'EV Scooters'},
+                            {
+                              'id': 'electric_motorcycle',
+                              'label': 'EV Motorcycles',
+                            },
+                          ].map((v) {
+                            final id = v['id']!;
+                            final label = v['label']!;
+                            final isSelected = state.selectedVehicleType == id;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: FilterChip(
+                                label: Text(label),
+                                selected: isSelected,
+                                selectedColor: AppColors.accentBlue.withValues(
+                                  alpha: 0.15,
+                                ),
+                                checkmarkColor: AppColors.accentBlue,
+                                labelStyle: TextStyle(
+                                  color: isSelected
+                                      ? AppColors.accentBlue
+                                      : primaryText,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                                onSelected: (_) => vm.selectVehicleType(id),
+                              ),
+                            );
+                          }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: state.availableCategories.map((cat) {
+                        final isSelected = state.selectedCategory == cat;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: ChoiceChip(
+                            label: Text(cat),
+                            selected: isSelected,
+                            selectedColor: AppColors.primaryRed,
+                            labelStyle: TextStyle(
+                              color: isSelected ? Colors.white : primaryText,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                            onSelected: (_) => vm.selectCategory(cat),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (state.filteredServices.isEmpty)
+                    const AppEmptyState(
+                      title: 'No Services Available',
+                      message: 'This garage has not published services in this category yet.',
+                      icon: Icons.miscellaneous_services_rounded,
+                    ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 16),
-          if (state.filteredServices.isEmpty)
-            const AppEmptyState(
-              title: 'No Services Available',
-              message: 'This garage has not published services in this category yet.',
-              icon: Icons.miscellaneous_services_rounded,
-            )
-          else
-            ...state.filteredServices.map((service) {
-              final evaluated = SmartPricingEngine.evaluate(
-                service: service,
-                vehicle: state.selectedVehicle,
-                vehicleType: state.selectedVehicleType != 'All'
-                    ? state.selectedVehicleType
-                    : null,
-                currencyCode: garage.currencyCode,
-              );
+          if (state.filteredServices.isNotEmpty)
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverList.separated(
+                itemCount: state.filteredServices.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 14),
+                itemBuilder: (context, index) {
+                  final service = state.filteredServices[index];
+                  final evaluated = SmartPricingEngine.evaluate(
+                    service: service,
+                    vehicle: state.selectedVehicle,
+                    vehicleType: state.selectedVehicleType != 'All'
+                        ? state.selectedVehicleType
+                        : null,
+                    currencyCode: garage.currencyCode,
+                  );
 
-              return GarageDetailServiceCard(
-                service: service,
-                evaluated: evaluated,
-                garage: garage,
-              );
-            }),
-          const SizedBox(height: 80),
+                  return GarageDetailServiceCard(
+                    service: service,
+                    evaluated: evaluated,
+                    garage: garage,
+                  );
+                },
+              ),
+            ),
+          const SliverToBoxAdapter(child: SizedBox(height: 80)),
         ],
       ),
     );

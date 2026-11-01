@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
 import 'package:garage_card/features/shared/models/notification_model.dart';
 
 class NotificationTile extends StatelessWidget {
@@ -52,16 +53,12 @@ class NotificationTile extends StatelessWidget {
                 onChanged: onSelectChanged,
               )
             : hasImage
-            ? ClipRRect(
+            ? AppCachedImage(
+                imageUrl: notification.imageUrl,
+                width: 48,
+                height: 48,
                 borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  notification.imageUrl!,
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      _buildFallbackIcon(isDark, secondaryTextColor),
-                ),
+                errorWidget: _buildFallbackIcon(isDark, secondaryTextColor),
               )
             : _buildFallbackIcon(isDark, secondaryTextColor),
         title: Text(

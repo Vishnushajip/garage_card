@@ -482,7 +482,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(ListView), findsOneWidget);
+        expect(find.byType(AccountSwitcherListView), findsOneWidget);
         expect(find.text('Test User'), findsOneWidget);
         expect(find.text('Merchant Workspace'), findsOneWidget);
         expect(find.text('Active'), findsOneWidget);

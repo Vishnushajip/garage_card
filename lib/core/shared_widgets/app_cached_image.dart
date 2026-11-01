@@ -15,6 +15,7 @@ class AppCachedImage extends StatelessWidget {
     this.fallbackIcon = Icons.image_not_supported_rounded,
     this.memCacheWidth,
     this.memCacheHeight,
+    this.isCircle = false,
   });
 
   final String? imageUrl;
@@ -27,15 +28,22 @@ class AppCachedImage extends StatelessWidget {
   final IconData fallbackIcon;
   final int? memCacheWidth;
   final int? memCacheHeight;
+  final bool isCircle;
 
   Widget _buildFallback(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fallbackShape = isCircle ? BoxShape.circle : BoxShape.rectangle;
+    final fallbackRadius = isCircle
+        ? null
+        : (borderRadius ?? BorderRadius.circular(12));
+
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-        borderRadius: borderRadius ?? BorderRadius.circular(12),
+        shape: fallbackShape,
+        borderRadius: fallbackRadius,
         border: Border.all(
           color: isDark ? AppColors.borderDark : AppColors.borderLight,
         ),
@@ -54,28 +62,34 @@ class AppCachedImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveRadius = borderRadius ?? BorderRadius.circular(12);
-
     if (imageUrl == null || imageUrl!.trim().isEmpty) {
       return _buildFallback(context);
     }
 
     final url = imageUrl!.trim();
+    final resolvedCacheWidth =
+        memCacheWidth ??
+        (width != null && width! > 0 ? (width! * 2.5).round() : null);
+    final resolvedCacheHeight =
+        memCacheHeight ??
+        (height != null && height! > 0 ? (height! * 2.5).round() : null);
 
     final imageWidget = Image.network(
       url,
       width: width,
       height: height,
       fit: fit,
-      cacheWidth: memCacheWidth,
-      cacheHeight: memCacheHeight,
+      cacheWidth: resolvedCacheWidth,
+      cacheHeight: resolvedCacheHeight,
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return placeholder ??
             SizedBox(
               width: width,
               height: height,
-              child: AppSkeletonLoader.card(height: 100),
+              child: isCircle
+                  ? AppSkeletonLoader.circle(size: width ?? height ?? 44)
+                  : AppSkeletonLoader.card(height: height ?? 100),
             );
       },
       errorBuilder: (context, error, stackTrace) {
@@ -83,6 +97,11 @@ class AppCachedImage extends StatelessWidget {
       },
     );
 
+    if (isCircle) {
+      return ClipOval(child: imageWidget);
+    }
+
+    final effectiveRadius = borderRadius ?? BorderRadius.circular(12);
     return ClipRRect(borderRadius: effectiveRadius, child: imageWidget);
   }
 }

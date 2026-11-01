@@ -8,9 +8,9 @@ class AppResponsiveLayout extends StatelessWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
   });
 
-  static const double kMaxDesktopViewportWidth = 1800;
-  static const double kMaxProjectWidth = 920;
-  static const double kMaxFormWidth = 760;
+  static const double kMaxDesktopViewportWidth = 1500;
+  static const double kMaxProjectWidth = 960;
+  static const double kMaxFormWidth = 840;
   static const double kMaxContentWidth = 960;
   static const double kMaxCompactWidth = 600;
 

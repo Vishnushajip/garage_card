@@ -5,6 +5,7 @@ import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/core/shared_widgets/app_whatsapp_button.dart';
 import 'package:garage_card/features/shared/models/garage_model.dart';
 import 'package:garage_card/features/shared/models/working_hours_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GarageDetailAboutTab extends StatelessWidget {
   const GarageDetailAboutTab({super.key, required this.garage});
@@ -115,13 +116,39 @@ class GarageDetailAboutTab extends StatelessWidget {
             color: AppColors.primaryRed,
           ),
           title: Text(
-            garage.address,
+            garage.address.isNotEmpty
+                ? garage.address
+                : (garage.googleAddress ?? 'Workshop Location'),
             style: AppFonts.bodyMedium(color: primaryText),
           ),
           subtitle: Text(
-            'Physical address',
+            garage.googleAddress != null &&
+                    garage.googleAddress!.isNotEmpty &&
+                    garage.googleAddress != garage.address
+                ? garage.googleAddress!
+                : 'Physical address',
             style: AppFonts.bodySmall(color: secondaryText),
           ),
+          trailing: (garage.latitude != 0.0 && garage.longitude != 0.0)
+              ? IconButton(
+                  icon: const Icon(
+                    Icons.directions_rounded,
+                    color: AppColors.primaryRed,
+                  ),
+                  tooltip: 'Get Directions',
+                  onPressed: () async {
+                    final url =
+                        garage.googleMapsUrl != null &&
+                            garage.googleMapsUrl!.isNotEmpty
+                        ? garage.googleMapsUrl!
+                        : 'https://www.google.com/maps/search/?api=1&query=${garage.latitude},${garage.longitude}';
+                    final uri = Uri.parse(url);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri);
+                    }
+                  },
+                )
+              : null,
         ),
         ListTile(
           contentPadding: EdgeInsets.zero,

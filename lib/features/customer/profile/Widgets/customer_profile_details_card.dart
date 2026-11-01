@@ -103,7 +103,7 @@ class CustomerProfileDetailsCard extends StatelessWidget {
               const SizedBox(height: 14),
               AppTextField(
                 label: context.tr('phoneNumberForCalling'),
-                hint: '+91 98765 43210',
+                hint: '98765 43210',
                 controller: phoneCtrl,
                 keyboardType: TextInputType.phone,
                 prefixIcon: const Icon(Icons.phone_outlined, size: 20),
@@ -158,7 +158,7 @@ class CustomerProfileDetailsCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               AppTextField(
-                hint: '+91 98765 43210',
+                hint: '98765 43210',
                 helperText: context.tr('whatsappHelperText'),
                 controller: whatsappCtrl,
                 keyboardType: TextInputType.phone,

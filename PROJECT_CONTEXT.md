@@ -338,6 +338,14 @@ The merchant address and workshop positioning system uses OpenStreetMap and cros
 - **Google Maps Share Link Tool:** Accepts external Google Maps links (e.g. `maps.app.goo.gl`, `@lat,lng`, `q=lat,lng`) inside the map picker to jump to exact coordinates without requiring paid Google Maps APIs.
 - **Reverse Geocoding:** Reverse-geocodes pinned coordinates into structured street and city addresses via OpenStreetMap Nominatim.
 
+### 5.14 Centralized Custom Feedback & Notification Overlay System (`AppNotificationService`)
+Default Flutter `ScaffoldMessenger` and `SnackBar` widgets are strictly prohibited across the entire project. All user feedback is mediated by a centralized floating overlay system:
+- **Architecture (`lib/core/notifications/`):**
+  - `AppNotificationModel`: Immutable model representing notifications with variant types (`success`, `error`, `warning`, `info`, `loading`), optional action callbacks, progress values (0.0 to 1.0), and decay durations.
+  - `AppNotificationToast`: Luxury floating card widget featuring smooth entrance/exit slide-and-fade animations, tactile swipe-up/tap-to-dismiss interactions, rounded 16px geometry, subtle status-tinted borders and drop shadows, and linear progress indicators.
+  - `AppNotificationService`: Riverpod Notifier (`appNotificationListProvider`) with a global static API (`success`, `error`, `warning`, `info`, `loading`, `update`, `dismiss`, `dismissAll`) that is completely safe to call without a `BuildContext` across async gaps.
+  - `AppNotificationHost`: Global overlay host positioned at the root of `GarageCardApp` in `lib/app.dart`. Automatically handles responsive placement (top-center on mobile/tablet, top-right bounded to 440px on desktop/web) and maintains a clean FIFO queue capped at 3 active toasts.
+
 ---
 
 ## 6. Critical Business Rules & Invariants

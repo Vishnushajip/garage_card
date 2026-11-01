@@ -5,6 +5,7 @@ import 'package:garage_card/core/branding/app_branding.dart';
 import 'package:garage_card/core/branding/app_logo.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -77,6 +78,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authViewModelProvider, (prev, next) {
+      if (next.isAuthenticated && !(prev?.isAuthenticated ?? false)) {
+        AppNotificationService.success('Login successful! Welcome to WeFix.');
+      } else if (next.errorMessage != null &&
+          next.errorMessage != prev?.errorMessage) {
+        AppNotificationService.error(next.errorMessage!);
+      }
+    });
+
     final state = ref.watch(authViewModelProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark

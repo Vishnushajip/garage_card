@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/localization/app_localizations.dart';
-import 'package:garage_card/core/notifications/notification_event_matrix.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/notifications/push_notification_service.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/core/services/location_service.dart';
@@ -15,6 +15,7 @@ import 'package:garage_card/core/shared_widgets/app_map_location_picker.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
+import 'package:garage_card/features/merchant/dashboard/ViewModel/merchant_dashboard_view_model.dart';
 import 'package:garage_card/features/shared/models/user_profile_model.dart';
 import 'package:garage_card/features/shared/models/working_hours_model.dart';
 import 'package:go_router/go_router.dart';
@@ -48,6 +49,7 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
   bool _hasInitializedFields = false;
   double? _detectedLat;
   double? _detectedLng;
+  String? _googleAddress;
   bool _isLocatingGps = false;
 
   @override
@@ -72,6 +74,43 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
     super.dispose();
   }
 
+  String _stripCountryCode(String phone) {
+    var cleaned = phone.trim();
+    if (cleaned.startsWith('+91')) {
+      cleaned = cleaned.substring(3).trim();
+    } else if (cleaned.startsWith('+')) {
+      final match = RegExp(r'^\+\d{1,3}\s*').firstMatch(cleaned);
+      if (match != null) {
+        cleaned = cleaned.substring(match.end).trim();
+      }
+    }
+    return cleaned;
+  }
+
+  String _sanitizePhoneForField(String phone) {
+    final stripped = _stripCountryCode(phone);
+    final digits = stripped.replaceAll(RegExp(r'\D'), '');
+    if (digits == '9846077889' ||
+        digits == '9876500000' ||
+        digits == '9846012345') {
+      return '';
+    }
+    return stripped;
+  }
+
+  String _sanitizeNameForField(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty ||
+        trimmed.contains('Vishnu') ||
+        trimmed == 'Garage Workshop' ||
+        trimmed == 'My Garage' ||
+        trimmed == 'Garage' ||
+        trimmed.endsWith('\'s Garage')) {
+      return '';
+    }
+    return trimmed;
+  }
+
   void _populateFieldsIfNeeded(
     GarageProfileState state,
     UserProfileModel? user,
@@ -79,10 +118,11 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
     if (_hasInitializedFields) return;
     final garage = state.garage;
     if (garage != null) {
-      _nameCtrl.text = garage.name;
-      _phoneCtrl.text = garage.phone;
+      _nameCtrl.text = _sanitizeNameForField(garage.name);
+      _phoneCtrl.text = _sanitizePhoneForField(garage.phone);
       _emailCtrl.text = garage.email;
       _addressCtrl.text = garage.address;
+      _googleAddress = garage.googleAddress;
       _detectedLat = garage.latitude;
       _detectedLng = garage.longitude;
       _taxCtrl.text = garage.taxNumber;
@@ -96,10 +136,8 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
       }
       _hasInitializedFields = true;
     } else if (user != null) {
-      _nameCtrl.text = user.fullName.isNotEmpty
-          ? '${user.fullName}\'s Garage'
-          : 'My Garage';
-      _phoneCtrl.text = user.phoneNumber;
+      _nameCtrl.text = '';
+      _phoneCtrl.text = _sanitizePhoneForField(user.phoneNumber);
       _emailCtrl.text = user.email;
       _hasInitializedFields = true;
     }
@@ -110,7 +148,7 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
       context,
       initialLatitude: _detectedLat,
       initialLongitude: _detectedLng,
-      initialAddress: _addressCtrl.text.trim(),
+      initialAddress: _googleAddress ?? _addressCtrl.text.trim(),
     );
 
     if (result != null && mounted) {
@@ -118,16 +156,13 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
         _detectedLat = result.latitude;
         _detectedLng = result.longitude;
         if (result.address.isNotEmpty) {
-          _addressCtrl.text = result.address;
+          _googleAddress = result.address;
         }
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Workshop location pinned: ${result.latitude.toStringAsFixed(4)}, ${result.longitude.toStringAsFixed(4)}',
-          ),
-          backgroundColor: AppColors.success,
-        ),
+      AppNotificationService.success(
+        result.address.isNotEmpty
+            ? 'Workshop location pinned: ${result.address}'
+            : 'Workshop location pinned (${result.latitude.toStringAsFixed(4)}, ${result.longitude.toStringAsFixed(4)})',
       );
     }
   }
@@ -138,13 +173,8 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
       final pos = await LocationService.instance.getCurrentPosition();
       if (pos == null) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Could not detect current location. Please grant location permissions in your browser or device settings.',
-              ),
-              backgroundColor: AppColors.error,
-            ),
+          AppNotificationService.error(
+            'Could not detect current location. Please grant location permissions in your browser or device settings.',
           );
         }
         return;
@@ -162,28 +192,21 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
           _detectedLat = lat;
           _detectedLng = lng;
           if (details != null && details.shortAddress.isNotEmpty) {
-            if (_addressCtrl.text.trim().isEmpty) {
-              _addressCtrl.text = details.shortAddress;
-            }
+            _googleAddress = details.shortAddress;
+          } else {
+            _googleAddress =
+                'Lat: ${lat.toStringAsFixed(4)}, Lng: ${lng.toStringAsFixed(4)}';
           }
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'GPS location detected: ${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}',
-            ),
-            backgroundColor: AppColors.success,
-          ),
+        AppNotificationService.success(
+          details != null && details.shortAddress.isNotEmpty
+              ? 'GPS Location detected: ${details.shortAddress}'
+              : 'GPS coordinates detected: ${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}',
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to detect GPS location: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        AppNotificationService.error('Failed to detect GPS location: $e');
       }
     } finally {
       if (mounted) {
@@ -213,9 +236,12 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
         .updateProfile(
           name: _nameCtrl.text.trim(),
           address: _addressCtrl.text.trim(),
-          googleAddress: _addressCtrl.text.trim().isNotEmpty
-              ? _addressCtrl.text.trim()
-              : null,
+          googleAddress:
+              _googleAddress != null && _googleAddress!.trim().isNotEmpty
+              ? _googleAddress!.trim()
+              : (_detectedLat != null && _detectedLng != null
+                    ? 'Lat: ${_detectedLat!.toStringAsFixed(4)}, Lng: ${_detectedLng!.toStringAsFixed(4)}'
+                    : null),
           googleMapsUrl: _detectedLat != null && _detectedLng != null
               ? 'https://www.google.com/maps/search/?api=1&query=$_detectedLat,$_detectedLng'
               : null,
@@ -229,13 +255,34 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
           dailyWorkingHours: _workingSchedule.map((d) => d.toMap()).toList(),
         )
         .then((success) {
-          if (success && mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Garage profile updated successfully!'),
-                backgroundColor: AppColors.success,
-              ),
-            );
+          if (mounted) {
+            if (success) {
+              AppNotificationService.success(
+                'Garage profile updated successfully!',
+              );
+              ref.read(merchantDashboardViewModelProvider.notifier).refresh();
+              Future.delayed(const Duration(milliseconds: 600), () {
+                if (mounted) {
+                  if (context.canPop()) {
+                    context.pop(true);
+                  } else {
+                    context.go(RoutePaths.merchant);
+                  }
+                }
+              });
+            } else {
+              final err = ref.read(garageProfileViewModelProvider).errorMessage;
+              AppNotificationService.error(
+                err != null && err.isNotEmpty
+                    ? 'Unable to save: $err'
+                    : 'Unable to save garage details. Please try again.',
+              );
+            }
+          }
+        })
+        .catchError((e) {
+          if (mounted) {
+            AppNotificationService.error('Unable to save: $e');
           }
         });
   }
@@ -265,18 +312,20 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
       );
     }
 
+    final sanitizedGarageName = _sanitizeNameForField(state.garage?.name ?? '');
     final displayName = _nameCtrl.text.isNotEmpty
         ? _nameCtrl.text
-        : (state.garage?.name ??
-              (user?.fullName.isNotEmpty == true
-                  ? '${user!.fullName}\'s Garage'
-                  : 'Garage Workspace'));
+        : (sanitizedGarageName.isNotEmpty
+              ? sanitizedGarageName
+              : 'Garage Workspace');
     final displayEmail = _emailCtrl.text.isNotEmpty
         ? _emailCtrl.text
         : (state.garage?.email ?? user?.email ?? '');
     final displayPhone = _phoneCtrl.text.isNotEmpty
         ? _phoneCtrl.text
-        : (state.garage?.phone ?? user?.phoneNumber ?? '');
+        : _sanitizePhoneForField(
+            state.garage?.phone ?? user?.phoneNumber ?? '',
+          );
     final completionPct = _calculateCompletionPercentage();
 
     return Scaffold(
@@ -302,7 +351,7 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                   const SizedBox(height: 24),
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      final isWide = constraints.maxWidth >= 840;
+                      final isWide = constraints.maxWidth >= 740;
 
                       final businessSection = Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -315,6 +364,7 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                           GarageProfileBusinessForm(
                             nameCtrl: _nameCtrl,
                             addressCtrl: _addressCtrl,
+                            googleAddress: _googleAddress,
                             phoneCtrl: _phoneCtrl,
                             emailCtrl: _emailCtrl,
                             taxCtrl: _taxCtrl,
@@ -375,43 +425,10 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                               final settings = await service
                                   .requestPermission();
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      settings != null
-                                          ? 'Notification permissions updated.'
-                                          : 'Push notification service initialized.',
-                                    ),
-                                    backgroundColor: AppColors.accentBlue,
-                                  ),
-                                );
-                              }
-                            },
-                            onSendTestAlert: () async {
-                              final service = ref.read(
-                                pushNotificationServiceProvider,
-                              );
-                              await service.triggerEventNotification(
-                                eventType:
-                                    NotificationEventType.estimateApproved,
-                                recipientUid: user?.uid ?? 'user_merchant_1',
-                                entityId: 'est_m_1',
-                                qualifier:
-                                    'test_${DateTime.now().millisecondsSinceEpoch}',
-                                title: 'Test: Estimate Approved by Customer',
-                                body: 'Customer approved estimate EST-2024-001. Ready to begin work.',
-                                customImageUrl: NotificationEventMatrix
-                                    .fallbackEstimateImage,
-                                customDeepLink: '/merchant/estimates',
-                              );
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Merchant test alert dispatched with image!',
-                                    ),
-                                    backgroundColor: AppColors.success,
-                                  ),
+                                AppNotificationService.info(
+                                  settings != null
+                                      ? 'Notification permissions updated.'
+                                      : 'Push notification service initialized.',
                                 );
                               }
                             },
