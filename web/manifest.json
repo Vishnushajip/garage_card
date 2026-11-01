@@ -1,11 +1,11 @@
 {
-    "name": "WeFix | Vehicle Service Platform",
-    "short_name": "WeFix",
+    "name": "V-Fix | Garage Management & Vehicle Service Platform",
+    "short_name": "V-Fix",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#FFFFFF",
+    "background_color": "#0F172A",
     "theme_color": "#DC2626",
-    "description": "WeFix is a modern vehicle service and garage management platform for motorcycles, scooters, cars, and all vehicle types.",
+    "description": "V-Fix – Smarter Garage Management. Better Vehicle Care. Modern vehicle servicing and workshop management platform.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

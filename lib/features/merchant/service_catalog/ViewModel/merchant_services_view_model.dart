@@ -19,7 +19,7 @@ class MerchantServicesViewModel extends Notifier<MerchantServicesState> {
     final user = ref.read(authViewModelProvider).userProfile;
     return user?.garageId != null && user!.garageId!.isNotEmpty
         ? user.garageId!
-        : 'garage_demo_1';
+        : '';
   }
 
   Future<void> loadServices() async {

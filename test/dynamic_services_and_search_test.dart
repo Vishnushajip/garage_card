@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:garage_card/features/customer/search/View/customer_search_screen.dart';
 import 'package:garage_card/features/merchant/service_catalog/Widgets/service_edit_dialog.dart';
+import 'package:garage_card/features/shared/models/garage_model.dart';
 import 'package:garage_card/features/shared/models/garage_service_model.dart';
 import 'package:garage_card/features/shared/pricing/smart_pricing_engine.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
@@ -136,8 +137,103 @@ void main() {
     () {
       late GarageRepository repo;
 
-      setUp(() {
+      setUp(() async {
         repo = GarageRepository();
+        final g1 = GarageModel(
+          id: 'garage_test_1',
+          name: 'City Speed Auto Care',
+          address: 'Kochi, Kerala',
+          latitude: 9.9674,
+          longitude: 76.2891,
+          city: 'Kochi',
+          phone: '+91 98460 11111',
+          email: 'city@test.com',
+          ownerUid: 'owner_1',
+          rating: 4.8,
+          reviewCount: 20,
+          currencyCode: 'INR',
+        );
+        final g2 = GarageModel(
+          id: 'garage_test_2',
+          name: 'Express Garage Aluva',
+          address: 'Aluva, Kerala',
+          latitude: 10.1076,
+          longitude: 76.3516,
+          city: 'Aluva',
+          phone: '+91 98460 22222',
+          email: 'express@test.com',
+          ownerUid: 'owner_2',
+          rating: 4.5,
+          reviewCount: 15,
+          currencyCode: 'INR',
+        );
+        await repo.updateGarageProfile(g1);
+        await repo.updateGarageProfile(g2);
+
+        await repo.saveGarageService(
+          'garage_test_1',
+          GarageServiceModel(
+            id: 'srv_1',
+            garageId: 'garage_test_1',
+            name: 'Foam Wash & Detailing',
+            description: 'Complete water wash and detailing',
+            category: 'periodic',
+            pricingType: 'vehicle_specific',
+            vehiclePricing: [
+              VehiclePricingTier(
+                vehicleType: 'motorcycle',
+                pricingType: 'fixed',
+                fixedPrice: 350.0,
+              ),
+              VehiclePricingTier(
+                vehicleType: 'car',
+                pricingType: 'fixed',
+                fixedPrice: 750.0,
+              ),
+            ],
+            isActive: true,
+          ),
+        );
+
+        await repo.saveGarageService(
+          'garage_test_1',
+          GarageServiceModel(
+            id: 'srv_2',
+            garageId: 'garage_test_1',
+            name: 'Synthetic Engine Oil Change',
+            description: 'Oil replacement and filter swap',
+            category: 'oil_change',
+            pricingType: 'vehicle_specific',
+            vehiclePricing: [
+              VehiclePricingTier(
+                vehicleType: 'scooter',
+                pricingType: 'fixed',
+                fixedPrice: 450.0,
+              ),
+              VehiclePricingTier(
+                vehicleType: 'car',
+                pricingType: 'fixed',
+                fixedPrice: 2800.0,
+              ),
+            ],
+            isActive: true,
+          ),
+        );
+
+        await repo.saveGarageService(
+          'garage_test_2',
+          GarageServiceModel(
+            id: 'srv_3',
+            garageId: 'garage_test_2',
+            name: 'Quick Wash Express',
+            description: 'High pressure exterior wash',
+            category: 'wash',
+            pricingType: 'fixed',
+            fixedPrice: 300.0,
+            supportedVehicleTypes: ['car', 'motorcycle', 'scooter'],
+            isActive: true,
+          ),
+        );
       });
 
       test(

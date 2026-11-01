@@ -4,6 +4,7 @@ import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_dialog.dart';
@@ -31,10 +32,10 @@ class CustomerEstimatesScreen extends ConsumerWidget {
   ) async {
     final confirmed = await AppDialog.confirm(
       context,
-      title: 'Approve Estimate?',
+      title: '${context.tr('approve')} ${context.tr('estimates')}?',
       message:
           'You are approving estimate ${estimate.estimateNumber} for ${CurrencyFormatter.format(estimate.totalAmount)}. The garage will proceed with repair works.',
-      confirmLabel: 'Yes, Approve Estimate',
+      confirmLabel: context.tr('approve'),
     );
 
     if (confirmed == true) {
@@ -82,10 +83,10 @@ class CustomerEstimatesScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogCtx),
-              child: const Text('Cancel'),
+              child: Text(context.tr('cancel')),
             ),
             AppButton(
-              label: 'Decline',
+              label: context.tr('reject'),
               variant: AppButtonVariant.danger,
               onPressed: () {
                 final reason = reasonCtrl.text.trim();
@@ -193,20 +194,19 @@ class CustomerEstimatesScreen extends ConsumerWidget {
                                   size: 20,
                                 ),
                                 onPressed: () {
-                                  final dummyGarage = GarageModel(
+                                  final fallbackGarage = GarageModel(
                                     id: estimate.garageId,
-                                    name: 'Apex Precision Automotive',
-                                    address: 'Near MG Road, Ravipuram, Kochi, Kerala',
-                                    phone: '+91 98460 12345',
-                                    email: 'service@apexprecision.com',
-                                    ownerUid: 'merchant_1',
+                                    name: 'Authorized Service Center',
+                                    address: 'Service Center Address',
+                                    phone: '',
+                                    email: '',
+                                    ownerUid: '',
                                   );
                                   PdfGeneratorService.printOrShareEstimate(
-                                    garage: dummyGarage,
+                                    garage: fallbackGarage,
                                     estimate: estimate,
-                                    customerName: 'Arjun Menon',
-                                    vehicleDisplay:
-                                        '2022 Hyundai Creta (KL 07 CD 4488)',
+                                    customerName: 'Customer',
+                                    vehicleDisplay: 'Vehicle',
                                   );
                                 },
                               ),

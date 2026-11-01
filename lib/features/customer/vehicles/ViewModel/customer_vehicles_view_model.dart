@@ -59,7 +59,7 @@ class CustomerVehiclesViewModel extends Notifier<CustomerVehiclesState> {
       final uid = _currentCustomerId ?? '';
       final veh = VehicleModel(
         id: '',
-        garageId: 'garage_demo_1',
+        garageId: '',
         customerId: uid,
         make: make,
         model: model,

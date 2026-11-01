@@ -142,20 +142,19 @@ class MerchantEstimatesScreen extends ConsumerWidget {
                                   size: 20,
                                 ),
                                 onPressed: () {
-                                  final dummyGarage = GarageModel(
+                                  final fallbackGarage = GarageModel(
                                     id: estimate.garageId,
-                                    name: 'Apex Precision Automotive',
-                                    address: 'Near MG Road, Ravipuram, Kochi, Kerala',
-                                    phone: '+91 98460 12345',
-                                    email: 'service@apexprecision.com',
-                                    ownerUid: 'merchant_1',
+                                    name: 'Authorized Service Center',
+                                    address: 'Service Center Address',
+                                    phone: '',
+                                    email: '',
+                                    ownerUid: '',
                                   );
                                   PdfGeneratorService.printOrShareEstimate(
-                                    garage: dummyGarage,
+                                    garage: fallbackGarage,
                                     estimate: estimate,
-                                    customerName: 'Arjun Menon',
-                                    vehicleDisplay:
-                                        '2022 Hyundai Creta (KL 07 CD 4488)',
+                                    customerName: 'Customer',
+                                    vehicleDisplay: 'Vehicle',
                                   );
                                 },
                               ),
@@ -170,9 +169,9 @@ class MerchantEstimatesScreen extends ConsumerWidget {
                                 onPressed: () {
                                   final msg =
                                       WhatsAppShareService.composeEstimateMessage(
-                                        customerName: 'Arjun Menon',
-                                        garageName: 'Apex Precision Automotive',
-                                        vehicleDisplay: '2022 Hyundai Creta',
+                                        customerName: 'Customer',
+                                        garageName: 'Authorized Service Center',
+                                        vehicleDisplay: 'Vehicle',
                                         estimateNumber: estimate.estimateNumber,
                                         totalAmount: CurrencyFormatter.format(
                                           estimate.totalAmount,

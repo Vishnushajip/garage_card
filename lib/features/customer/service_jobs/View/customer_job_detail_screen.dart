@@ -522,7 +522,10 @@ class _CustomerJobDetailScreenState
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: StatusTimelineView(history: state.history),
+                    child: StatusTimelineView(
+                      history: state.history,
+                      showCustomerOnly: true,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),

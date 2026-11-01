@@ -15,7 +15,13 @@ class VehicleModel {
     this.fuelType = 'Petrol',
     this.color = '',
     this.lastServiceDate,
+    this.lastServiceType,
     this.nextServiceDue,
+    this.nextServiceOdometer,
+    this.maintenanceIntervalMonths,
+    this.maintenanceIntervalKm,
+    this.lastServicedGarageId,
+    this.lastServiceJobId,
     this.createdAt,
   });
 
@@ -34,10 +40,54 @@ class VehicleModel {
   final String fuelType;
   final String color;
   final DateTime? lastServiceDate;
+  final String? lastServiceType;
   final DateTime? nextServiceDue;
+  final int? nextServiceOdometer;
+  final int? maintenanceIntervalMonths;
+  final int? maintenanceIntervalKm;
+  final String? lastServicedGarageId;
+  final String? lastServiceJobId;
   final DateTime? createdAt;
 
   String get displayName => '$year $make $model ($licensePlate)';
+
+  bool get hasMaintenanceSchedule =>
+      nextServiceDue != null || nextServiceOdometer != null;
+
+  String get maintenanceStatus {
+    if (!hasMaintenanceSchedule) {
+      return 'not_available';
+    }
+    final now = DateTime.now();
+    final daysRemaining = nextServiceDue?.difference(now).inDays;
+    final kmRemaining = nextServiceOdometer == null
+        ? null
+        : nextServiceOdometer! - currentOdometer;
+
+    if ((daysRemaining != null && daysRemaining < 0) ||
+        (kmRemaining != null && kmRemaining < 0)) {
+      return 'overdue';
+    }
+    if ((daysRemaining != null && daysRemaining <= 3) ||
+        (kmRemaining != null && kmRemaining <= 100)) {
+      return 'due';
+    }
+    if ((daysRemaining != null && daysRemaining <= 14) ||
+        (kmRemaining != null && kmRemaining <= 500)) {
+      return 'due_soon';
+    }
+    return 'upcoming';
+  }
+
+  int? get daysUntilNextService {
+    if (nextServiceDue == null) return null;
+    return nextServiceDue!.difference(DateTime.now()).inDays;
+  }
+
+  int? get kmUntilNextService {
+    if (nextServiceOdometer == null) return null;
+    return nextServiceOdometer! - currentOdometer;
+  }
 
   Map<String, dynamic> toFirestore() {
     return {
@@ -55,7 +105,13 @@ class VehicleModel {
       'fuelType': fuelType,
       'color': color,
       'lastServiceDate': lastServiceDate?.toIso8601String(),
+      'lastServiceType': lastServiceType,
       'nextServiceDue': nextServiceDue?.toIso8601String(),
+      'nextServiceOdometer': nextServiceOdometer,
+      'maintenanceIntervalMonths': maintenanceIntervalMonths,
+      'maintenanceIntervalKm': maintenanceIntervalKm,
+      'lastServicedGarageId': lastServicedGarageId,
+      'lastServiceJobId': lastServiceJobId,
       'createdAt': createdAt?.toIso8601String(),
     };
   }
@@ -79,9 +135,16 @@ class VehicleModel {
       lastServiceDate: data['lastServiceDate'] != null
           ? DateTime.tryParse(data['lastServiceDate'] as String)
           : null,
+      lastServiceType: data['lastServiceType'] as String?,
       nextServiceDue: data['nextServiceDue'] != null
           ? DateTime.tryParse(data['nextServiceDue'] as String)
           : null,
+      nextServiceOdometer: (data['nextServiceOdometer'] as num?)?.toInt(),
+      maintenanceIntervalMonths: (data['maintenanceIntervalMonths'] as num?)
+          ?.toInt(),
+      maintenanceIntervalKm: (data['maintenanceIntervalKm'] as num?)?.toInt(),
+      lastServicedGarageId: data['lastServicedGarageId'] as String?,
+      lastServiceJobId: data['lastServiceJobId'] as String?,
       createdAt: data['createdAt'] != null
           ? DateTime.tryParse(data['createdAt'] as String)
           : null,
@@ -104,7 +167,13 @@ class VehicleModel {
     String? fuelType,
     String? color,
     DateTime? lastServiceDate,
+    String? lastServiceType,
     DateTime? nextServiceDue,
+    int? nextServiceOdometer,
+    int? maintenanceIntervalMonths,
+    int? maintenanceIntervalKm,
+    String? lastServicedGarageId,
+    String? lastServiceJobId,
     DateTime? createdAt,
   }) {
     return VehicleModel(
@@ -123,7 +192,15 @@ class VehicleModel {
       fuelType: fuelType ?? this.fuelType,
       color: color ?? this.color,
       lastServiceDate: lastServiceDate ?? this.lastServiceDate,
+      lastServiceType: lastServiceType ?? this.lastServiceType,
       nextServiceDue: nextServiceDue ?? this.nextServiceDue,
+      nextServiceOdometer: nextServiceOdometer ?? this.nextServiceOdometer,
+      maintenanceIntervalMonths:
+          maintenanceIntervalMonths ?? this.maintenanceIntervalMonths,
+      maintenanceIntervalKm:
+          maintenanceIntervalKm ?? this.maintenanceIntervalKm,
+      lastServicedGarageId: lastServicedGarageId ?? this.lastServicedGarageId,
+      lastServiceJobId: lastServiceJobId ?? this.lastServiceJobId,
       createdAt: createdAt ?? this.createdAt,
     );
   }

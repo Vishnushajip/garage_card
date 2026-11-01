@@ -12,7 +12,7 @@ class MerchantEstimatesViewModel extends Notifier<MerchantEstimatesState> {
     if (user?.garageId != null && user!.garageId!.isNotEmpty) {
       return user.garageId!;
     }
-    return 'garage_demo_1';
+    return '';
   }
 
   @override
@@ -54,8 +54,8 @@ class MerchantEstimatesViewModel extends Notifier<MerchantEstimatesState> {
       final est = EstimateModel(
         id: '',
         garageId: _effectiveGarageId(),
-        jobId: 'job_demo_1',
-        customerId: 'cust_demo_1',
+        jobId: '',
+        customerId: '',
         estimateNumber: estimateNumber,
         items: items,
         subtotal: subtotal,

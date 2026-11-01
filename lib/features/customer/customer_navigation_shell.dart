@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garage_card/core/branding/app_logo.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/shared_widgets/app_modern_nav_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:go_router/go_router.dart';
@@ -38,38 +39,38 @@ class CustomerNavigationShell extends StatelessWidget {
                   ? AppColors.surfaceDark
                   : AppColors.surfaceLight,
               indicatorColor: AppColors.primaryRed.withValues(alpha: 0.12),
-              destinations: const [
+              destinations: [
                 NavigationRailDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(
+                  icon: const Icon(Icons.home_outlined),
+                  selectedIcon: const Icon(
                     Icons.home_rounded,
                     color: AppColors.primaryRed,
                   ),
-                  label: Text('Home'),
+                  label: Text(context.tr('home')),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.storefront_outlined),
-                  selectedIcon: Icon(
+                  icon: const Icon(Icons.storefront_outlined),
+                  selectedIcon: const Icon(
                     Icons.storefront_rounded,
                     color: AppColors.primaryRed,
                   ),
-                  label: Text('Garages'),
+                  label: Text(context.tr('garages')),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.receipt_long_outlined),
-                  selectedIcon: Icon(
+                  icon: const Icon(Icons.receipt_long_outlined),
+                  selectedIcon: const Icon(
                     Icons.receipt_long_rounded,
                     color: AppColors.primaryRed,
                   ),
-                  label: Text('Invoices'),
+                  label: Text(context.tr('invoices')),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.person_outline_rounded),
-                  selectedIcon: Icon(
+                  icon: const Icon(Icons.person_outline_rounded),
+                  selectedIcon: const Icon(
                     Icons.person_rounded,
                     color: AppColors.primaryRed,
                   ),
-                  label: Text('Profile'),
+                  label: Text(context.tr('profile')),
                 ),
               ],
             ),
@@ -85,26 +86,26 @@ class CustomerNavigationShell extends StatelessWidget {
       bottomNavigationBar: AppModernNavigationBar(
         currentIndex: navigationShell.currentIndex,
         onDestinationSelected: _onDestinationSelected,
-        items: const [
+        items: [
           AppNavItem(
             icon: Icons.home_outlined,
             selectedIcon: Icons.home_rounded,
-            label: 'Home',
+            label: context.tr('home'),
           ),
           AppNavItem(
             icon: Icons.storefront_outlined,
             selectedIcon: Icons.storefront_rounded,
-            label: 'Garages',
+            label: context.tr('garages'),
           ),
           AppNavItem(
             icon: Icons.receipt_long_outlined,
             selectedIcon: Icons.receipt_long_rounded,
-            label: 'Invoices',
+            label: context.tr('invoices'),
           ),
           AppNavItem(
             icon: Icons.person_outline_rounded,
             selectedIcon: Icons.person_rounded,
-            label: 'Profile',
+            label: context.tr('profile'),
           ),
         ],
       ),

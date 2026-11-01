@@ -105,7 +105,7 @@ class CustomerJobsViewModel extends Notifier<CustomerJobsState> {
       );
       final history = await ref
           .read(garageRepositoryProvider)
-          .getJobHistory(jobId);
+          .getJobHistory(jobId, customerOnly: true);
 
       state = state.copyWith(
         isLoadingDetail: false,

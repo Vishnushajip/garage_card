@@ -3,6 +3,7 @@ import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/features/shared/documents/pdf_generator_service.dart';
 import 'package:garage_card/features/shared/models/garage_model.dart';
@@ -49,7 +50,7 @@ class InvoiceCardItem extends StatelessWidget {
                       style: AppFonts.titleLarge(color: primaryTextColor),
                     ),
                     Text(
-                      'Issued on ${DateFormatter.formatDate(invoice.issuedAt ?? invoice.createdAt)}',
+                      '${context.tr('issuedOn')} ${DateFormatter.formatDate(invoice.issuedAt ?? invoice.createdAt)}',
                       style: AppFonts.labelSmall(color: secondaryTextColor),
                     ),
                   ],
@@ -65,7 +66,7 @@ class InvoiceCardItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Total Amount',
+                      context.tr('totalAmount'),
                       style: AppFonts.labelSmall(color: secondaryTextColor),
                     ),
                     Text(
@@ -81,7 +82,7 @@ class InvoiceCardItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      'Balance Due',
+                      context.tr('balanceDue'),
                       style: AppFonts.labelSmall(color: secondaryTextColor),
                     ),
                     Text(
@@ -104,21 +105,21 @@ class InvoiceCardItem extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton.icon(
                 icon: const Icon(Icons.download_rounded, size: 18),
-                label: const Text('Download PDF'),
+                label: Text(context.tr('downloadPdf')),
                 onPressed: () {
-                  final dummyGarage = GarageModel(
+                  final fallbackGarage = GarageModel(
                     id: invoice.garageId,
-                    name: 'Apex Precision Automotive',
-                    address: 'Near MG Road, Ravipuram, Kochi, Kerala',
-                    phone: '+91 98460 12345',
-                    email: 'service@apexprecision.com',
-                    ownerUid: 'merchant_1',
+                    name: 'Authorized Service Center',
+                    address: 'Service Center Address',
+                    phone: '',
+                    email: '',
+                    ownerUid: '',
                   );
                   PdfGeneratorService.printOrShareInvoice(
-                    garage: dummyGarage,
+                    garage: fallbackGarage,
                     invoice: invoice,
-                    customerName: 'Arjun Menon',
-                    vehicleDisplay: '2020 Honda City (KL 07 BX 9021)',
+                    customerName: 'Customer',
+                    vehicleDisplay: 'Vehicle',
                   );
                 },
               ),

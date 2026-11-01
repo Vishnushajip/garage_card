@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/features/shared/models/job_status_history_model.dart';
 
 class StatusTimelineView extends StatelessWidget {
-  const StatusTimelineView({super.key, required this.history});
+  const StatusTimelineView({
+    super.key,
+    required this.history,
+    this.showCustomerOnly = false,
+  });
 
   final List<JobStatusHistoryModel> history;
+  final bool showCustomerOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +25,15 @@ class StatusTimelineView extends StatelessWidget {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
 
-    if (history.isEmpty) {
+    final displayList = showCustomerOnly
+        ? history.where((h) => h.isCustomerVisible).toList()
+        : history;
+
+    if (displayList.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Text(
-          'No history recorded yet.',
+          context.tr('noHistoryRecorded'),
           style: AppFonts.bodyMedium(color: secondaryTextColor),
         ),
       );
@@ -32,9 +42,9 @@ class StatusTimelineView extends StatelessWidget {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: history.length,
+      itemCount: displayList.length,
       itemBuilder: (context, index) {
-        final item = history[index];
+        final item = displayList[index];
         final isLatest = index == 0;
 
         return IntrinsicHeight(
@@ -81,7 +91,7 @@ class StatusTimelineView extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            item.toStatus.toUpperCase(),
+                            context.loc.repairStatus(item.toStatus),
                             style: AppFonts.labelLarge(
                               color: isLatest
                                   ? AppColors.accentBlue

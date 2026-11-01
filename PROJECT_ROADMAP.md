@@ -5,10 +5,10 @@ This roadmap organizes the prioritized enhancements from `FEATURE_GAP_ANALYSIS.m
 
 ```mermaid
 flowchart LR
-    P0[Phase 0:\nDynamic Services & Smart Search\n(COMPLETED)] --> P1[Phase 1:\nCore Job Lifecycle & Gate Pass]
-    P1 --> P2[Phase 2:\nParts Inventory & Stock Engine]
-    P2 --> P3[Phase 3:\nPayment Gateway & Tax Export]
-    P3 --> P4[Phase 4:\nRich Media Chat & AMC Contracts]
+    P0[Phase 0:\nDynamic Services & Smart Search\n(COMPLETED)] --> P1[Phase 1:\nCore Job Lifecycle, Repair Tracking\n& Gate Pass (COMPLETED)]
+    P1 --> P2[Phase 2:\nParts Inventory & Stock Engine\n(COMPLETED)]
+    P2 --> P3[Phase 3:\nPayment Reconciliation & Tax Export\n(COMPLETED)]
+    P3 --> P4[Phase 4:\nWarranty Vault, Rich Chat & Packages]
     P4 --> P5[Phase 5:\nAI Dictation & Smart OCR]
 ```
 
@@ -23,38 +23,35 @@ flowchart LR
 
 ---
 
-## Phase 1: Core Job Lifecycle Integrity & Digital Gate Pass (Immediate Priority)
+## Phase 1: Core Job Lifecycle, Real-Time Repair Tracking & Digital Gate Pass (COMPLETED)
 
-### 1.1 Objectives
-Eliminate unauthorized vehicle release, customer estimate disputes over surprise work, and un-indexed Firestore query risks.
+### 1.1 Objectives Achieved
+Eliminated fake/unverified repair statuses, unauthorized vehicle release, customer estimate disputes over surprise work, and un-indexed Firestore query risks. All active repairs, maintenance reminders, and dashboard metrics originate strictly from verified database records.
 
-### 1.2 Features to Implement
-1. **Supplemental Repair Approval Workflow:**
-   - Enables mechanics to submit supplementary line items mid-job without destroying the initial approved estimate.
-   - Customers receive an instant push alert: *"Additional work required on brake caliper (₹1,200). Approve / Reject."*
-2. **Digital Gate Pass & OTP Vehicle Release:**
-   - Generates a cryptographically secure 4-digit OTP or QR code when an invoice balance reaches zero.
-   - Gate security or garage lead verifies the OTP before releasing the keys and vehicle.
-3. **Formal Quality Control (QC) Sign-off Checklist:**
-   - 8-point workshop checklist (Fluid levels, Tire pressure, Torque check, Cleanliness, Road test) mandatory before triggering `readyForCollection`.
-4. **Firestore Indexes Manifest (`firestore.indexes.json`):**
-   - Pre-build all composite indexes for queries filtering by `garageId`, `status`, and sorting by `createdAt`.
-
-### 1.3 Technical Modifications
-- **Frontend Changes:**
-  - Add `SupplementalEstimateDialog` in `lib/features/merchant/estimates/`.
-  - Add `QCChecklistModal` in `lib/features/merchant/service_jobs/Widgets/`.
-  - Add `DigitalGatePassCard` with QR code view in `lib/features/customer/service_jobs/` and merchant job details.
-- **Backend & Database Modifications:**
-  - Add `supplementalEstimates` subcollection: `garages/{gId}/serviceJobs/{jId}/supplementalEstimates/{id}`.
-  - Add `qcChecklist` field to `ServiceJobModel` (`Map<String, bool>`).
-  - Add `gatePassCode` and `isGatePassVerified` to `ServiceJobModel`.
-  - Add composite index definitions in `firestore.indexes.json`.
-- **Testing Requirements:**
-  - Unit tests for supplemental estimate balance calculations.
-  - Widget tests for QC checklist mandatory validation before status advancement.
-  - End-to-end mock test for gate-pass OTP verification.
-- **Expected Outcome:** 100% elimination of payment drive-aways and zero disputes over unapproved mid-repair work.
+### 1.2 Implemented & Verified Capabilities
+1. **Real-Time Active Repair Tracking:**
+   - Strict qualification via `isActiveRepair`: jobs must be actively in progress (`in_progress`, `awaiting_parts`, `on_hold`, `quality_check`). Pending, requested, scheduled, or cancelled jobs are excluded.
+   - Dedicated filter chips on Customer Repair Orders (`/customer/jobs`): All, Active Repairs, Service History.
+2. **Merchant "Start Repair" Workflow:**
+   - Dedicated `StartRepairDialog` assigning lead technician and recording commencement notes.
+   - Logs `actualStartTime`, sets status to `in_progress`, writes customer-visible audit history, and dispatches real-time push notification with `/customer/jobs/{id}` deep link.
+3. **Merchant "Complete Repair" & Handover Workflow:**
+   - Dedicated `CompleteRepairDialog` capturing final odometer, target odometer, next recommended service type and due date.
+   - Transitions status to `completed`, automatically updates customer's `VehicleModel` record, creates/updates `ServiceReminderModel`, and issues a 6-digit cryptographic digital gate pass OTP.
+4. **Dynamic Vehicle Maintenance Intelligence:**
+   - Evaluates real vehicle service records (`upcoming`, `due_soon`, `due`, `overdue`).
+   - If no schedule exists, renders an authentic informative empty state ("Maintenance schedule not available. Complete your next service to track intervals") with zero fake or invented dates.
+5. **Timeline History Privacy:**
+   - `JobStatusHistoryModel` enforces `isCustomerVisible`. Internal mechanic diagnostic notes remain strictly private to workshop staff; customers see only authorized milestones.
+6. **Supplemental Repair Approval Workflow:**
+   - Enables mechanics to submit supplementary line items mid-job without destroying the initial approved estimate (`AddSupplementalWorkDialog`).
+   - Customers receive an instant push alert and approve/reject individual supplemental items.
+7. **Digital Gate Pass & OTP Vehicle Release:**
+   - Generates 6-digit OTP code on completion; verified via `GatePassVerificationDialog` before releasing vehicle.
+8. **Formal Quality Control (QC) Sign-off Checklist:**
+   - 9-point workshop checklist mandatory before marking ready for pickup (`QCChecklistDialog`).
+9. **Firestore Composite Indexes Manifest:**
+   - Pre-built composite indexes in `firestore.indexes.json` for queries filtering by `garageId`, `status`, and sorting by `createdAt`.
 
 ---
 
@@ -169,4 +166,13 @@ Empower workshop technicians to create complete job cards hands-free and elimina
   - Audio permission handling and offline speech-to-text fallback tests.
   - Plate regex validation across state formats.
 - **Expected Outcome:** Check-in time reduced from 5 minutes to under 45 seconds per vehicle.
+
+---
+
+## Phase 6: Technical SEO, Public Landing Pages & Dual-Platform Separation (COMPLETED)
+- **V-Fix Brand Identity:** Unified commercial name to **V-Fix** with slogan: *V-Fix – Smarter Garage Management. Better Vehicle Care.*
+- **Pre-Rendered Static SEO Pages:** 13 dedicated public HTML landing pages in `web/` with luxury styling (`web/assets/css/seo-site.css`) covering `/solutions/garage-owners`, `/customers/find-garages`, `/features/*`, `/pricing`, `/faq`, `/about`, `/contact`, `/privacy-policy`, `/terms-and-conditions`, and `/garages/`.
+- **Crawl Directives & Sitemaps:** Production `robots.txt` disallowing private app routes and canonical XML sitemap (`/sitemap.xml`) with proper HTTPS priority mappings.
+- **Rich Schema.org JSON-LD:** Structured microdata implemented for `Organization`, `WebSite`, `SoftwareApplication`, `Service`, `Product`, `FAQPage`, and `ItemList`.
+- **Zero Android Side-Effects:** 100% isolation between web-only SEO pages and shared mobile codebase, preserving Android compilation, Firebase Auth, and Riverpod MVVM architecture.
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_dropdown.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
@@ -14,8 +15,8 @@ class JobStatusDialog extends StatefulWidget {
     this.customerName = 'Valued Customer',
     this.vehicleDisplay = 'Vehicle',
     this.jobNumber = '',
-    this.garageName = 'Apex Precision Automotive',
-    this.customerPhone = '+919846077112',
+    this.garageName = 'Authorized Service Center',
+    this.customerPhone = '',
     this.customerWhatsApp = '',
   });
 
@@ -241,7 +242,7 @@ class _JobStatusDialogState extends State<JobStatusDialog> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(context.tr('cancel')),
         ),
         OutlinedButton.icon(
           icon: const Icon(
@@ -249,11 +250,11 @@ class _JobStatusDialogState extends State<JobStatusDialog> {
             color: AppColors.success,
             size: 18,
           ),
-          label: const Text('WhatsApp Only'),
+          label: Text(context.tr('whatsappOnly')),
           onPressed: _isLoading ? null : _sendWhatsAppOnly,
         ),
         AppButton(
-          label: 'Save & WhatsApp',
+          label: context.tr('saveAndWhatsapp'),
           icon: const Icon(Icons.send_rounded, size: 16),
           onPressed: () => _submit(alsoOpenWhatsApp: true),
           isLoading: _isLoading,

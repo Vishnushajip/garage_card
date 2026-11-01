@@ -27,7 +27,7 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
       final repo = ref.read(garageRepositoryProvider);
       final garageId = (user?.garageId != null && user!.garageId!.isNotEmpty)
           ? user.garageId!
-          : 'garage_demo_1';
+          : '';
 
       final results = await Future.wait([
         repo.getInvoices(garageId: garageId, limit: 100),
@@ -176,15 +176,23 @@ class MerchantAnalyticsViewModel extends Notifier<MerchantAnalyticsState> {
     }).toList();
 
     final completedCount = filteredJobs
-        .where((j) => j.status == 'completed')
+        .where((j) => j.isCompletedRepair)
         .length;
     final inProgressCount = filteredJobs
-        .where((j) => j.status == 'inProgress')
+        .where(
+          (j) =>
+              j.status.toLowerCase() == 'in_progress' ||
+              j.status.toLowerCase() == 'inprogress',
+        )
         .length;
     final readyCount = filteredJobs
-        .where((j) => j.status == 'readyForCollection')
+        .where(
+          (j) =>
+              j.status.toLowerCase() == 'readyforcollection' ||
+              j.status.toLowerCase() == 'ready_for_collection',
+        )
         .length;
-    final newCount = filteredJobs.where((j) => j.status == 'received').length;
+    final newCount = filteredJobs.where((j) => j.isPendingRequest).length;
 
     final chartPoints = _buildChartDataPoints(range, filteredInvoices, now);
 

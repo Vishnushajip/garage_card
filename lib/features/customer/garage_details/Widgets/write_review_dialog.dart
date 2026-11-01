@@ -277,8 +277,8 @@ class _WriteReviewDialogState extends State<WriteReviewDialog> {
                         variant: WhatsAppButtonVariant.outline,
                         isFullWidth: true,
                         message: _selectedLang == 'ml'
-                            ? 'നമസ്കാരം ${widget.garageName}, WeFix-ലെ എന്റെ സർവീസ് റിവ്യൂ:\nറേറ്റിംഗ്: ${_rating.toInt()}/5 സ്റ്റാർ\nഅഭിപ്രായം: ${_commentController.text.trim().isNotEmpty ? _commentController.text.trim() : 'നല്ല സർവീസ്!'}'
-                            : 'Hello ${widget.garageName}, here is my service review on WeFix:\nRating: ${_rating.toInt()}/5 Stars\nFeedback: ${_commentController.text.trim().isNotEmpty ? _commentController.text.trim() : 'Great service!'}',
+                            ? 'നമസ്കാരം ${widget.garageName}, V-Fix-ലെ എന്റെ സർവീസ് റിവ്യൂ:\nറേറ്റിംഗ്: ${_rating.toInt()}/5 സ്റ്റാർ\nഅഭിപ്രായം: ${_commentController.text.trim().isNotEmpty ? _commentController.text.trim() : 'നല്ല സർവീസ്!'}'
+                            : 'Hello ${widget.garageName}, here is my service review on V-Fix:\nRating: ${_rating.toInt()}/5 Stars\nFeedback: ${_commentController.text.trim().isNotEmpty ? _commentController.text.trim() : 'Great service!'}',
                       ),
                     ],
                   ),

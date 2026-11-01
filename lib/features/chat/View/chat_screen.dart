@@ -147,7 +147,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   onPressed: () => WhatsAppShareService.openWhatsApp(
                     phone: phone,
                     message:
-                        'Hi ${widget.recipientName}, regarding your inquiry on WeFix.',
+                        'Hi ${widget.recipientName}, regarding your inquiry on V-Fix.',
                   ),
                 ),
               ],
@@ -320,7 +320,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       onPressed: () => WhatsAppShareService.openWhatsApp(
                         phone: phone,
                         message:
-                            'Hi ${widget.recipientName}, regarding your inquiry on WeFix.',
+                            'Hi ${widget.recipientName}, regarding your inquiry on V-Fix.',
                       ),
                     ),
                   ],
@@ -387,7 +387,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               onPressed: () => WhatsAppShareService.openWhatsApp(
                 phone: phone,
                 message:
-                    'Hi ${widget.recipientName}, regarding your inquiry on WeFix.',
+                    'Hi ${widget.recipientName}, regarding your inquiry on V-Fix.',
               ),
             ),
           ],

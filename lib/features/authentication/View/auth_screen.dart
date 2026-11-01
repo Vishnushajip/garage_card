@@ -479,7 +479,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                             const SizedBox(height: 18),
                             Center(
                               child: Text(
-                                'By continuing, you agree to WeFix Terms & Privacy Policy',
+                                'By continuing, you agree to V-Fix Terms & Privacy Policy',
                                 textAlign: TextAlign.center,
                                 style: AppFonts.labelSmall(
                                   color: secondaryTextColor.withValues(

@@ -244,7 +244,7 @@ class PdfGeneratorService {
               ),
               pw.SizedBox(height: 4),
               pw.Text(
-                'Generated securely via WeFix Platform',
+                'Generated securely via V-Fix Platform',
                 style: const pw.TextStyle(
                   fontSize: 8,
                   color: PdfColors.grey500,
@@ -511,7 +511,7 @@ class PdfGeneratorService {
               ),
               pw.SizedBox(height: 4),
               pw.Text(
-                'Generated securely via WeFix Platform',
+                'Generated securely via V-Fix Platform',
                 style: const pw.TextStyle(
                   fontSize: 8,
                   color: PdfColors.grey500,

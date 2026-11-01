@@ -9,7 +9,7 @@ class WarrantyItemModel {
     this.coverageKm,
     this.startDate,
     this.expiryDate,
-    this.garageName = 'Apex Auto Works',
+    this.garageName = 'Authorized Workshop',
     this.status = 'active',
   });
 
@@ -58,7 +58,7 @@ class WarrantyItemModel {
       coverageKm: (map['coverageKm'] as num?)?.toInt(),
       startDate: DateFormatter.parse(map['startDate']),
       expiryDate: DateFormatter.parse(map['expiryDate']),
-      garageName: map['garageName'] as String? ?? 'Apex Auto Works',
+      garageName: map['garageName'] as String? ?? 'Authorized Workshop',
       status: map['status'] as String? ?? 'active',
     );
   }

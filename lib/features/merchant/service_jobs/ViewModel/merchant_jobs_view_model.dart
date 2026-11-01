@@ -12,7 +12,7 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
     if (user?.garageId != null && user!.garageId!.isNotEmpty) {
       return user.garageId!;
     }
-    return 'garage_demo_1';
+    return '';
   }
 
   @override
@@ -126,6 +126,74 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
     }
   }
 
+  Future<bool> startRepair({
+    required String jobId,
+    String? technicianName,
+    String? notes,
+  }) async {
+    state = state.copyWith(isUpdatingStatus: true, errorMessage: null);
+    try {
+      final user = ref.read(authViewModelProvider).userProfile;
+      final staffUid = user?.uid ?? 'Staff';
+      await ref
+          .read(garageRepositoryProvider)
+          .startRepair(
+            garageId: _effectiveGarageId(),
+            jobId: jobId,
+            startedByUid: staffUid,
+            technicianName: technicianName,
+            notes: notes,
+          );
+      await selectJob(jobId);
+      await _loadJobs();
+      state = state.copyWith(isUpdatingStatus: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isUpdatingStatus: false,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> completeRepair({
+    required String jobId,
+    int? finalOdometer,
+    DateTime? nextServiceDue,
+    int? nextServiceOdometer,
+    String? nextServiceType,
+    String? notes,
+  }) async {
+    state = state.copyWith(isUpdatingStatus: true, errorMessage: null);
+    try {
+      final user = ref.read(authViewModelProvider).userProfile;
+      final staffUid = user?.uid ?? 'Staff';
+      await ref
+          .read(garageRepositoryProvider)
+          .completeRepair(
+            garageId: _effectiveGarageId(),
+            jobId: jobId,
+            completedByUid: staffUid,
+            finalOdometer: finalOdometer,
+            nextServiceDue: nextServiceDue,
+            nextServiceOdometer: nextServiceOdometer,
+            nextServiceType: nextServiceType,
+            notes: notes,
+          );
+      await selectJob(jobId);
+      await _loadJobs();
+      state = state.copyWith(isUpdatingStatus: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isUpdatingStatus: false,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
+  }
+
   Future<bool> createJob({
     required String customerName,
     required String vehicleDisplay,
@@ -137,9 +205,9 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
     try {
       final newJob = ServiceJobModel(
         id: '',
-        garageId: 'garage_demo_1',
-        customerId: 'cust_demo_1',
-        vehicleId: 'veh_1',
+        garageId: _effectiveGarageId(),
+        customerId: '',
+        vehicleId: '',
         jobNumber: 'JOB-2026-${DateTime.now().millisecondsSinceEpoch % 1000}',
         status: 'received',
         odometerReading: odometerReading,

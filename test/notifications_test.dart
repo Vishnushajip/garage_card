@@ -2,7 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:garage_card/core/notifications/fcm_token_model.dart';
 import 'package:garage_card/core/notifications/notification_event_matrix.dart';
 import 'package:garage_card/features/merchant/notifications/Model/merchant_notifications_state.dart';
+import 'package:garage_card/features/shared/models/appointment_model.dart';
+import 'package:garage_card/features/shared/models/estimate_model.dart';
+import 'package:garage_card/features/shared/models/invoice_model.dart';
 import 'package:garage_card/features/shared/models/notification_model.dart';
+import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:garage_card/features/shared/models/vehicle_inspection_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
@@ -180,9 +184,17 @@ void main() {
   group('Garage Repository Notification Lifecycle Integration Tests', () {
     test('Job status change creates customer notification with rich image and deep link', () async {
       final repo = GarageRepository();
-      final initialJobs = await repo.getServiceJobs(garageId: 'garage_demo_1');
-      expect(initialJobs, isNotEmpty);
-      final job = initialJobs.first;
+      final job = await repo.createServiceJob(
+        ServiceJobModel(
+          id: 'job_notif_1',
+          jobNumber: 'JOB-2026-101',
+          garageId: 'garage_notif_1',
+          customerId: 'cust_notif_1',
+          vehicleId: 'veh_notif_1',
+          vehicleDisplay: 'Honda Civic',
+          status: 'inProgress',
+        ),
+      );
 
       await repo.updateJobStatus(
         jobId: job.id,
@@ -204,9 +216,17 @@ void main() {
 
     test('Job completion creates customer notification with direct review action deep link', () async {
       final repo = GarageRepository();
-      final initialJobs = await repo.getServiceJobs(garageId: 'garage_demo_1');
-      expect(initialJobs, isNotEmpty);
-      final job = initialJobs.first;
+      final job = await repo.createServiceJob(
+        ServiceJobModel(
+          id: 'job_notif_2',
+          jobNumber: 'JOB-2026-102',
+          garageId: 'garage_notif_1',
+          customerId: 'cust_notif_1',
+          vehicleId: 'veh_notif_1',
+          vehicleDisplay: 'Honda Civic',
+          status: 'inProgress',
+        ),
+      );
 
       await repo.updateJobStatus(
         jobId: job.id,
@@ -230,15 +250,22 @@ void main() {
       'Estimate approval creates merchant notification with estimate image',
       () async {
         final repo = GarageRepository();
-        final estimates = await repo.getEstimates(garageId: 'garage_demo_1');
-        expect(estimates, isNotEmpty);
-        final est = estimates.first;
+        final est = await repo.createEstimate(
+          EstimateModel(
+            id: 'est_notif_1',
+            garageId: 'garage_notif_1',
+            jobId: 'job_notif_1',
+            customerId: 'cust_notif_1',
+            estimateNumber: 'EST-2026-101',
+            totalAmount: 4500.0,
+          ),
+        );
 
         final success = await repo.approveEstimate(est.id);
         expect(success, isTrue);
 
         final merchantNotifs = await repo.getNotifications(
-          recipientUid: 'user_merchant_1',
+          recipientUid: est.garageId,
         );
         expect(merchantNotifs, isNotEmpty);
         final approvalNotif = merchantNotifs.firstWhere(
@@ -253,8 +280,16 @@ void main() {
 
     test('Invoice issuance from estimate creates customer notification with invoice image', () async {
       final repo = GarageRepository();
-      final estimates = await repo.getEstimates(garageId: 'garage_demo_1');
-      final est = estimates.first;
+      final est = await repo.createEstimate(
+        EstimateModel(
+          id: 'est_notif_2',
+          garageId: 'garage_notif_1',
+          jobId: 'job_notif_1',
+          customerId: 'cust_notif_1',
+          estimateNumber: 'EST-2026-102',
+          totalAmount: 3200.0,
+        ),
+      );
 
       final invoice = await repo.createInvoiceFromEstimate(est);
       expect(invoice.id, isNotEmpty);
@@ -274,8 +309,17 @@ void main() {
       'Payment recording creates customer notification with balance update',
       () async {
         final repo = GarageRepository();
-        final invoices = await repo.getInvoices(garageId: 'garage_demo_1');
-        final inv = invoices.first;
+        final inv = await repo.createInvoice(
+          InvoiceModel(
+            id: 'inv_notif_1',
+            garageId: 'garage_notif_1',
+            jobId: 'job_notif_1',
+            customerId: 'cust_notif_1',
+            invoiceNumber: 'INV-2026-101',
+            totalAmount: 5000.0,
+            balanceDue: 5000.0,
+          ),
+        );
 
         final payment = await repo.recordPayment(
           invoiceId: inv.id,
@@ -304,15 +348,22 @@ void main() {
       'Customer appointment booking creates merchant notification',
       () async {
         final repo = GarageRepository();
-        final initialAppointments = await repo.getAppointments(
-          garageId: 'garage_demo_1',
+        final app = AppointmentModel(
+          id: 'app_notif_1',
+          garageId: 'garage_notif_1',
+          customerId: 'cust_notif_1',
+          customerName: 'Rahul',
+          customerPhone: '+91 98460 00000',
+          vehicleInfo: 'Swift VXi',
+          preferredDate: DateTime.now(),
+          issueDescription: 'Periodic Maintenance',
+          status: 'submitted',
         );
-        final app = initialAppointments.first;
 
         await repo.createAppointment(app);
 
         final merchantNotifs = await repo.getNotifications(
-          recipientUid: 'user_merchant_1',
+          recipientUid: app.garageId,
         );
         expect(merchantNotifs, isNotEmpty);
         final bookingNotif = merchantNotifs.firstWhere(
@@ -325,8 +376,17 @@ void main() {
 
     test('Saving digital inspection creates customer notification with inspection photo', () async {
       final repo = GarageRepository();
-      final jobs = await repo.getServiceJobs(garageId: 'garage_demo_1');
-      final job = jobs.first;
+      final job = await repo.createServiceJob(
+        ServiceJobModel(
+          id: 'job_notif_3',
+          jobNumber: 'JOB-2026-103',
+          garageId: 'garage_notif_1',
+          customerId: 'cust_notif_1',
+          vehicleId: 'veh_notif_1',
+          vehicleDisplay: 'Honda Civic',
+          status: 'inProgress',
+        ),
+      );
 
       final inspection = VehicleInspectionModel(
         id: 'insp_test_99',
@@ -354,6 +414,16 @@ void main() {
 
     test('Marking notification as read updates read state', () async {
       final repo = GarageRepository();
+      await repo.createNotification(
+        NotificationModel(
+          id: 'notif_read_1',
+          recipientUid: 'customer_demo_uid',
+          title: 'Update',
+          body: 'Your vehicle update',
+          isRead: false,
+        ),
+      );
+
       final notifs = await repo.getNotifications(
         recipientUid: 'customer_demo_uid',
       );

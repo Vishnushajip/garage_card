@@ -32,7 +32,7 @@ class CustomerGarageDetailViewModel
       );
 
       final authUser = ref.read(authViewModelProvider).userProfile;
-      final customerId = authUser?.uid ?? 'cust_demo_1';
+      final customerId = authUser?.uid ?? '';
       final email = authUser?.email ?? FirebaseAuth.instance.currentUser?.email;
       final vehicles = await _repo.getVehicles(
         customerId: customerId,
@@ -89,7 +89,7 @@ class CustomerGarageDetailViewModel
     state = state.copyWith(isSubmittingReview: true, errorMessage: null);
     try {
       final authUser = ref.read(authViewModelProvider).userProfile;
-      final customerId = authUser?.uid ?? 'cust_demo_1';
+      final customerId = authUser?.uid ?? '';
       final customerName = authUser?.fullName ?? 'Customer';
 
       final review = ReviewModel(

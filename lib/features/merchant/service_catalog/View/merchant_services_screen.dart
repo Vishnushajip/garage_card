@@ -26,7 +26,7 @@ class MerchantServicesScreen extends ConsumerWidget {
     final garageId =
         authUser?.garageId != null && authUser!.garageId!.isNotEmpty
         ? authUser.garageId!
-        : 'garage_demo_1';
+        : '';
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryText = isDark

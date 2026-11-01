@@ -18,7 +18,9 @@ import 'package:garage_card/features/customer/profile/View/customer_profile_scre
 import 'package:garage_card/features/customer/profile/ViewModel/customer_profile_view_model.dart';
 import 'package:garage_card/features/customer/vehicles/View/customer_vehicles_screen.dart';
 import 'package:garage_card/features/merchant/invoices/View/merchant_invoices_screen.dart';
+import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:garage_card/features/shared/models/user_profile_model.dart';
+import 'package:garage_card/features/shared/models/vehicle_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 import 'package:go_router/go_router.dart';
 
@@ -305,69 +307,98 @@ void main() {
   });
 
   group('Vishnu Shaji Account Vehicles Tests', () {
-    test(
-      'GarageRepository returns 4 dummy vehicles for vishnushaji431@gmail.com',
-      () async {
-        final repo = GarageRepository();
-        final vehicles = await repo.getVehicles(
-          userEmail: 'vishnushaji431@gmail.com',
-        );
+    test('GarageRepository returns created vehicles for customer', () async {
+      final repo = GarageRepository();
+      await repo.createVehicle(
+        VehicleModel(
+          id: 'veh_v1',
+          customerId: 'vishnu_uid_123',
+          garageId: 'garage_1',
+          make: 'BMW',
+          model: '3 Series 330i M Sport',
+          year: 2023,
+          licensePlate: 'KL 07 CZ 0007',
+          fuelType: 'Petrol',
+          color: 'Portimao Blue Metallic',
+        ),
+      );
+      await repo.createVehicle(
+        VehicleModel(
+          id: 'veh_v2',
+          customerId: 'vishnu_uid_123',
+          garageId: 'garage_1',
+          make: 'Toyota',
+          model: 'Innova Crysta 2.4 ZX',
+          year: 2022,
+          licensePlate: 'KL 07 BY 4455',
+          fuelType: 'Diesel',
+          color: 'Attitude Black',
+        ),
+      );
+      final vehicles = await repo.getVehicles(customerId: 'vishnu_uid_123');
 
-        expect(vehicles.length, greaterThanOrEqualTo(4));
-        final plates = vehicles.map((v) => v.licensePlate).toList();
-        expect(plates, contains('KL 07 CZ 0007'));
-        expect(plates, contains('KL 07 BY 4455'));
-        expect(plates, contains('KL 07 CB 1122'));
-        expect(plates, contains('KL 07 BW 6500'));
+      expect(vehicles.length, 2);
+      final plates = vehicles.map((v) => v.licensePlate).toList();
+      expect(plates, contains('KL 07 CZ 0007'));
+      expect(plates, contains('KL 07 BY 4455'));
 
-        final bmw = vehicles.firstWhere(
-          (v) => v.licensePlate == 'KL 07 CZ 0007',
-        );
-        expect(bmw.make, 'BMW');
-        expect(bmw.model, '3 Series 330i M Sport');
-        expect(bmw.year, 2023);
-        expect(bmw.fuelType, 'Petrol');
-        expect(bmw.color, 'Portimao Blue Metallic');
-      },
-    );
+      final bmw = vehicles.firstWhere((v) => v.licensePlate == 'KL 07 CZ 0007');
+      expect(bmw.make, 'BMW');
+      expect(bmw.model, '3 Series 330i M Sport');
+      expect(bmw.year, 2023);
+      expect(bmw.fuelType, 'Petrol');
+      expect(bmw.color, 'Portimao Blue Metallic');
+    });
 
-    testWidgets(
-      'CustomerVehiclesScreen displays dummy vehicles for vishnushaji431@gmail.com',
-      (tester) async {
-        tester.view.physicalSize = const Size(1200, 2400);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() => tester.view.resetPhysicalSize());
+    testWidgets('CustomerVehiclesScreen displays vehicles for customer', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
 
-        final vishnuProfile = UserProfileModel(
-          uid: 'vishnu_uid_123',
-          email: 'vishnushaji431@gmail.com',
-          fullName: 'Vishnu Shaji',
-          phoneNumber: '+91 98460 77889',
-          role: 'customer',
-          createdAt: DateTime.now(),
-        );
+      final repo = GarageRepository();
+      await repo.createVehicle(
+        VehicleModel(
+          id: 'veh_v1',
+          customerId: 'vishnu_uid_123',
+          garageId: 'garage_1',
+          make: 'BMW',
+          model: '3 Series 330i M Sport',
+          year: 2023,
+          licensePlate: 'KL 07 CZ 0007',
+          fuelType: 'Petrol',
+          color: 'Portimao Blue Metallic',
+        ),
+      );
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              authViewModelProvider.overrideWith(
-                () => _MockAuthViewModel(initialProfile: vishnuProfile),
-              ),
-            ],
-            child: MaterialApp(
-              home: CustomerVehiclesScreen(onSelectVehicle: (_) {}),
+      final vishnuProfile = UserProfileModel(
+        uid: 'vishnu_uid_123',
+        email: 'vishnushaji431@gmail.com',
+        fullName: 'Vishnu Shaji',
+        phoneNumber: '+91 98460 77889',
+        role: 'customer',
+        createdAt: DateTime.now(),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            garageRepositoryProvider.overrideWithValue(repo),
+            authViewModelProvider.overrideWith(
+              () => _MockAuthViewModel(initialProfile: vishnuProfile),
             ),
+          ],
+          child: MaterialApp(
+            home: CustomerVehiclesScreen(onSelectVehicle: (_) {}),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(find.text('My Vehicles'), findsOneWidget);
-        expect(find.text('KL 07 CZ 0007'), findsOneWidget);
-        expect(find.text('KL 07 BY 4455'), findsOneWidget);
-        expect(find.text('KL 07 CB 1122'), findsOneWidget);
-        expect(find.text('KL 07 BW 6500'), findsOneWidget);
-      },
-    );
+      expect(find.text('My Vehicles'), findsOneWidget);
+      expect(find.text('KL 07 CZ 0007'), findsOneWidget);
+    });
 
     testWidgets(
       'CustomerDashboardScreen displays Vishnu active job and vehicles',
@@ -376,6 +407,19 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
 
+        final repo = GarageRepository();
+        await repo.createServiceJob(
+          ServiceJobModel(
+            id: 'job_v1',
+            jobNumber: 'JOB-2026-077',
+            garageId: 'garage_1',
+            customerId: 'vishnu_uid_123',
+            vehicleId: 'veh_v1',
+            vehicleDisplay: '2023 BMW 330i M Sport (KL 07 CZ 0007)',
+            status: 'inProgress',
+          ),
+        );
+
         final vishnuProfile = UserProfileModel(
           uid: 'vishnu_uid_123',
           email: 'vishnushaji431@gmail.com',
@@ -388,6 +432,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              garageRepositoryProvider.overrideWithValue(repo),
               authViewModelProvider.overrideWith(
                 () => _MockAuthViewModel(initialProfile: vishnuProfile),
               ),
@@ -485,6 +530,109 @@ void main() {
         expect(find.byType(AccountSwitcherListView), findsOneWidget);
         expect(find.text('Account Switching'), findsWidgets);
         expect(find.text('Merchant Workspace'), findsOneWidget);
+      },
+    );
+  });
+
+  group('Customer Profile Responsive Layout Tests', () {
+    testWidgets(
+      'CustomerProfileScreen renders cleanly on mobile viewport 360x640',
+      (tester) async {
+        tester.view.physicalSize = const Size(360, 640);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+
+        final router = GoRouter(
+          initialLocation: RoutePaths.customerProfile,
+          routes: [
+            GoRoute(
+              path: RoutePaths.customerProfile,
+              builder: (context, state) => const CustomerProfileScreen(),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authViewModelProvider.overrideWith(() => _MockAuthViewModel()),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Account Profile'), findsOneWidget);
+        expect(find.text('Personal details & mode switching'), findsOneWidget);
+        expect(find.text('Profile Incomplete'), findsOneWidget);
+        expect(find.text('Language Preference'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'CustomerProfileScreen adapts to two-column layout on desktop 1440x900',
+      (tester) async {
+        tester.view.physicalSize = const Size(1440, 900);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+
+        final router = GoRouter(
+          initialLocation: RoutePaths.customerProfile,
+          routes: [
+            GoRoute(
+              path: RoutePaths.customerProfile,
+              builder: (context, state) => const CustomerProfileScreen(),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authViewModelProvider.overrideWith(() => _MockAuthViewModel()),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Account Profile'), findsOneWidget);
+        expect(find.text('Profile Incomplete'), findsOneWidget);
+        expect(find.text('Language Preference'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'CustomerProfileScreen renders without overflow on 320px screen width',
+      (tester) async {
+        tester.view.physicalSize = const Size(320, 600);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+
+        final router = GoRouter(
+          initialLocation: RoutePaths.customerProfile,
+          routes: [
+            GoRoute(
+              path: RoutePaths.customerProfile,
+              builder: (context, state) => const CustomerProfileScreen(),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authViewModelProvider.overrideWith(() => _MockAuthViewModel()),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Account Profile'), findsOneWidget);
+        expect(tester.takeException(), isNull);
       },
     );
   });

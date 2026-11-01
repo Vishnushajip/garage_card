@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
@@ -43,7 +44,7 @@ class _CustomerWarrantyVaultScreenState
 
     try {
       final user = ref.read(authViewModelProvider).userProfile;
-      final customerId = user?.uid ?? 'cust_demo_1';
+      final customerId = user?.uid ?? '';
       final list = await ref
           .read(garageRepositoryProvider)
           .getCustomerWarranties(customerId);
@@ -152,7 +153,9 @@ class _CustomerWarrantyVaultScreenState
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  isActive ? 'ACTIVE' : 'EXPIRED',
+                                  isActive
+                                      ? context.tr('active')
+                                      : context.tr('expired'),
                                   style: AppFonts.labelSmall(
                                     color: isActive
                                         ? AppColors.success

@@ -32,7 +32,7 @@ class DailyOperationsTodoCard extends StatelessWidget {
     String msg;
     if (item.type == TodoItemType.deliveryToday) {
       msg =
-          'Hello ${item.customerName}, your vehicle ${item.vehicleDisplay} is ready for collection at Apex Precision Automotive. Kindly visit us today to collect your vehicle. Thank you!';
+          'Hello ${item.customerName}, your vehicle ${item.vehicleDisplay} is ready for collection at our service center. Kindly visit us today to collect your vehicle. Thank you!';
     } else if (item.type == TodoItemType.paymentDue) {
       msg =
           'Hello ${item.customerName}, gentle reminder regarding outstanding payment of ${CurrencyFormatter.format(item.amount ?? 0)} for your recent garage service. Kindly settle at your earliest convenience.';

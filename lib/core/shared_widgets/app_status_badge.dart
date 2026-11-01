@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 
 import '../colors/app_colors.dart';
 import '../fonts/app_fonts.dart';
@@ -18,13 +19,8 @@ class AppStatusBadge extends StatelessWidget {
         .toLowerCase()
         .replaceAll(' ', '_');
 
-    String display =
-        customLabel ??
-        status
-            .replaceAllMapped(RegExp(r'([A-Z])'), (m) => ' ${m[1]}')
-            .replaceAll('_', ' ')
-            .trim()
-            .toUpperCase();
+    final loc = AppLocalizations.of(context);
+    final display = customLabel ?? loc.status(status);
 
     switch (normalized) {
       case 'completed':

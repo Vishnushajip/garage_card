@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
@@ -118,6 +119,11 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     Widget? effectiveMiddle = titleWidget;
     if (effectiveMiddle == null && title.isNotEmpty) {
+      final localizedTitle = context.tr(title);
+      final localizedSubtitle = subtitle != null && subtitle!.isNotEmpty
+          ? context.tr(subtitle!)
+          : null;
+
       effectiveMiddle = Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: centerTitle
@@ -125,16 +131,16 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
             : CrossAxisAlignment.start,
         children: [
           Text(
-            title,
+            localizedTitle,
             style: AppFonts.titleMedium(color: primaryTextColor)
                 .copyWith(fontWeight: FontWeight.bold),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          if (subtitle != null && subtitle!.isNotEmpty) ...[
+          if (localizedSubtitle != null) ...[
             const SizedBox(height: 1),
             Text(
-              subtitle!,
+              localizedSubtitle,
               style: AppFonts.labelSmall(color: secondaryTextColor),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

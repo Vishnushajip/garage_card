@@ -68,7 +68,7 @@ class PushNotificationService {
   final FirebaseAuth? auth;
 
   static const String channelId = 'garage_card_high_importance';
-  static const String channelName = 'WeFix Alerts';
+  static const String channelName = 'V-Fix Alerts';
   static const String channelDescription =
       'High priority alerts for vehicle service updates, estimates, and invoices.';
 
@@ -311,7 +311,7 @@ class PushNotificationService {
 
   Future<void> displayLocalNotification(RemoteMessage message) async {
     final notification = message.notification;
-    final title = notification?.title ?? message.data['title'] ?? 'WeFix';
+    final title = notification?.title ?? message.data['title'] ?? 'V-Fix';
     final body = notification?.body ?? message.data['body'] ?? '';
     final imageUrl =
         notification?.android?.imageUrl ??

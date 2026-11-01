@@ -15,6 +15,7 @@ class ServiceJobModel {
     this.customerNotes = '',
     this.internalNotes = '',
     this.technicianName = '',
+    this.actualStartTime,
     this.estimatedCompletionDate,
     this.completedDate,
     this.vehicleDisplay = '',
@@ -29,6 +30,9 @@ class ServiceJobModel {
     this.qcInspectorName,
     this.qcInspectedAt,
     this.supplementalItems = const [],
+    this.nextRecommendedServiceDate,
+    this.nextRecommendedOdometer,
+    this.nextRecommendedServiceType,
     this.createdAt,
     this.updatedAt,
   });
@@ -44,6 +48,7 @@ class ServiceJobModel {
   final String customerNotes;
   final String internalNotes;
   final String technicianName;
+  final DateTime? actualStartTime;
   final DateTime? estimatedCompletionDate;
   final DateTime? completedDate;
   final String vehicleDisplay;
@@ -58,8 +63,46 @@ class ServiceJobModel {
   final String? qcInspectorName;
   final DateTime? qcInspectedAt;
   final List<SupplementalWorkItem> supplementalItems;
+  final DateTime? nextRecommendedServiceDate;
+  final int? nextRecommendedOdometer;
+  final String? nextRecommendedServiceType;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  bool get isActiveRepair {
+    final s = status.toLowerCase();
+    return s == 'in_progress' ||
+        s == 'inprogress' ||
+        s == 'awaiting_parts' ||
+        s == 'waitingforparts' ||
+        s == 'on_hold' ||
+        s == 'quality_check' ||
+        s == 'qualitycheck';
+  }
+
+  bool get isPendingRequest {
+    final s = status.toLowerCase();
+    return s == 'received' ||
+        s == 'requested' ||
+        s == 'pending' ||
+        s == 'accepted' ||
+        s == 'scheduled' ||
+        s == 'checked_in' ||
+        s == 'inspection' ||
+        s == 'inspectionpending' ||
+        s == 'estimate_pending' ||
+        s == 'approved';
+  }
+
+  bool get isCompletedRepair {
+    final s = status.toLowerCase();
+    return s == 'completed' || s == 'closed' || s == 'delivered';
+  }
+
+  bool get isCancelled {
+    final s = status.toLowerCase();
+    return s == 'cancelled' || s == 'rejected';
+  }
 
   Map<String, dynamic> toFirestore() {
     return {
@@ -73,6 +116,7 @@ class ServiceJobModel {
       'customerNotes': customerNotes,
       'internalNotes': internalNotes,
       'technicianName': technicianName,
+      'actualStartTime': actualStartTime?.toIso8601String(),
       'estimatedCompletionDate': estimatedCompletionDate?.toIso8601String(),
       'completedDate': completedDate?.toIso8601String(),
       'vehicleDisplay': vehicleDisplay,
@@ -87,6 +131,10 @@ class ServiceJobModel {
       'qcInspectorName': qcInspectorName,
       'qcInspectedAt': qcInspectedAt?.toIso8601String(),
       'supplementalItems': supplementalItems.map((e) => e.toMap()).toList(),
+      'nextRecommendedServiceDate': nextRecommendedServiceDate
+          ?.toIso8601String(),
+      'nextRecommendedOdometer': nextRecommendedOdometer,
+      'nextRecommendedServiceType': nextRecommendedServiceType,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
@@ -109,6 +157,7 @@ class ServiceJobModel {
       customerNotes: data['customerNotes'] as String? ?? '',
       internalNotes: data['internalNotes'] as String? ?? '',
       technicianName: data['technicianName'] as String? ?? '',
+      actualStartTime: DateFormatter.parse(data['actualStartTime']),
       estimatedCompletionDate: DateFormatter.parse(
         data['estimatedCompletionDate'],
       ),
@@ -136,6 +185,12 @@ class ServiceJobModel {
               )
               .toList() ??
           const [],
+      nextRecommendedServiceDate: DateFormatter.parse(
+        data['nextRecommendedServiceDate'],
+      ),
+      nextRecommendedOdometer: (data['nextRecommendedOdometer'] as num?)
+          ?.toInt(),
+      nextRecommendedServiceType: data['nextRecommendedServiceType'] as String?,
       createdAt: DateFormatter.parse(data['createdAt']),
       updatedAt: DateFormatter.parse(data['updatedAt']),
     );
@@ -153,6 +208,7 @@ class ServiceJobModel {
     String? customerNotes,
     String? internalNotes,
     String? technicianName,
+    DateTime? actualStartTime,
     DateTime? estimatedCompletionDate,
     DateTime? completedDate,
     String? vehicleDisplay,
@@ -167,6 +223,9 @@ class ServiceJobModel {
     String? qcInspectorName,
     DateTime? qcInspectedAt,
     List<SupplementalWorkItem>? supplementalItems,
+    DateTime? nextRecommendedServiceDate,
+    int? nextRecommendedOdometer,
+    String? nextRecommendedServiceType,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -182,6 +241,7 @@ class ServiceJobModel {
       customerNotes: customerNotes ?? this.customerNotes,
       internalNotes: internalNotes ?? this.internalNotes,
       technicianName: technicianName ?? this.technicianName,
+      actualStartTime: actualStartTime ?? this.actualStartTime,
       estimatedCompletionDate:
           estimatedCompletionDate ?? this.estimatedCompletionDate,
       completedDate: completedDate ?? this.completedDate,
@@ -197,6 +257,12 @@ class ServiceJobModel {
       qcInspectorName: qcInspectorName ?? this.qcInspectorName,
       qcInspectedAt: qcInspectedAt ?? this.qcInspectedAt,
       supplementalItems: supplementalItems ?? this.supplementalItems,
+      nextRecommendedServiceDate:
+          nextRecommendedServiceDate ?? this.nextRecommendedServiceDate,
+      nextRecommendedOdometer:
+          nextRecommendedOdometer ?? this.nextRecommendedOdometer,
+      nextRecommendedServiceType:
+          nextRecommendedServiceType ?? this.nextRecommendedServiceType,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

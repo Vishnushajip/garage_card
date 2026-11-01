@@ -216,3 +216,181 @@
    - `AppRetryButton`
    - `AppLoadingOverlay`
    All state widgets support configurable title, description/message, icon/illustration, primary action, secondary action, layout size (`compact`, `standard`, `fullScreen`), light/dark themes, and zero-overflow responsive adaptability from 320px mobile to 1920px desktop.
+
+---
+
+## 6. Mandatory Feature-First MVVM Architecture with Riverpod & File Decomposition Rules
+
+### Rule 14: Permanent Feature-First MVVM Architecture Standard
+
+Every future development task, feature implementation, bug fix, UI modification, API integration, and refactoring must strictly follow this feature-first MVVM architecture with Riverpod.
+
+#### 1. Feature-First Folder Structure
+Every application section must maintain its own independent feature folder under `lib/features/<feature_name>/`:
+```text
+lib/
+├── core/
+│   ├── constants/
+│   ├── config/
+│   ├── network/
+│   ├── services/
+│   ├── exceptions/
+│   ├── utils/
+│   ├── theme/
+│   └── widgets/
+│       ├── app_text_field.dart
+│       ├── app_dropdown.dart
+│       ├── app_button.dart
+│       ├── app_loading_state.dart
+│       ├── app_empty_state.dart
+│       └── app_error_state.dart
+│
+├── features/
+│   ├── garage/
+│   │   ├── views/          # Pure presentation, layout, user event forwarding
+│   │   ├── view_models/    # Riverpod Notifiers/AsyncNotifiers, logic, validation
+│   │   ├── models/         # Strongly-typed immutable state and domain models
+│   │   ├── widgets/        # Reusable presentational components for the feature
+│   │   └── repositories/   # Feature-specific Firestore queries & API communication
+│   ├── jobs/
+│   ├── invoices/
+│   ├── analytics/
+│   └── customers/
+│
+└── main.dart
+```
+
+#### 2. View Rules
+The `views/` folder must contain presentation/UI logic only:
+- Responsible for rendering UI and observing Riverpod providers.
+- Display data received from ViewModels.
+- Forward user interactions to ViewModel methods.
+- Render loading, success, empty, search-not-found, offline, and error states.
+- Handle screen navigation.
+- **Strictly Forbidden in Views:** Direct API calls, direct Firestore queries, business logic, database operations, complex data transformations, authentication logic, or state-changing mutations.
+
+#### 3. ViewModel Rules — State Management & Logic
+All feature-specific state management and business operations must be handled inside the corresponding ViewModels using Riverpod:
+- Coordinate API calls, Firestore operations, and state changes.
+- Manage form state, field validation, and submission states.
+- Manage search, filtering, sorting, and pagination.
+- Perform data transformations and business validations.
+- Handle loading states, request timeouts, and error mappings.
+- **Forbidden:** Never put feature-specific state management in Views, Widgets, or unrelated global providers. Riverpod is the sole state management solution. Never use `setState()` for application state or business logic.
+
+#### 4. Separate ViewModels Into Small Files
+Do not create one massive ViewModel handling every operation of an entire feature:
+- Split ViewModels according to logical responsibility (e.g. `garage_list_view_model.dart`, `garage_details_view_model.dart`, `garage_form_view_model.dart`, `garage_search_view_model.dart`).
+- Each ViewModel must have a clear, single responsibility.
+
+#### 5. Repository Rules
+Each feature must have its own repository (or domain repository delegate) when it needs data access:
+- Firestore queries, document operations, and batch/transaction updates.
+- API communication and data persistence.
+- Mapping raw database responses into strongly-typed domain models.
+- Handling data-access errors and mapping to `AppException`.
+- **Architectural Flow:**
+  ```text
+  View
+    |
+    v
+  Riverpod ViewModel
+    |
+    v
+  Feature Repository
+    |
+    v
+  Core API / Firebase Services
+    |
+    v
+  Firestore / Backend API
+  ```
+- Views and Widgets must NEVER directly access the repository or database.
+
+#### 6. Model Rules
+Each feature must maintain its own models:
+- Define strongly-typed data structures, JSON serialization, and Firestore serialization.
+- Enforce immutability and null safety (`copyWith`, `toMap`, `fromFirestore`).
+- Zero UI widgets, business logic, or API request execution inside model classes.
+
+#### 7. Widget Rules
+All feature-specific UI components must reside inside that feature's `widgets/` folder:
+- Focused on UI presentation and reusable within their feature.
+- Receive data through constructors or read appropriate Riverpod providers.
+- Delegate state-changing user actions to ViewModels.
+- Zero direct database or API calls.
+
+#### 8. Core and Shared Components Boundary
+Only genuinely reusable components may exist in `core/`:
+- `core/widgets/`: Centralized text fields, dropdowns, buttons, search fields, loading overlays, empty states, error states, responsive wrappers.
+- `core/services/`: Firebase initialization, push notification infrastructure, connectivity monitoring, PDF/file upload infrastructure.
+- `core/network/`: HTTP clients, interceptors, network error handlers.
+- **Rule:** Never place feature-specific widgets or business logic into `core/`. Only components genuinely shared across multiple independent features belong in `core/`.
+
+#### 9. Riverpod Implementation Standards
+- Riverpod is the exclusive state management library across Customer, Merchant, and Admin modules.
+- Use `AsyncNotifier` / `AsyncNotifierProvider` for asynchronous state.
+- Use `Notifier` / `NotifierProvider` for synchronous state management.
+- Keep provider definitions scoped close to their feature.
+- Never use `setState()`, Bloc, Cubit, GetX, or separate Provider packages.
+
+#### 10. STRICT RULE: NO MASSIVE SOURCE FILES
+- Do not create unnecessarily lengthy source files.
+- Files approaching approximately 300–400 lines must be reviewed for logical decomposition.
+- One primary responsibility per file.
+- Extract complex subwidgets, dialogs, sheets, and reusable components into dedicated files in `widgets/`.
+- Extract multi-domain repository operations into dedicated feature repositories.
+- Keep functions concise, readable, and self-documenting.
+
+#### 11. Mandatory Architecture Compliance Checklist
+Before completing any task, verify:
+1. Feature-specific UI resides in the correct feature folder.
+2. Feature-specific ViewModels reside within that feature.
+3. All feature-specific state transitions occur through Riverpod ViewModels.
+4. Views and presentational widgets contain zero direct Firestore or API calls.
+5. Repositories handle data persistence and Firestore communication.
+6. Models are strictly typed and immutable.
+7. Feature widgets are cleanly extracted; no oversized files (> 300-400 lines without review).
+8. Only genuinely reusable components reside in `core/`.
+9. Zero `setState()` for application logic.
+10. All three verification gates pass: `dart format`, `flutter analyze` (0 issues), `flutter test` (100% pass).
+
+---
+
+## 7. Permanent Technical SEO & Platform Separation Rules
+
+### Rule 15: SEO AND PLATFORM SEPARATION RULE — MANDATORY
+1. Every public web page must have appropriate SEO metadata.
+2. Public website content must be crawlable and indexable where appropriate.
+3. Maintain valid `sitemap.xml` and `robots.txt` files at the web root.
+4. Generate page-specific titles, descriptions, and canonical URLs.
+5. Use structured data (JSON-LD Schema.org) only when the underlying information is accurate.
+6. Never expose private merchant or customer information through SEO pages.
+7. Never index authenticated dashboards, invoices, payment records, private profiles, or private repair tracking.
+8. Never create fake business records or fake SEO content.
+9. SEO implementation must not negatively affect Android functionality.
+10. Keep web-specific SEO dependencies and functionality separate from shared Android code.
+11. Prefer lightweight, performant SEO solutions.
+12. Use actual database records for dynamic public garage pages.
+13. Update SEO documentation whenever public routes or page content change.
+14. Verify crawler accessibility and page performance before marking SEO implementation complete.
+
+---
+
+## 8. Permanent Multi-Language Localization Rules (English & Malayalam)
+
+### Rule 16: APPLICATION LOCALIZATION RULE — MANDATORY
+1. **Dynamic Language Switching:**
+   - The application supports English (`en`) and Malayalam (`ml`).
+   - Switching language via `localeProvider` must immediately and dynamically re-render all visible presentation strings throughout the entire app without needing an app restart.
+2. **Strict Separation of Static UI vs Database Values:**
+   - **Translate Static Content:** Screen titles, descriptions, navigation labels, button pills, form labels, helper hints, empty states, error states, and system dialogs must use `context.tr(keyOrPhrase)` or `AppLocalizations`.
+   - **Preserve Business & User Data:** Merchant garage names (e.g. "Vishnu Auto Care"), customer names (e.g. "Vishnu Shaji"), vehicle license plates ("KL 07 AB 1234"), mechanic notes, and custom line item descriptions must NEVER be translated or modified.
+3. **Predefined Status Code Localization:**
+   - Database documents store normalized alphanumeric status codes (`in_progress`, `completed`, `received`, `waiting_for_parts`, `ready_for_collection`, `paid`, `unpaid`, `overdue`, `due_soon`).
+   - UI status components (including `AppStatusBadge`, timeline step views, and filter chips) must pass raw status codes through `loc.status(rawStatus)` or `loc.repairStatus(rawStatus)` to display natural, culturally appropriate Malayalam and English labels.
+4. **Natural, Culturally Appropriate Malayalam:**
+   - Use standard Malayalam automotive terminology familiar to Kerala users (e.g. 'അക്കൗണ്ട് പ്രൊഫൈൽ', 'വാറന്റി വോൾട്ട്', 'പുരോഗമിക്കുന്നു', 'പൂർത്തിയായി', 'പണം അടച്ചു', 'അടയ്ക്കാനുണ്ട്', 'കൈപ്പറ്റാൻ തയ്യാറാണ്').
+5. **Universal Fallback and Typography:**
+   - Any unknown string defaults cleanly to English or the raw input.
+   - All Malayalam text must use the configured `AppFonts.fontFallbacks` (`['Manjari', 'Gayathri', 'Noto Sans Malayalam', 'sans-serif']`) and maintain zero `RenderFlex` overflows down to 320px screen width.

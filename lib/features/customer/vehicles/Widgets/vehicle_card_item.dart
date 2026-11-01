@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/features/shared/models/vehicle_model.dart';
 
 class VehicleCardItem extends StatelessWidget {
@@ -93,7 +94,7 @@ class VehicleCardItem extends StatelessWidget {
                     if (vehicle.nextServiceDue != null) ...[
                       const SizedBox(height: 6),
                       Text(
-                        'Next Service: ${DateFormatter.formatDate(vehicle.nextServiceDue)}',
+                        '${context.tr('nextServiceDue')}: ${DateFormatter.formatDate(vehicle.nextServiceDue)}',
                         style: AppFonts.labelSmall(color: AppColors.accentBlue),
                       ),
                     ],

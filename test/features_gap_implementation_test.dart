@@ -15,6 +15,7 @@ import 'package:garage_card/features/shared/models/payment_record_model.dart';
 import 'package:garage_card/features/shared/models/qc_checklist_model.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:garage_card/features/shared/models/supplemental_work_model.dart';
+import 'package:garage_card/features/shared/models/warranty_item_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
 void main() {
@@ -75,20 +76,58 @@ void main() {
   group('GarageRepository Inventory & Workflow Tests', () {
     late GarageRepository repo;
 
-    setUp(() {
+    setUp(() async {
       repo = GarageRepository();
+
+      final initialItem = InventoryItemModel(
+        id: 'initial_part_1',
+        garageId: 'garage_test_1',
+        sku: 'PART-001',
+        name: 'Brake Pad Set',
+        category: 'Brakes & Suspension',
+        unitCost: 800.0,
+        sellingPrice: 1200.0,
+        currentStock: 2,
+        minStockAlert: 5,
+        unit: 'Sets',
+      );
+      await repo.saveInventoryItem('garage_test_1', initialItem);
+
+      await repo.createServiceJob(
+        ServiceJobModel(
+          id: 'job_test_1',
+          jobNumber: 'JOB-2026-001',
+          garageId: 'garage_test_1',
+          customerId: 'cust_test_1',
+          vehicleId: 'veh_test_1',
+          vehicleDisplay: 'Hyundai i20',
+          status: 'inProgress',
+        ),
+      );
+
+      await repo.createServiceJob(
+        ServiceJobModel(
+          id: 'job_test_5',
+          jobNumber: 'JOB-2026-005',
+          garageId: 'garage_test_1',
+          customerId: 'cust_test_1',
+          vehicleId: 'veh_test_1',
+          vehicleDisplay: 'Honda City',
+          status: 'qcInProgress',
+        ),
+      );
     });
 
     test('Inventory CRUD and stock adjustments work as expected', () async {
-      final initial = await repo.getInventory('garage_demo_1');
+      final initial = await repo.getInventory('garage_test_1');
       expect(initial.isNotEmpty, isTrue);
 
-      final lowStock = await repo.getLowStockItems('garage_demo_1');
+      final lowStock = await repo.getLowStockItems('garage_test_1');
       expect(lowStock.any((i) => i.isLowStock), isTrue);
 
       final newItem = InventoryItemModel(
         id: 'test_item_1',
-        garageId: 'garage_demo_1',
+        garageId: 'garage_test_1',
         sku: 'TEST-SKU-99',
         name: 'Test Synthetic Fluid',
         category: 'Fluids & Lubricants',
@@ -99,26 +138,26 @@ void main() {
         unit: 'Bottles',
       );
 
-      final saved = await repo.saveInventoryItem('garage_demo_1', newItem);
+      final saved = await repo.saveInventoryItem('garage_test_1', newItem);
       expect(saved.sku, equals('TEST-SKU-99'));
 
-      await repo.adjustInventoryStock('garage_demo_1', 'test_item_1', 5);
+      await repo.adjustInventoryStock('garage_test_1', 'test_item_1', 5);
       var updatedList = await repo.getInventory(
-        'garage_demo_1',
+        'garage_test_1',
         query: 'TEST-SKU-99',
       );
       expect(updatedList.first.currentStock, equals(15));
 
-      await repo.deleteInventoryItem('garage_demo_1', 'test_item_1');
+      await repo.deleteInventoryItem('garage_test_1', 'test_item_1');
       updatedList = await repo.getInventory(
-        'garage_demo_1',
+        'garage_test_1',
         query: 'TEST-SKU-99',
       );
       expect(updatedList.isEmpty, isTrue);
     });
 
     test('Supplemental work request and decision lifecycle', () async {
-      const jobId = 'job_demo_1';
+      const jobId = 'job_test_1';
       final item = SupplementalWorkItem(
         id: 'supp_test_1',
         jobId: jobId,
@@ -129,18 +168,18 @@ void main() {
         status: 'pending',
       );
 
-      await repo.addSupplementalWork('garage_demo_1', jobId, item);
-      var jobs = await repo.getServiceJobs(garageId: 'garage_demo_1');
+      await repo.addSupplementalWork('garage_test_1', jobId, item);
+      var jobs = await repo.getServiceJobs(garageId: 'garage_test_1');
       var job = jobs.firstWhere((j) => j.id == jobId);
       expect(job.supplementalItems.any((s) => s.id == 'supp_test_1'), isTrue);
 
       await repo.decideSupplementalWork(
-        'garage_demo_1',
+        'garage_test_1',
         jobId,
         'supp_test_1',
         true,
       );
-      jobs = await repo.getServiceJobs(garageId: 'garage_demo_1');
+      jobs = await repo.getServiceJobs(garageId: 'garage_test_1');
       job = jobs.firstWhere((j) => j.id == jobId);
       final approvedItem = job.supplementalItems.firstWhere(
         (s) => s.id == 'supp_test_1',
@@ -152,41 +191,41 @@ void main() {
     test(
       'QC Checklist sign-off validation and Gate Pass OTP lifecycle',
       () async {
-        const jobId = 'job_demo_5';
+        const jobId = 'job_test_5';
         final fullChecklist = {
           for (final k in QCChecklistModel.standardChecklistItems) k: true,
         };
 
         await repo.updateQcChecklist(
-          'garage_demo_1',
+          'garage_test_1',
           jobId,
           fullChecklist,
           inspectorName: 'Suresh Kumar',
         );
 
-        var jobs = await repo.getServiceJobs(garageId: 'garage_demo_1');
+        var jobs = await repo.getServiceJobs(garageId: 'garage_test_1');
         var job = jobs.firstWhere((j) => j.id == jobId);
         expect(job.isQcPassed, isTrue);
         expect(job.qcInspectorName, equals('Suresh Kumar'));
 
-        final otp = await repo.generateGatePass('garage_demo_1', jobId);
+        final otp = await repo.generateGatePass('garage_test_1', jobId);
         expect(otp.length, equals(6));
 
         final wrongOtpResult = await repo.verifyGatePass(
-          'garage_demo_1',
+          'garage_test_1',
           jobId,
           '000000',
         );
         expect(wrongOtpResult, isFalse);
 
         final correctOtpResult = await repo.verifyGatePass(
-          'garage_demo_1',
+          'garage_test_1',
           jobId,
           otp,
         );
         expect(correctOtpResult, isTrue);
 
-        jobs = await repo.getServiceJobs(garageId: 'garage_demo_1');
+        jobs = await repo.getServiceJobs(garageId: 'garage_test_1');
         job = jobs.firstWhere((j) => j.id == jobId);
         expect(job.isGatePassVerified, isTrue);
         expect(job.status, equals('completed'));
@@ -196,7 +235,40 @@ void main() {
     test(
       'Split payments update invoice records and customer warranties',
       () async {
-        const invId = 'inv_demo_3';
+        const invId = 'inv_test_3';
+        final initialInv = InvoiceModel(
+          id: invId,
+          garageId: 'garage_test_1',
+          jobId: 'job_test_1',
+          customerId: 'cust_test_1',
+          invoiceNumber: 'INV-1003',
+          subtotal: 5000.0,
+          totalAmount: 5000.0,
+          balanceDue: 5000.0,
+          currencyCode: 'INR',
+          warrantyItems: [
+            WarrantyItemModel(
+              id: 'war_1',
+              invoiceId: invId,
+              partName: 'Front Strut',
+              durationMonths: 12,
+              startDate: DateTime.now(),
+              expiryDate: DateTime.now().add(const Duration(days: 365)),
+              status: 'active',
+            ),
+          ],
+        );
+        await repo.createInvoice(initialInv);
+
+        await repo.recordPayment(
+          invoiceId: invId,
+          amount: 2500.0,
+          paymentMethod: 'cash',
+          referenceNumber: 'CASH1',
+          notes: 'Advance deposit',
+          recordedByUid: 'staff_1',
+        );
+
         final payment = await repo.recordPayment(
           invoiceId: invId,
           amount: 2500.0,
@@ -207,13 +279,13 @@ void main() {
         );
 
         expect(payment.amount, equals(2500.0));
-        final invoices = await repo.getInvoices(garageId: 'garage_demo_1');
+        final invoices = await repo.getInvoices(garageId: 'garage_test_1');
         final inv = invoices.firstWhere((i) => i.id == invId);
         expect(inv.balanceDue, equals(0.0));
         expect(inv.isPaid, isTrue);
         expect(inv.paymentRecords.length, greaterThanOrEqualTo(2));
 
-        final warranties = await repo.getCustomerWarranties('cust_demo_1');
+        final warranties = await repo.getCustomerWarranties('cust_test_1');
         expect(warranties.isNotEmpty, isTrue);
         expect(warranties.any((w) => w.isActive), isTrue);
       },

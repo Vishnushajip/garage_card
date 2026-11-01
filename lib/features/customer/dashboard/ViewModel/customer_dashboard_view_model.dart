@@ -86,9 +86,33 @@ class CustomerDashboardViewModel extends Notifier<CustomerDashboardState> {
         longitude: location?.longitude ?? 76.2673,
       );
 
-      final activeJobs = jobs.where((j) => j.status != 'completed').toList();
+      final activeJobs = jobs.where((j) => j.isActiveRepair).toList();
       final pendingEstimates = estimates.where((e) => e.isPending).toList();
       final unpaidInvoices = invoices.where((i) => !i.isPaid).toList();
+
+      final combinedReminders = <ServiceReminderModel>[...reminders];
+      for (final v in vehicles) {
+        if (v.hasMaintenanceSchedule &&
+            !combinedReminders.any((r) => r.vehicleId == v.id)) {
+          combinedReminders.add(
+            ServiceReminderModel(
+              id: 'veh_maint_${v.id}',
+              garageId: v.lastServicedGarageId ?? '',
+              customerId: v.customerId,
+              vehicleId: v.id,
+              vehicleDisplay: v.displayName,
+              title: '${v.lastServiceType ?? "Periodic"} Maintenance',
+              serviceType: v.lastServiceType ?? 'Routine Maintenance',
+              dueDate: v.nextServiceDue ?? DateTime.now(),
+              dueMileage: v.nextServiceOdometer ?? 0,
+              status: v.maintenanceStatus,
+              isCustomerReported: false,
+              notes: 'Calculated from vehicle maintenance record',
+              createdAt: v.lastServiceDate,
+            ),
+          );
+        }
+      }
 
       state = state.copyWith(
         isLoading: false,
@@ -97,7 +121,7 @@ class CustomerDashboardViewModel extends Notifier<CustomerDashboardState> {
         pendingEstimates: pendingEstimates,
         recentEstimates: estimates,
         unpaidInvoices: unpaidInvoices,
-        upcomingReminders: reminders,
+        upcomingReminders: combinedReminders,
         nearbyGarages: nearby,
       );
     } catch (e) {

@@ -69,7 +69,7 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
       final current = state.garage;
       final garageId =
           current?.id ??
-          (user != null ? 'garage_${user.uid}' : 'garage_demo_1');
+          (user != null && user.uid.isNotEmpty ? 'garage_${user.uid}' : '');
 
       final updated = GarageModel(
         id: garageId,

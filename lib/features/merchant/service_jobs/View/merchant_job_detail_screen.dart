@@ -17,9 +17,11 @@ import 'package:garage_card/features/shared/models/service_job_model.dart';
 
 import '../ViewModel/merchant_jobs_view_model.dart';
 import '../Widgets/add_supplemental_work_dialog.dart';
+import '../Widgets/complete_repair_dialog.dart';
 import '../Widgets/gate_pass_verification_dialog.dart';
 import '../Widgets/job_status_dialog.dart';
 import '../Widgets/qc_checklist_dialog.dart';
+import '../Widgets/start_repair_dialog.dart';
 
 class MerchantJobDetailScreen extends ConsumerStatefulWidget {
   const MerchantJobDetailScreen({super.key, required this.jobId});
@@ -41,6 +43,48 @@ class _MerchantJobDetailScreenState
     });
   }
 
+  void _openStartRepairDialog(BuildContext context, ServiceJobModel job) {
+    showDialog(
+      context: context,
+      builder: (ctx) => StartRepairDialog(
+        job: job,
+        onStartRepair: (technicianName, notes) => ref
+            .read(merchantJobsViewModelProvider.notifier)
+            .startRepair(
+              jobId: job.id,
+              technicianName: technicianName,
+              notes: notes,
+            ),
+      ),
+    );
+  }
+
+  void _openCompleteRepairDialog(BuildContext context, ServiceJobModel job) {
+    showDialog(
+      context: context,
+      builder: (ctx) => CompleteRepairDialog(
+        job: job,
+        onCompleteRepair:
+            ({
+              required int finalOdometer,
+              DateTime? nextServiceDue,
+              int? nextServiceOdometer,
+              String? nextServiceType,
+              String? notes,
+            }) => ref
+                .read(merchantJobsViewModelProvider.notifier)
+                .completeRepair(
+                  jobId: job.id,
+                  finalOdometer: finalOdometer,
+                  nextServiceDue: nextServiceDue,
+                  nextServiceOdometer: nextServiceOdometer,
+                  nextServiceType: nextServiceType,
+                  notes: notes,
+                ),
+      ),
+    );
+  }
+
   void _openStatusDialog(BuildContext context, ServiceJobModel job) {
     showDialog(
       context: context,
@@ -52,7 +96,7 @@ class _MerchantJobDetailScreenState
               : 'Customer',
           vehicleDisplay: job.vehicleDisplay,
           jobNumber: job.jobNumber,
-          garageName: 'Apex Precision Automotive',
+          garageName: 'Authorized Service Center',
           customerPhone: job.customerPhone,
           customerWhatsApp: job.customerWhatsApp,
           onUpdateStatus: (newStatus, notes) {
@@ -194,13 +238,72 @@ class _MerchantJobDetailScreenState
                           style: AppFonts.labelSmall(color: secondaryTextColor),
                         ),
                         const SizedBox(height: 16),
-                        AppButton(
-                          label: 'Update Status & Notify Customer',
-                          onPressed: () => _openStatusDialog(context, job),
-                          variant: AppButtonVariant.primary,
-                          isFullWidth: true,
-                          height: 44,
-                        ),
+                        if (!job.isActiveRepair && !job.isCompletedRepair) ...[
+                          AppButton(
+                            label: 'Start Repair Work',
+                            icon: const Icon(
+                              Icons.play_arrow_rounded,
+                              size: 18,
+                            ),
+                            onPressed: () =>
+                                _openStartRepairDialog(context, job),
+                            variant: AppButtonVariant.primary,
+                            isFullWidth: true,
+                            height: 44,
+                          ),
+                          const SizedBox(height: 10),
+                          AppButton(
+                            label: 'Update Status & Notify Customer',
+                            icon: const Icon(
+                              Icons.edit_notifications_rounded,
+                              size: 18,
+                            ),
+                            onPressed: () => _openStatusDialog(context, job),
+                            variant: AppButtonVariant.outline,
+                            isFullWidth: true,
+                            height: 42,
+                          ),
+                        ] else if (job.isActiveRepair) ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                child: AppButton(
+                                  label: 'Update Status',
+                                  icon: const Icon(
+                                    Icons.edit_notifications_rounded,
+                                    size: 16,
+                                  ),
+                                  onPressed: () =>
+                                      _openStatusDialog(context, job),
+                                  variant: AppButtonVariant.outline,
+                                  height: 44,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: AppButton(
+                                  label: 'Complete Repair',
+                                  icon: const Icon(
+                                    Icons.check_circle_rounded,
+                                    size: 16,
+                                  ),
+                                  onPressed: () =>
+                                      _openCompleteRepairDialog(context, job),
+                                  variant: AppButtonVariant.primary,
+                                  height: 44,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ] else ...[
+                          AppButton(
+                            label: 'Update Delivery Notes',
+                            onPressed: () => _openStatusDialog(context, job),
+                            variant: AppButtonVariant.outline,
+                            isFullWidth: true,
+                            height: 44,
+                          ),
+                        ],
                       ],
                     ),
                   ),

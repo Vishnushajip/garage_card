@@ -3,7 +3,8 @@
 ## 1. Project Overview
 
 ### 1.1 Project Identity
-- **Project Name:** Garage Card (Commercial Brand: **WeFix**)
+- **Project Name:** Garage Card (Commercial Brand: **V-Fix**)
+- **Brand Slogan:** *V-Fix – Smarter Garage Management. Better Vehicle Care.*
 - **Platform Application:** Multi-Tenant Automotive Service & Garage Management Platform
 - **Form Factors:** Mobile (Android/iOS), Tablet, Laptop, and Web (Desktop / Mobile Browsers)
 - **Codebase Strategy:** Unified single Flutter codebase supporting dual distinct experiences (Customer & Merchant) with multi-device responsive adaptations.
@@ -248,6 +249,26 @@ Customers discover workshop services via a dedicated, auto-focused search screen
 Merchants configure their workshop location without paid Google Maps API keys:
 - **URL Coordinate Extraction:** Automatically parses latitude and longitude from Google Maps share links using regex patterns (`@lat,lng` and `?q=lat,lng`).
 - **Open Geocoding:** Resolves text addresses using the free OpenStreetMap Nominatim forward geocoding API.
+
+### 5.7 Real-Time Repair Tracking, Start Repair & Complete Repair Workflows
+Repairs progress through verified operational states backed by actual Firestore records:
+- **Active Repair Qualification:** A repair job qualifies as `isActiveRepair` strictly when work has commenced (`in_progress`, `awaiting_parts`, `on_hold`, `quality_check`). Requests, bookings, or estimates awaiting decision are explicitly classified as `isPendingRequest` and excluded from active repairs.
+- **Merchant "Start Repair" Action:** Explicit action requiring lead technician assignment and commencement notes; transitions status to `in_progress`, logs `actualStartTime`, writes customer-visible history, and triggers high-priority customer notification with deep link `/customer/jobs/{jobId}`.
+- **Merchant "Complete Repair" Action:** Final handover dialog capturing final odometer reading, target odometer, next recommended service type and due date, and handover notes. Atomically:
+  1. Transitions job to `completed` and records `completedDate`.
+  2. Generates/updates vehicle record with `currentOdometer`, `lastServiceDate`, `lastServiceType`, `nextServiceDue`, and `nextServiceOdometer`.
+  3. Automatically schedules a `ServiceReminderModel` for the vehicle.
+  4. Issues a 6-digit cryptographic digital gate pass OTP.
+  5. Emits `'Service Completed'` push notification with OTP and review prompt.
+
+### 5.8 Dynamic Upcoming Vehicle Maintenance & History Privacy
+- **Maintenance Intelligence:** Computed directly from vehicle records and completed repair jobs:
+  - `upcoming`: Due in > 14 days and > 500 km remaining.
+  - `due_soon`: Due within 14 days or <= 500 km remaining.
+  - `due`: Due within 3 days or <= 100 km remaining.
+  - `overdue`: Date in past or current odometer exceeds target.
+  - `not_available`: Rendered authentically when no vehicle maintenance schedule exists (zero fake or simulated dates).
+- **History Privacy & Audit Trail:** History logs record `isCustomerVisible`. Internal mechanic diagnostic notes remain strictly private to merchants, while customer timelines only show customer-approved milestones.
 - **Direct Navigation:** "Test Location on Maps" and customer navigation buttons launch external Google Maps search queries via standard `url_launcher`.
 
 ### 5.7 Mandatory Global UI States, Loading, Skeleton, Empty & Error Architecture
@@ -259,6 +280,14 @@ The platform enforces a unified suite of reusable state components across Custom
 - **`AppOfflineState`:** Distinguishes live vs cached data with last-sync timestamps and offline cached indicators.
 - **`AppPermissionState` & `AppUnauthorizedState`:** Contextual explanations for location, notifications, camera, storage, and session expirations.
 - **`AppLoadingOverlay`:** Non-blocking visual feedback during network mutations preventing duplicate form and action submissions.
+
+### 5.8 Dynamic Application-Wide Multi-Language Localization (English & Malayalam)
+The application incorporates a dynamic bilingual localization architecture supporting English (`en`) and Malayalam (`ml`):
+- **Dynamic Runtime Switching:** Reactive Riverpod `localeProvider` controls `MaterialApp.router`'s `locale`, dynamically rebuilding the UI upon language selection without application restarts.
+- **Phrase-to-Key Universal Fallback (`_phraseToKeyMap`):** Bridges raw UI English phrases directly to normalized localization keys, translating screens, buttons, app bars, and dialogs seamlessly.
+- **Status Code Translation Engine:** Translates normalized backend status codes (`in_progress`, `completed`, `received`, `waiting_for_parts`, `ready_for_collection`, `paid`, `unpaid`, `overdue`, `due_soon`) into natural localized labels via `loc.status(rawStatus)`, `loc.repairStatus(rawStatus)`, and `loc.invoiceStatus(rawStatus)`.
+- **Strict Business Data Preservation:** User-generated and database-stored business records (garage names, customer names, registration numbers, notes, custom services) are never altered or translated.
+- **Automotive Typography & Zero-Overflow Layouts:** Leverages Malayalam font fallbacks (`Manjari`, `Gayathri`, `Noto Sans Malayalam`) maintaining zero `RenderFlex` overflows across all device form factors down to 320px.
 
 ---
 

@@ -1,47 +1,140 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="WeFix is a modern vehicle service and garage management platform for motorcycles, scooters, cars, and all vehicle types.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+
+  <!-- Primary SEO Meta Tags -->
+  <title>V-Fix | Garage Management & Vehicle Service Platform</title>
+  <meta name="title" content="V-Fix | Garage Management & Vehicle Service Platform">
+  <meta name="description" content="V-Fix – Smarter Garage Management. Better Vehicle Care. Modern cloud platform for auto workshops, repair job cards, GST billing, digital estimates, customer management, and real-time vehicle repair tracking.">
+  <meta name="keywords" content="garage management software, auto repair shop software, workshop billing software, car service near me, bike repair, vehicle repair tracking, job cards, automotive CRM, garage invoice management, vehicle maintenance">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="author" content="V-Fix Technologies">
+  <meta name="application-name" content="V-Fix">
+  <meta name="theme-color" content="#0F172A">
+  <link rel="canonical" href="https://vfix.app/">
+
+  <!-- Open Graph / Facebook / LinkedIn / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="V-Fix">
+  <meta property="og:url" content="https://vfix.app/">
+  <meta property="og:title" content="V-Fix – Smarter Garage Management. Better Vehicle Care.">
+  <meta property="og:description" content="Manage workshop operations, repair jobs, invoices, estimates, and customer vehicles. Discover local garages and track repairs in real-time.">
+  <meta property="og:image" content="https://vfix.app/icons/Icon-512.png">
+  <meta property="og:image:alt" content="V-Fix Garage Management & Vehicle Service Platform">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter / X Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://vfix.app/">
+  <meta name="twitter:title" content="V-Fix – Smarter Garage Management. Better Vehicle Care.">
+  <meta name="twitter:description" content="Complete SaaS platform for modern garage owners and vehicle owners. Digital job cards, billing, estimates & tracking.">
+  <meta name="twitter:image" content="https://vfix.app/icons/Icon-512.png">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="WeFix">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="V-Fix">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>WeFix | Vehicle Service Platform</title>
+  <!-- Google Authentication Client ID -->
   <meta name="google-signin-client_id" content="62265849009-mushlhju9uianaf4aqq4qtcj11kfiij5.apps.googleusercontent.com">
   <link rel="manifest" href="manifest.json">
-</head>
-<body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
+  <!-- Schema.org JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://vfix.app/#organization",
+        "name": "V-Fix",
+        "url": "https://vfix.app/",
+        "logo": "https://vfix.app/icons/Icon-512.png",
+        "slogan": "Smarter Garage Management. Better Vehicle Care.",
+        "description": "V-Fix is a complete multi-tenant SaaS platform empowering automotive repair workshops with job card tracking, digital invoicing, inventory control, and providing vehicle owners with real-time repair tracking and service history.",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+91-98765-43210",
+          "contactType": "customer service",
+          "email": "support@vfix.app",
+          "availableLanguage": ["English", "Malayalam"]
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://vfix.app/#website",
+        "url": "https://vfix.app/",
+        "name": "V-Fix | Garage Management & Vehicle Service Platform",
+        "publisher": {
+          "@id": "https://vfix.app/#organization"
+        },
+        "description": "Smarter Garage Management. Better Vehicle Care. Modern cloud platform for auto workshops and vehicle owners."
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://vfix.app/#software",
+        "name": "V-Fix",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web, Android",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "INR"
+        },
+        "featureList": [
+          "Digital Job Cards & Repair Workflows",
+          "Automotive Invoicing & Gate Pass Generation",
+          "Digital Estimates with Customer Approval",
+          "Workshop Inventory & Spare Parts Tracking",
+          "Real-Time Vehicle Repair Tracking for Customers",
+          "Intelligent Service Reminders & Maintenance Schedules",
+          "Direct WhatsApp Updates & Call Communication"
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body style="margin: 0; background-color: #0F172A; color: #F8FAFC; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+
+  <!-- Crawlable semantic fallback for Search Engine Bots & Screen Readers -->
+  <noscript>
+    <div style="padding: 40px 20px; max-width: 900px; margin: 0 auto;">
+      <h1>V-Fix – Smarter Garage Management. Better Vehicle Care.</h1>
+      <p>V-Fix is the premier multi-tenant automotive platform serving both independent garage owners and vehicle owners.</p>
+      <h2>Garage Management Features</h2>
+      <ul>
+        <li><a href="/features/garage-management">Garage Workshop Management</a>: Multi-bay job scheduling, technician task allocation, and daily pipeline tracking.</li>
+        <li><a href="/features/repair-job-management">Digital Job Cards & Repair Tracking</a>: Step-by-step repair workflow with gate pass issuance.</li>
+        <li><a href="/features/invoice-management">Automotive Billing & Invoicing</a>: Digital invoices, PDF exports, and payment settlement tracking.</li>
+        <li><a href="/features/vehicle-maintenance">Vehicle Maintenance Intelligence</a>: Proactive odometer and date-based service reminder system.</li>
+      </ul>
+      <h2>Solutions for Businesses and Vehicle Owners</h2>
+      <ul>
+        <li><a href="/solutions/garage-owners">For Garage Owners & Auto Repair Shops</a>: Streamline daily repair jobs, eliminate paperwork, and delight clients.</li>
+        <li><a href="/customers/find-garages">For Vehicle Owners</a>: Discover verified garages, compare services, and track repairs in real-time.</li>
+      </ul>
+      <h2>Company & Policies</h2>
+      <ul>
+        <li><a href="/about">About V-Fix</a></li>
+        <li><a href="/pricing">Transparent Pricing</a></li>
+        <li><a href="/faq">Frequently Asked Questions</a></li>
+        <li><a href="/contact">Contact Support</a></li>
+        <li><a href="/privacy-policy">Privacy Policy</a></li>
+        <li><a href="/terms-and-conditions">Terms & Conditions</a></li>
+      </ul>
+    </div>
+  </noscript>
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
@@ -60,7 +153,7 @@
       if (Notification.permission === "granted") {
         var options = {
           body: body || '',
-          icon: '/assets/branding/wefix_app_icon.png',
+          icon: '/icons/Icon-192.png',
           badge: '/favicon.png',
           data: { deepLink: deepLink || '/' }
         };
@@ -69,12 +162,12 @@
         }
         if (navigator.serviceWorker && navigator.serviceWorker.ready) {
           navigator.serviceWorker.ready.then(function(reg) {
-            reg.showNotification(title || 'WeFix Alert', options);
+            reg.showNotification(title || 'V-Fix Alert', options);
           }).catch(function() {
-            new Notification(title || 'WeFix Alert', options);
+            new Notification(title || 'V-Fix Alert', options);
           });
         } else {
-          new Notification(title || 'WeFix Alert', options);
+          new Notification(title || 'V-Fix Alert', options);
         }
       } else if (Notification.permission !== "denied") {
         Notification.requestPermission().then(function(perm) {

@@ -188,8 +188,7 @@ class AuthViewModel extends Notifier<AuthState> {
           ? 'Vishnu Shaji'
           : email.split('@').first.toUpperCase();
       final defaultPhone = isVishnu ? '+91 98460 77889' : '+91 98765 00000';
-      final isDemoMerchant = email.toLowerCase() == 'demo_merchant@garage.com';
-      final initialGarageId = isDemoMerchant ? 'garage_demo_1' : null;
+      const String? initialGarageId = null;
 
       try {
         final doc = await FirebaseFirestore.instance

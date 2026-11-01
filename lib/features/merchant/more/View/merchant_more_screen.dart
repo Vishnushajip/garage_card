@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/core/shared_widgets/account_switcher_list_view.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
@@ -52,7 +53,7 @@ class MerchantMoreScreen extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
-            title,
+            context.tr(title),
             style: AppFonts.titleSmall(color: primaryColor)
                 .copyWith(fontWeight: FontWeight.bold),
           ),
@@ -101,12 +102,12 @@ class MerchantMoreScreen extends ConsumerWidget {
         child: Icon(data.icon, color: data.color, size: 20),
       ),
       title: Text(
-        data.title,
+        context.tr(data.title),
         style: AppFonts.bodyMedium(color: primaryColor)
             .copyWith(fontWeight: FontWeight.w600),
       ),
       subtitle: Text(
-        data.subtitle,
+        context.tr(data.subtitle),
         style: AppFonts.labelSmall(color: secondaryColor),
       ),
       trailing: Icon(
@@ -357,7 +358,7 @@ class MerchantMoreScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'WeFix Garage',
+                          'V-Fix Garage',
                           style: AppFonts.labelSmall(color: primaryTextColor)
                               .copyWith(fontWeight: FontWeight.bold),
                         ),
@@ -387,16 +388,16 @@ class MerchantMoreScreen extends ConsumerWidget {
                         size: 16,
                       ),
                       label: Text(
-                        'Sign Out',
+                        context.tr('signOut'),
                         style: AppFonts.labelSmall(color: AppColors.error)
                             .copyWith(fontWeight: FontWeight.w600),
                       ),
                       onPressed: () async {
                         final confirm = await AppDialog.confirm(
                           context,
-                          title: 'Sign Out?',
+                          title: context.tr('signOut'),
                           message: 'Are you sure you want to securely exit your merchant workspace?',
-                          confirmLabel: 'Sign Out',
+                          confirmLabel: context.tr('signOut'),
                           isDestructive: true,
                         );
                         if (confirm == true) {

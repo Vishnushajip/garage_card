@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_state_layout_size.dart';
 
@@ -89,7 +90,7 @@ class AppEmptyState extends StatelessWidget {
           ),
         SizedBox(height: layoutSize == AppStateLayoutSize.compact ? 12 : 20),
         Text(
-          title,
+          context.tr(title),
           style: layoutSize == AppStateLayoutSize.compact
               ? AppFonts.titleMedium(color: primaryTextColor)
                     .copyWith(fontWeight: FontWeight.bold)
@@ -102,7 +103,7 @@ class AppEmptyState extends StatelessWidget {
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: Text(
-              _effectiveDescription!,
+              context.tr(_effectiveDescription!),
               style: layoutSize == AppStateLayoutSize.compact
                   ? AppFonts.bodySmall(color: secondaryTextColor)
                   : AppFonts.bodyMedium(color: secondaryTextColor),
@@ -119,7 +120,7 @@ class AppEmptyState extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               AppButton(
-                label: actionLabel!,
+                label: context.tr(actionLabel!),
                 onPressed: onAction,
                 variant: AppButtonVariant.primary,
                 height: layoutSize == AppStateLayoutSize.compact ? 38 : 46,
@@ -128,7 +129,7 @@ class AppEmptyState extends StatelessWidget {
                 TextButton(
                   onPressed: onSecondaryAction,
                   child: Text(
-                    secondaryActionLabel!,
+                    context.tr(secondaryActionLabel!),
                     style: AppFonts.labelLarge(color: AppColors.accentBlue),
                   ),
                 ),

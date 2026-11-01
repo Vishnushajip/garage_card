@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /features/
+Allow: /solutions/
+Allow: /customers/
+Allow: /pricing
+Allow: /faq
+Allow: /contact
+Allow: /privacy-policy
+Allow: /terms-and-conditions
+Allow: /garages/
+Allow: /icons/
+Allow: /assets/
+Allow: /sitemap.xml
+
+# Disallow private authenticated application routes
+Disallow: /customer/
+Disallow: /merchant/
+Disallow: /messages/
+Disallow: /chat/
+Disallow: /auth
+
+Sitemap: https://vfix.app/sitemap.xml
+

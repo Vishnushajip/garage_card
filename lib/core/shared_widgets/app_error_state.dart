@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_retry_button.dart';
 import 'package:garage_card/core/shared_widgets/app_state_layout_size.dart';
@@ -128,7 +129,7 @@ class _AppErrorStateState extends State<AppErrorState> {
               ),
               const SizedBox(height: 18),
               Text(
-                widget.title,
+                context.tr(widget.title),
                 style: widget.layoutSize == AppStateLayoutSize.compact
                     ? AppFonts.titleMedium(color: primaryTextColor)
                           .copyWith(fontWeight: FontWeight.bold)
@@ -140,7 +141,7 @@ class _AppErrorStateState extends State<AppErrorState> {
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 440),
                 child: Text(
-                  widget.message,
+                  context.tr(widget.message),
                   style: widget.layoutSize == AppStateLayoutSize.compact
                       ? AppFonts.bodySmall(color: secondaryTextColor)
                       : AppFonts.bodyMedium(color: secondaryTextColor),
@@ -162,7 +163,9 @@ class _AppErrorStateState extends State<AppErrorState> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          _showDetails ? 'Hide details' : 'Show details',
+                          _showDetails
+                              ? context.tr('hideDetails')
+                              : context.tr('showDetails'),
                           style: AppFonts.labelSmall(
                             color: AppColors.accentBlue,
                           ),
@@ -207,7 +210,7 @@ class _AppErrorStateState extends State<AppErrorState> {
                   if (widget.onRetry != null)
                     AppRetryButton(
                       onRetry: () async => widget.onRetry!(),
-                      label: widget.retryLabel,
+                      label: context.tr(widget.retryLabel),
                       isCompact:
                           widget.layoutSize == AppStateLayoutSize.compact,
                     ),

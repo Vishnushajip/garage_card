@@ -32,7 +32,7 @@ class MerchantAnalyticsScreen extends ConsumerWidget {
     final user = authState.userProfile;
     final garageId = (user?.garageId != null && user!.garageId!.isNotEmpty)
         ? user.garageId!
-        : 'garage_demo_1';
+        : '';
 
     if (state.isLoading && state.metrics == null) {
       return const Scaffold(

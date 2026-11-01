@@ -10,7 +10,7 @@ class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
     if (user?.garageId != null && user!.garageId!.isNotEmpty) {
       return user.garageId!;
     }
-    return 'garage_demo_1';
+    return '';
   }
 
   @override

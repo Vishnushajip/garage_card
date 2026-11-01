@@ -13,7 +13,7 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
-  const notificationTitle = payload.notification?.title || payload.data?.title || 'WeFix Notification';
+  const notificationTitle = payload.notification?.title || payload.data?.title || 'V-Fix Notification';
   const imageUrl = payload.notification?.image || payload.data?.image || payload.data?.imageUrl || null;
   const iconUrl = payload.notification?.icon || payload.data?.icon || '/icons/Icon-192.png';
   const bodyText = payload.notification?.body || payload.data?.body || '';

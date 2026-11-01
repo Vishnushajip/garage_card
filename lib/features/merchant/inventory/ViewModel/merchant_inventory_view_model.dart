@@ -11,7 +11,7 @@ class MerchantInventoryViewModel extends Notifier<MerchantInventoryState> {
     if (user?.garageId != null && user!.garageId!.isNotEmpty) {
       return user.garageId!;
     }
-    return 'garage_demo_1';
+    return '';
   }
 
   @override
@@ -98,4 +98,3 @@ final merchantInventoryViewModelProvider =
     NotifierProvider<MerchantInventoryViewModel, MerchantInventoryState>(() {
       return MerchantInventoryViewModel();
     });
-

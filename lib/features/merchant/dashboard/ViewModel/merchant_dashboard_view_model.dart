@@ -68,19 +68,31 @@ class MerchantDashboardViewModel extends Notifier<MerchantDashboardState> {
       final invoices = results[3] as List<InvoiceModel>;
       final appointments = results[4] as List<AppointmentModel>;
 
-      final activeJobs = jobs.where((j) => j.status != 'completed').toList();
-      final completedJobs = jobs
-          .where((j) => j.status == 'completed' || j.status == 'closed')
-          .length;
+      final activeJobs = jobs.where((j) => j.isActiveRepair).toList();
+      final completedJobs = jobs.where((j) => j.isCompletedRepair).length;
       final awaitingInspection = jobs
-          .where((j) => j.status == 'inspectionPending')
+          .where(
+            (j) =>
+                j.status.toLowerCase() == 'inspectionpending' ||
+                j.status.toLowerCase() == 'inspection',
+          )
           .length;
       final awaitingEstimate = estimates
           .where((e) => e.status == 'sent')
           .length;
-      final inProgress = jobs.where((j) => j.status == 'inProgress').length;
+      final inProgress = jobs
+          .where(
+            (j) =>
+                j.status.toLowerCase() == 'in_progress' ||
+                j.status.toLowerCase() == 'inprogress',
+          )
+          .length;
       final readyForCollection = jobs
-          .where((j) => j.status == 'readyForCollection')
+          .where(
+            (j) =>
+                j.status.toLowerCase() == 'readyforcollection' ||
+                j.status.toLowerCase() == 'ready_for_collection',
+          )
           .length;
 
       final unpaidInvoices = invoices.where((i) => !i.isPaid).toList();

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
@@ -60,9 +61,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
     final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     if (state.isLoading) {
-      return const Scaffold(
-        body: AppLoading(message: 'Loading your garage portal...'),
-      );
+      return Scaffold(body: AppLoading(message: context.tr('loadingPortal')));
     }
 
     if (state.errorMessage != null && state.activeJobs.isEmpty) {
@@ -83,7 +82,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline_rounded, size: 22),
-            tooltip: 'Messages',
+            tooltip: context.tr('messages'),
             onPressed: () => context.push(RoutePaths.chatList),
           ),
           IconButton(
@@ -97,7 +96,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
               backgroundColor: AppColors.primaryRed,
               child: const Icon(Icons.notifications_outlined, size: 22),
             ),
-            tooltip: 'Notifications',
+            tooltip: context.tr('notifications'),
             onPressed: () => context.push(RoutePaths.customerNotifications),
           ),
           const SizedBox(width: 4),
@@ -144,14 +143,14 @@ class CustomerDashboardScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Profile Incomplete',
+                                context.tr('profileIncomplete'),
                                 style: AppFonts.titleSmall(
                                   color: AppColors.primaryDark,
                                 ).copyWith(fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Complete your profile to receive instant repair & WhatsApp alerts.',
+                                context.tr('completePersonalDetailsDesc'),
                                 style: AppFonts.labelSmall(
                                   color: AppColors.textSecondaryLight,
                                 ),
@@ -178,7 +177,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                             ),
                           ),
                           child: Text(
-                            'Complete Now',
+                            context.tr('completeProfileNow'),
                             style: AppFonts.labelSmall(color: Colors.white)
                                 .copyWith(fontWeight: FontWeight.bold),
                           ),
@@ -228,14 +227,14 @@ class CustomerDashboardScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Search Garages, Services & Packages...',
+                                context.tr('searchGaragesServicesPackages'),
                                 style: AppFonts.labelMedium(
                                   color: secondaryTextColor,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Bike wash, oil change, periodic maintenance...',
+                                context.tr('searchPlaceholderSub'),
                                 style: AppFonts.bodySmall(
                                   color: secondaryTextColor.withValues(
                                     alpha: 0.7,
@@ -266,7 +265,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'Filter',
+                                context.tr('filter'),
                                 style: AppFonts.labelSmall(color: Colors.white)
                                     .copyWith(fontWeight: FontWeight.bold),
                               ),
@@ -324,7 +323,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                     Expanded(
                       child: CustomerQuickActionButton(
                         icon: Icons.storefront_rounded,
-                        label: 'Garages',
+                        label: context.tr('garages'),
                         accentColor: AppColors.accentBlue,
                         onTap: onNavigateToNearbyGarages,
                       ),
@@ -333,7 +332,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                     Expanded(
                       child: CustomerQuickActionButton(
                         icon: Icons.car_repair_rounded,
-                        label: 'Repairs',
+                        label: context.tr('repairs'),
                         accentColor: AppColors.info,
                         badgeCount: state.activeJobs.length,
                         onTap:
@@ -345,7 +344,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                     Expanded(
                       child: CustomerQuickActionButton(
                         icon: Icons.receipt_long_rounded,
-                        label: 'Invoices',
+                        label: context.tr('invoices'),
                         accentColor: AppColors.success,
                         badgeCount: state.unpaidInvoices.length,
                         onTap: onNavigateToInvoices,
@@ -355,7 +354,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                     Expanded(
                       child: CustomerQuickActionButton(
                         icon: Icons.chat_bubble_outline_rounded,
-                        label: 'Support',
+                        label: context.tr('support'),
                         accentColor: AppColors.accentAmber,
                         onTap: () => context.push(RoutePaths.chatList),
                       ),
@@ -396,7 +395,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              'FEATURED OFFERS',
+                              context.tr('featuredOffers'),
                               style: AppFonts.labelSmall(color: Colors.white)
                                   .copyWith(fontWeight: FontWeight.bold),
                             ),
@@ -413,7 +412,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                                 const SizedBox(width: 4),
                                 Flexible(
                                   child: Text(
-                                    'Genuine Parts',
+                                    context.tr('genuineParts'),
                                     style: AppFonts.labelSmall(
                                       color: Colors.white70,
                                     ),
@@ -427,7 +426,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Workshop Packages & Periodic Care',
+                        context.tr('workshopPackagesPeriodicCare'),
                         style: AppFonts.headlineSmall(color: Colors.white)
                             .copyWith(fontWeight: FontWeight.bold),
                       ),
@@ -438,7 +437,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 14),
                       AppButton(
-                        label: 'Explore Workshop Packages',
+                        label: context.tr('exploreWorkshopPackages'),
                         onPressed: onNavigateToNearbyGarages,
                         variant: AppButtonVariant.primary,
                         height: 38,
@@ -453,14 +452,14 @@ class CustomerDashboardScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        'Featured & Verified Garages',
+                        context.tr('featuredGarages'),
                         style: AppFonts.titleLarge(color: primaryTextColor),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     TextButton(
                       onPressed: onNavigateToNearbyGarages,
-                      child: const Text('View All'),
+                      child: Text(context.tr('viewAll')),
                     ),
                   ],
                 ),
@@ -502,7 +501,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                         children: [
                           Flexible(
                             child: Text(
-                              'Active Repairs',
+                              context.tr('activeRepairs'),
                               style: AppFonts.titleLarge(
                                 color: primaryTextColor,
                               ),
@@ -537,7 +536,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                       onPressed:
                           onNavigateToJobs ??
                           () => context.push(RoutePaths.customerJobs),
-                      child: const Text('View All'),
+                      child: Text(context.tr('viewAll')),
                     ),
                   ],
                 ),
@@ -564,14 +563,14 @@ class CustomerDashboardScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        'Upcoming Maintenance',
+                        context.tr('upcomingMaintenance'),
                         style: AppFonts.titleLarge(color: primaryTextColor),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     TextButton(
                       onPressed: onNavigateToReminders,
-                      child: const Text('View All'),
+                      child: Text(context.tr('viewAll')),
                     ),
                   ],
                 ),
@@ -587,18 +586,43 @@ class CustomerDashboardScreen extends ConsumerWidget {
                       padding: const EdgeInsets.all(16),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.calendar_today_rounded,
-                            size: 20,
-                            color: AppColors.success,
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentBlue.withValues(
+                                alpha: 0.1,
+                              ),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.calendar_today_rounded,
+                              size: 18,
+                              color: AppColors.accentBlue,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Text(
-                              'No upcoming service reminders scheduled.',
-                              style: AppFonts.bodySmall(
-                                color: secondaryTextColor,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  state.vehicles.isNotEmpty
+                                      ? 'Maintenance schedule not available'
+                                      : 'No vehicles registered',
+                                  style: AppFonts.labelMedium(
+                                    color: primaryTextColor,
+                                  ).copyWith(fontWeight: FontWeight.w600),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  state.vehicles.isNotEmpty
+                                      ? 'Complete your next service to automatically track intervals, reminders, and warranty.'
+                                      : 'Add your vehicle or book a service to view upcoming maintenance schedules.',
+                                  style: AppFonts.bodySmall(
+                                    color: secondaryTextColor,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -640,7 +664,7 @@ class CustomerDashboardScreen extends ConsumerWidget {
                               ),
                             ),
                             subtitle: Text(
-                              '${rem.vehicleDisplay} • Due ${DateFormatter.formatDate(rem.dueDate)}',
+                              '${rem.vehicleDisplay} • Due ${DateFormatter.formatDate(rem.dueDate)}${rem.dueMileage > 0 ? " (${rem.dueMileage} km)" : ""}',
                               style: AppFonts.labelSmall(
                                 color: secondaryTextColor,
                               ),

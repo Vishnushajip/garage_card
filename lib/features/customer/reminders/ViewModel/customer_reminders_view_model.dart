@@ -54,7 +54,7 @@ class CustomerRemindersViewModel extends Notifier<CustomerRemindersState> {
 
       final reminder = ServiceReminderModel(
         id: '',
-        garageId: 'garage_demo_1',
+        garageId: '',
         customerId: uid,
         vehicleId: vehicleId,
         vehicleDisplay: vehicleDisplay,

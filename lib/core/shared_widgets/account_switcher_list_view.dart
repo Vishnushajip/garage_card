@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 
@@ -52,9 +53,9 @@ class AccountSwitcherListView extends ConsumerWidget {
       _AccountItemData(
         id: 'customer',
         title: customerName,
-        badgeLabel: 'Customer',
+        badgeLabel: context.tr('customer'),
         email: customerEmail,
-        description: 'Vehicle registry, repair status & digital invoices',
+        description: context.tr('customerAccountDesc'),
         icon: Icons.directions_car_rounded,
         isActive: !isMerchant,
         accentColor: AppColors.accentBlue,
@@ -62,9 +63,9 @@ class AccountSwitcherListView extends ConsumerWidget {
       _AccountItemData(
         id: 'merchant',
         title: merchantName,
-        badgeLabel: 'Merchant',
+        badgeLabel: context.tr('merchant'),
         email: merchantEmail,
-        description: 'Garage operations, digital inspections & staff roles',
+        description: context.tr('merchantAccountDesc'),
         icon: Icons.storefront_rounded,
         isActive: isMerchant,
         accentColor: AppColors.primaryRed,
@@ -93,17 +94,19 @@ class AccountSwitcherListView extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 title: Text(
-                  'Switch to ${item.badgeLabel} Account?',
+                  context.loc.locale.languageCode == 'ml'
+                      ? '${context.tr(item.id)} അക്കൗണ്ടിലേക്ക് മാറണോ?'
+                      : 'Switch to ${item.badgeLabel} Account?',
                   style: AppFonts.titleMedium(color: primaryTextColor),
                 ),
                 content: Text(
-                  'You will switch from ${isMerchant ? "Merchant" : "Customer"} to ${item.badgeLabel} workspace. Your session and account data will be maintained.',
+                  context.tr('switchAccountDesc'),
                   style: AppFonts.bodyMedium(color: secondaryTextColor),
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: const Text('Cancel'),
+                    child: Text(context.tr('cancel')),
                   ),
                   FilledButton(
                     style: FilledButton.styleFrom(
@@ -113,7 +116,7 @@ class AccountSwitcherListView extends ConsumerWidget {
                       ),
                     ),
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: const Text('Confirm Switch'),
+                    child: Text(context.tr('confirmSwitch')),
                   ),
                 ],
               ),
@@ -212,17 +215,16 @@ class _AccountTileItem extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 6,
+                      runSpacing: 2,
                       children: [
-                        Flexible(
-                          child: Text(
-                            item.title,
-                            style: AppFonts.titleSmall(color: primaryTextColor)
-                                .copyWith(fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                        Text(
+                          item.title,
+                          style: AppFonts.titleSmall(color: primaryTextColor)
+                              .copyWith(fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 6,
@@ -284,7 +286,7 @@ class _AccountTileItem extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'Active',
+                        context.tr('active'),
                         style: AppFonts.labelSmall(
                           color: AppColors.success,
                         ).copyWith(fontWeight: FontWeight.bold, fontSize: 11),
@@ -306,7 +308,7 @@ class _AccountTileItem extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Switch',
+                        context.tr('switch'),
                         style: AppFonts.labelSmall(
                           color: Colors.white,
                         ).copyWith(fontWeight: FontWeight.bold, fontSize: 11),
