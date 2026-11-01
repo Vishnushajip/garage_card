@@ -65,143 +65,152 @@ class GarageCardItem extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (hasCover)
-              AspectRatio(
-                aspectRatio: 2.2,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.network(
-                      garage.coverImageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (ctx, err, stack) => Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 180),
+                child: AspectRatio(
+                  aspectRatio: 2.2,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.network(
+                        garage.coverImageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (ctx, err, stack) => Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                            ),
                           ),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.car_repair_rounded,
-                            size: 40,
-                            color: Colors.white24,
+                          child: const Center(
+                            child: Icon(
+                              Icons.car_repair_rounded,
+                              size: 40,
+                              color: Colors.white24,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withValues(alpha: 0.15),
-                            Colors.black.withValues(alpha: 0.75),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 10,
-                      right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
+                      Container(
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.65),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.15),
+                              Colors.black.withValues(alpha: 0.75),
+                            ],
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              size: 14,
-                              color: AppColors.accentAmber,
+                      ),
+                      Positioned(
+                        top: 10,
+                        right: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.65),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2),
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${garage.rating.toStringAsFixed(1)} (${garage.reviewCount})',
-                              style: AppFonts.labelSmall(color: Colors.white)
-                                  .copyWith(fontWeight: FontWeight.bold),
-                            ),
-                          ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.star_rounded,
+                                size: 14,
+                                color: AppColors.accentAmber,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${garage.rating.toStringAsFixed(1)} (${garage.reviewCount})',
+                                style: AppFonts.labelSmall(color: Colors.white)
+                                    .copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      bottom: 10,
-                      left: 14,
-                      right: 14,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppColors.surfaceDark,
-                              border: Border.all(color: Colors.white, width: 2),
-                              image: hasLogo
-                                  ? DecorationImage(
-                                      image: NetworkImage(garage.logoUrl!),
-                                      fit: BoxFit.cover,
+                      Positioned(
+                        bottom: 10,
+                        left: 14,
+                        right: 14,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.surfaceDark,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                                image: hasLogo
+                                    ? DecorationImage(
+                                        image: NetworkImage(garage.logoUrl!),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : null,
+                              ),
+                              child: !hasLogo
+                                  ? const Icon(
+                                      Icons.garage_rounded,
+                                      color: Colors.white,
+                                      size: 24,
                                     )
                                   : null,
                             ),
-                            child: !hasLogo
-                                ? const Icon(
-                                    Icons.garage_rounded,
-                                    color: Colors.white,
-                                    size: 24,
-                                  )
-                                : null,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        garage.name,
-                                        style: AppFonts.titleMedium(
-                                          color: Colors.white,
-                                        ).copyWith(fontWeight: FontWeight.bold),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          garage.name,
+                                          style:
+                                              AppFonts.titleMedium(
+                                                color: Colors.white,
+                                              ).copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
-                                    ),
-                                    if (garage.isVerified) ...[
-                                      const SizedBox(width: 6),
-                                      const Icon(
-                                        Icons.verified_rounded,
-                                        color: AppColors.primaryRed,
-                                        size: 16,
-                                      ),
+                                      if (garage.isVerified) ...[
+                                        const SizedBox(width: 6),
+                                        const Icon(
+                                          Icons.verified_rounded,
+                                          color: AppColors.primaryRed,
+                                          size: 16,
+                                        ),
+                                      ],
                                     ],
-                                  ],
-                                ),
-                                Text(
-                                  garage.city,
-                                  style: AppFonts.labelSmall(
-                                    color: Colors.white70,
                                   ),
-                                ),
-                              ],
+                                  Text(
+                                    garage.city,
+                                    style: AppFonts.labelSmall(
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             Padding(

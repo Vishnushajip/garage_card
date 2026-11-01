@@ -1,7 +1,6 @@
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:garage_card/core/firebase/firebase_config.dart';
+import 'package:garage_card/core/services/image_upload_service.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/models/garage_model.dart';
 import 'package:garage_card/features/shared/models/subscription_model.dart';
@@ -56,6 +55,7 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
     required String taxNumber,
     required String currencyCode,
     required String openHours,
+    List<Map<String, dynamic>>? dailyWorkingHours,
     String? googleAddress,
     String? googleMapsUrl,
     double? latitude,
@@ -86,6 +86,7 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
         city: current?.city ?? 'Kochi',
         rating: current?.rating ?? 5.0,
         openHours: openHours,
+        dailyWorkingHours: dailyWorkingHours ?? current?.dailyWorkingHours,
         isVerified: true,
         ownerUid: current?.ownerUid ?? user?.uid ?? 'owner_unknown',
         taxNumber: taxNumber,
@@ -141,28 +142,16 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
 
     state = state.copyWith(isSaving: true, errorMessage: null);
     try {
-      final bytes = await file.readAsBytes();
-      final ext = file.name.split('.').last;
-      final refPath =
-          'garages/${current.id}/branding/logo_${DateTime.now().millisecondsSinceEpoch}.$ext';
+      final imageService = ref.read(imageUploadServiceProvider);
+      final uploaded = await imageService.uploadImage(
+        file: file,
+        folder: 'garages/${current.id}/branding',
+        entityId: 'logo',
+        profile: ImageProfile.thumbnail,
+        previousImageUrl: current.logoUrl,
+      );
 
-      String downloadUrl = '';
-      if (FirebaseConfig.isInitialized) {
-        try {
-          final storageRef = FirebaseStorage.instance.ref(refPath);
-          final metadata = SettableMetadata(
-            contentType: file.mimeType ?? 'image/jpeg',
-          );
-          final task = await storageRef.putData(bytes, metadata);
-          downloadUrl = await task.ref.getDownloadURL();
-        } catch (_) {}
-      }
-
-      if (downloadUrl.isEmpty) {
-        downloadUrl = file.path;
-      }
-
-      final updated = current.copyWith(logoUrl: downloadUrl);
+      final updated = current.copyWith(logoUrl: uploaded.downloadUrl);
       await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
       state = state.copyWith(isSaving: false, garage: updated);
       return true;
@@ -178,28 +167,16 @@ class GarageProfileViewModel extends Notifier<GarageProfileState> {
 
     state = state.copyWith(isSaving: true, errorMessage: null);
     try {
-      final bytes = await file.readAsBytes();
-      final ext = file.name.split('.').last;
-      final refPath =
-          'garages/${current.id}/branding/cover_${DateTime.now().millisecondsSinceEpoch}.$ext';
+      final imageService = ref.read(imageUploadServiceProvider);
+      final uploaded = await imageService.uploadImage(
+        file: file,
+        folder: 'garages/${current.id}/branding',
+        entityId: 'cover',
+        profile: ImageProfile.standard,
+        previousImageUrl: current.coverImageUrl,
+      );
 
-      String downloadUrl = '';
-      if (FirebaseConfig.isInitialized) {
-        try {
-          final storageRef = FirebaseStorage.instance.ref(refPath);
-          final metadata = SettableMetadata(
-            contentType: file.mimeType ?? 'image/jpeg',
-          );
-          final task = await storageRef.putData(bytes, metadata);
-          downloadUrl = await task.ref.getDownloadURL();
-        } catch (_) {}
-      }
-
-      if (downloadUrl.isEmpty) {
-        downloadUrl = file.path;
-      }
-
-      final updated = current.copyWith(coverImageUrl: downloadUrl);
+      final updated = current.copyWith(coverImageUrl: uploaded.downloadUrl);
       await ref.read(garageRepositoryProvider).updateGarageProfile(updated);
       state = state.copyWith(isSaving: false, garage: updated);
       return true;

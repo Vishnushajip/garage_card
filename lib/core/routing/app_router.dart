@@ -36,6 +36,10 @@ import 'package:garage_card/features/customer/garage_details/View/customer_garag
 import 'package:garage_card/features/merchant/service_catalog/View/merchant_services_screen.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 import 'package:garage_card/features/splash/View/splash_screen.dart';
+import 'package:garage_card/features/support/views/customer_create_ticket_screen.dart';
+import 'package:garage_card/features/support/views/customer_tickets_screen.dart';
+import 'package:garage_card/features/support/views/merchant_tickets_screen.dart';
+import 'package:garage_card/features/support/views/ticket_detail_screen.dart';
 import 'package:go_router/go_router.dart';
 
 class _AuthRouterListenable extends ChangeNotifier {
@@ -343,6 +347,43 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.customerWarranties,
         builder: (context, state) => const CustomerWarrantyVaultScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.customerSupport,
+        builder: (context, state) => const CustomerTicketsScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.customerCreateTicket,
+        builder: (context, state) {
+          final jobId = state.uri.queryParameters['jobId'];
+          final garageId = state.uri.queryParameters['garageId'];
+          final vehicleId = state.uri.queryParameters['vehicleId'];
+          final invoiceId = state.uri.queryParameters['invoiceId'];
+          return CustomerCreateTicketScreen(
+            preselectedJobId: jobId,
+            preselectedGarageId: garageId,
+            preselectedVehicleId: vehicleId,
+            preselectedInvoiceId: invoiceId,
+          );
+        },
+      ),
+      GoRoute(
+        path: RoutePaths.customerTicketDetail,
+        builder: (context, state) {
+          final ticketId = state.pathParameters['id'] ?? '';
+          return TicketDetailScreen(ticketId: ticketId);
+        },
+      ),
+      GoRoute(
+        path: RoutePaths.merchantSupport,
+        builder: (context, state) => const MerchantTicketsScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.merchantTicketDetail,
+        builder: (context, state) {
+          final ticketId = state.pathParameters['id'] ?? '';
+          return TicketDetailScreen(ticketId: ticketId);
+        },
       ),
       GoRoute(
         path: RoutePaths.noInternet,

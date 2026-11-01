@@ -15,24 +15,76 @@ service firebase.storage {
         request.resource.contentType.matches('image/.*');
     }
 
-    match /users/{userId}/avatars/{fileName} {
+    match /users/{userId}/avatars/{allPaths=**} {
       allow read: if true;
       allow write: if isOwner(userId) && isValidImage();
+      allow delete: if isOwner(userId);
     }
 
-    match /garages/{garageId}/logos/{fileName} {
+    match /garages/{garageId}/branding/{allPaths=**} {
       allow read: if true;
       allow write: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated();
     }
 
-    match /garages/{garageId}/inspections/{fileName} {
+    match /garages/{garageId}/logo/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated();
+    }
+
+    match /garages/{garageId}/logos/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated();
+    }
+
+    match /garages/{garageId}/cover/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated();
+    }
+
+    match /garages/{garageId}/services/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated();
+    }
+
+    match /merchants/{merchantId}/packages/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner(merchantId) && isValidImage();
+      allow delete: if isOwner(merchantId);
+    }
+
+    match /customers/{customerId}/vehicles/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(customerId) && isValidImage();
+      allow delete: if isOwner(customerId);
+    }
+
+    match /jobs/{jobId}/attachments/{allPaths=**} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated();
     }
 
-    match /garages/{garageId}/documents/{fileName} {
+    match /support/{ticketId}/attachments/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated();
+    }
+
+    match /garages/{garageId}/inspections/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated();
+    }
+
+    match /garages/{garageId}/documents/{allPaths=**} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && request.resource.size < 15 * 1024 * 1024;
+      allow delete: if isAuthenticated();
     }
   }
 }

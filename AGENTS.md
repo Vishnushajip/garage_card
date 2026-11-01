@@ -51,7 +51,7 @@
 - Every screen, layout, dialog, sheet, and widget must adapt flawlessly across:
   - **Mobile:** `< 768px` (single-column layouts, thumb-zone bottom navigation, responsive bottom sheets).
   - **Tablet:** `768px - 1023px` (adaptive 2-column grids, master-detail split views, side navigation rails).
-  - **Laptop & Desktop:** `1024px+` (3-column responsive grids, full desktop sidebars, maximum width constraints `1200px`).
+  - **Laptop & Desktop:** `1024px+` (responsive grids, full desktop sidebars, centralized maximum content width limitation: `AppResponsiveLayout.kMaxProjectWidth = 960px`, and form width `kMaxFormWidth = 840px` to prevent over-stretched horizontal layouts on ultra-wide screens).
 - **Zero Overflow Policy:** Under no circumstance may any widget produce a `RenderFlex` overflow (horizontal or vertical) on any screen width down to 320px. Use `Flexible`, `Expanded`, `LayoutBuilder`, and intrinsic row chunking where appropriate.
 
 ### Rule 6: State Management & Reactive UI
@@ -394,3 +394,34 @@ Before completing any task, verify:
 5. **Universal Fallback and Typography:**
    - Any unknown string defaults cleanly to English or the raw input.
    - All Malayalam text must use the configured `AppFonts.fontFallbacks` (`['Manjari', 'Gayathri', 'Noto Sans Malayalam', 'sans-serif']`) and maintain zero `RenderFlex` overflows down to 320px screen width.
+
+---
+
+## 9. Permanent Image Compression, Optimization & Firebase Storage Upload Rules
+
+### Rule 17: MANDATORY CENTRALIZED IMAGE OPTIMIZATION & UPLOAD RULE
+1. **Centralized Service Exclusive Usage:**
+   - All image uploads across Customer, Merchant, and Shared modules must exclusively use `ImageUploadService` (`lib/core/services/image_upload_service.dart`).
+   - Feature views, dialogs, and ViewModels must NEVER directly invoke `FirebaseStorage.instance` or upload raw, uncompressed files.
+2. **Mandatory Automated Optimization & Visually Lossless Compression:**
+   - Every uploaded image must be pre-processed by `ImageCompressionProcessor`:
+     - **EXIF Auto-Orientation:** Automatically baked into pixel coordinates via `bakeOrientation` so mobile camera uploads are never rotated.
+     - **Metadata Stripping:** Strip unnecessary camera metadata, GPS tags, and device identifiers to protect customer and merchant privacy and reduce overhead.
+     - **Intelligent Transparency Preservation:** Inspect alpha channel pixels. If true transparent pixels exist, encode as optimized PNG (`level: 6`). If opaque, encode as high-efficiency JPEG (`quality: 82-88`).
+     - **Aspect-Ratio Preserving Downscaling:** Downscale to target profile bounds with cubic interpolation without stretching or upscaling smaller images.
+3. **Predefined Compression Profiles (`ImageProfile`):**
+   - `thumbnail`: 300×300 (Quality 82) for customer avatars, garage logos, small icons.
+   - `card`: 800×800 (Quality 85) for merchant service package cards, catalog items, ticket attachments.
+   - `standard`: 1200×1200 (Quality 86) for garage cover banners, repair job progress photos, vehicle documents.
+   - `large`: 1920×1920 (Quality 88) for detailed inspection reports and high-resolution certificates.
+4. **Predictable Storage Pathing & Security Boundaries:**
+   - Store all assets in structured, tenant-scoped paths:
+     - Garages: `garages/{garageId}/services/{serviceId}/{hash}.{ext}`, `garages/{garageId}/logo/...`, `garages/{garageId}/cover/...`
+     - Users/Customers: `users/{userId}/avatars/{hash}.{ext}`, `customers/{customerId}/vehicles/{vehicleId}/...`
+     - Operations: `jobs/{jobId}/attachments/...`, `support/{ticketId}/attachments/...`
+   - Cache control headers (`public, max-age=31536000`) and custom metadata (`checksum`, `originalSizeBytes`, `compressedSizeBytes`) must be written to every storage item.
+5. **Safe Asset Replacement Pattern:**
+   - When replacing an existing image (e.g. Updating a package photo or garage banner), the previous image in Firebase Storage must only be deleted AFTER the new image is successfully uploaded and the Firestore document reference is updated.
+   - Never leave orphaned references if an upload fails mid-way.
+6. **Frontend Memory Management with `AppCachedImage`:**
+   - Network images must be rendered with `AppCachedImage`, utilizing `memCacheWidth` and `memCacheHeight` constraints to prevent uncompressed raster textures from bloating browser or device GPU memory.

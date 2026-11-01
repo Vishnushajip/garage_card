@@ -99,7 +99,7 @@ class WhatsAppShareService {
         '• Job No: $jobNumber\n'
         '• Status: $status\n'
         '${notes.isNotEmpty ? '• Details: $notes\n' : ''}\n'
-        'Track repair progress in your V-Fix app.\n'
+        'Track repair progress in your WeFix app.\n'
         'Thank you,\n$garageName';
   }
 
@@ -131,7 +131,7 @@ class WhatsAppShareService {
           '• നിലവിലെ അവസ്ഥ: $statusMalayalam\n'
           '$partsMl'
           '$notesMl\n'
-          'കൂടുതൽ വിവരങ്ങൾക്ക് V-Fix ആപ്പ് സന്ദർശിക്കുക.\n'
+          'കൂടുതൽ വിവരങ്ങൾക്ക് വിഫിക്സ് ആപ്പ് സന്ദർശിക്കുക.\n'
           'നന്ദി,\n$garageName';
     }
 
@@ -143,7 +143,7 @@ class WhatsAppShareService {
           '• Status: $status\n'
           '$partsEng'
           '$notesEng\n'
-          'Track live repair status in the V-Fix app.\n'
+          'Track live repair status in the WeFix app.\n'
           'Thank you,\n$garageName';
     }
 
@@ -154,7 +154,7 @@ class WhatsAppShareService {
         '• Status / അവസ്ഥ: $status ($statusMalayalam)\n'
         '${partsNeeded != null && partsNeeded.isNotEmpty ? '• Parts Needed / പാർട്സുകൾ: $partsNeeded\n' : ''}'
         '${notes.isNotEmpty ? '• Details / വിവരണം: $notes\n' : ''}\n'
-        'Track live progress in your V-Fix app / കൂടുതൽ വിവരങ്ങൾക്ക് V-Fix ആപ്പ് കാണുക.\n\n'
+        'Track live progress in your WeFix app / കൂടുതൽ വിവരങ്ങൾക്ക് വിഫിക്സ് ആപ്പ് കാണുക.\n\n'
         'Thank you / നന്ദി,\n$garageName';
   }
 
@@ -170,7 +170,7 @@ class WhatsAppShareService {
         '• Estimate No: $estimateNumber\n'
         '• Vehicle: $vehicleDisplay\n'
         '• Estimated Total: $totalAmount\n\n'
-        'Please open your V-Fix app to review and approve the estimate.\n'
+        'Please open your WeFix app to review and approve the estimate.\n'
         'Thank you,\n$garageName';
   }
 
@@ -186,7 +186,7 @@ class WhatsAppShareService {
         '• Invoice No: $invoiceNumber\n'
         '• Vehicle: $vehicleDisplay\n'
         '• Balance Due: $balanceDue\n\n'
-        'You can view and download your PDF invoice directly in the V-Fix app.\n'
+        'You can view and download your PDF invoice directly in the WeFix app.\n'
         'Thank you,\n$garageName';
   }
 
@@ -201,7 +201,7 @@ class WhatsAppShareService {
         'This is a friendly service reminder from $garageName for your vehicle $vehicleDisplay:\n'
         '• Service: $reminderTitle\n'
         '• Due Date: $dueDate\n\n'
-        'Book your service appointment conveniently via the V-Fix app.\n'
+        'Book your service appointment conveniently via the WeFix app.\n'
         'Thank you,\n$garageName';
   }
 
@@ -211,7 +211,7 @@ class WhatsAppShareService {
     required String garageId,
     String language = 'english',
   }) {
-    final link = 'https://vfix.app/customer/garages/$garageId';
+    final link = 'https://wefix.app/customer/garages/$garageId';
     if (language == 'malayalam') {
       return 'നമസ്കാരം $customerName,\n\n'
           '$garageName തിരഞ്ഞെടുത്തതിന് ഞങ്ങളുടെ ഹൃദയം നിറഞ്ഞ നന്ദി. നിങ്ങളുടെ വാഹനത്തിന്റെ സർവീസ് തൃപ്തികരമായി പൂർത്തിയായി എന്ന് കരുതുന്നു.\n\n'

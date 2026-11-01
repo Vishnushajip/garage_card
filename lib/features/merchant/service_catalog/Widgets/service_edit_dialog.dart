@@ -1,9 +1,15 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/services/image_upload_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_dropdown.dart';
+import 'package:garage_card/core/shared_widgets/app_image_picker_box.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
 import 'package:garage_card/features/shared/models/garage_service_model.dart';
 
@@ -65,6 +71,10 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
   bool _isActive = true;
   bool _isSaving = false;
   String? _error;
+  String? _imageUrl;
+  XFile? _selectedImageFile;
+  Uint8List? _selectedImageBytes;
+  ImageUploadProgress? _uploadProgress;
 
   static const List<Map<String, String>> _availableVehicleTypes = [
     {'id': 'car', 'label': 'Car'},
@@ -88,6 +98,7 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
 
     final s = widget.initialService;
     if (s != null) {
+      _imageUrl = s.imageUrl;
       _nameController.text = s.name;
       _descriptionController.text = s.description;
       _category = s.category;
@@ -241,6 +252,43 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
                           : () => Navigator.pop(context),
                     ),
                   ],
+                ),
+                const SizedBox(height: 16),
+                AppImagePickerBox(
+                  existingImageUrl: _imageUrl,
+                  selectedBytes: _selectedImageBytes,
+                  selectedFile: _selectedImageFile,
+                  height: 150,
+                  label: 'Package Image',
+                  helperText: 'Select an image for this package. It will be compressed & optimized automatically.',
+                  uploadProgress: _uploadProgress,
+                  onPickImage: () async {
+                    final picker = ImagePicker();
+                    final picked = await picker.pickImage(
+                      source: ImageSource.gallery,
+                      imageQuality: 90,
+                    );
+                    if (picked != null) {
+                      final bytes = await picked.readAsBytes();
+                      if (mounted) {
+                        setState(() {
+                          _selectedImageFile = picked;
+                          _selectedImageBytes = bytes;
+                        });
+                      }
+                    }
+                  },
+                  onRemoveImage:
+                      (_selectedImageBytes != null ||
+                          (_imageUrl != null && _imageUrl!.isNotEmpty))
+                      ? () {
+                          setState(() {
+                            _selectedImageFile = null;
+                            _selectedImageBytes = null;
+                            _imageUrl = null;
+                          });
+                        }
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 AppTextField(
@@ -653,6 +701,8 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
                             return;
                           }
 
+                          final nav = Navigator.of(context);
+
                           setState(() {
                             _isSaving = true;
                             _error = null;
@@ -661,6 +711,49 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
                           final serviceId =
                               widget.initialService?.id ??
                               'srv_${const Uuid().v4().substring(0, 8)}';
+
+                          String? finalImageUrl = _imageUrl;
+
+                          if (_selectedImageBytes != null ||
+                              _selectedImageFile != null) {
+                            try {
+                              final imageService = ImageUploadService();
+                              final uploadResult = await imageService
+                                  .uploadImage(
+                                    file:
+                                        _selectedImageBytes ??
+                                        _selectedImageFile,
+                                    folder:
+                                        'garages/${widget.garageId}/services',
+                                    entityId: serviceId,
+                                    profile: ImageProfile.card,
+                                    previousImageUrl:
+                                        widget.initialService?.imageUrl,
+                                    onProgress: (p) {
+                                      if (mounted) {
+                                        setState(() => _uploadProgress = p);
+                                      }
+                                    },
+                                  );
+                              finalImageUrl = uploadResult.downloadUrl;
+                            } catch (e) {
+                              if (mounted) {
+                                setState(() {
+                                  _isSaving = false;
+                                  _error =
+                                      'Failed to optimize or upload package image: $e';
+                                });
+                              }
+                              return;
+                            }
+                          } else if (_imageUrl == null &&
+                              widget.initialService?.imageUrl != null) {
+                            unawaited(
+                              ImageUploadService().safeCleanupPreviousImage(
+                                previousUrl: widget.initialService?.imageUrl,
+                              ),
+                            );
+                          }
 
                           final tiers = <VehiclePricingTier>[];
                           final catPrices = <String, double>{};
@@ -717,6 +810,7 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
                             name: _nameController.text.trim(),
                             description: _descriptionController.text.trim(),
                             category: _category,
+                            imageUrl: finalImageUrl,
                             pricingMethod: _pricingType,
                             pricingType: _pricingType,
                             fixedPrice: double.tryParse(
@@ -752,7 +846,6 @@ class _ServiceEditDialogState extends State<ServiceEditDialog> {
                             updatedAt: DateTime.now(),
                           );
 
-                          final nav = Navigator.of(context);
                           final ok = await widget.onSave(newService);
                           if (!mounted) return;
                           if (ok) {

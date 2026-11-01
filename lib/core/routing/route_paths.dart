@@ -16,6 +16,9 @@ class RoutePaths {
   static const String customerNotifications = '/customer/notifications';
   static const String customerProfile = '/customer/profile';
   static const String customerWarranties = '/customer/warranties';
+  static const String customerSupport = '/customer/support';
+  static const String customerCreateTicket = '/customer/support/create';
+  static const String customerTicketDetail = '/customer/support/:id';
   static const String customerJobDetail = '/customer/jobs/:id';
   static const String customerGarageDetail = '/customer/garages/:id';
   static const String chatList = '/messages';
@@ -33,4 +36,6 @@ class RoutePaths {
   static const String merchantNotifications = '/merchant/notifications';
   static const String merchantSettings = '/merchant/settings';
   static const String merchantMore = '/merchant/more';
+  static const String merchantSupport = '/merchant/support';
+  static const String merchantTicketDetail = '/merchant/support/:id';
 }

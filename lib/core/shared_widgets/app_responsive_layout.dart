@@ -4,9 +4,15 @@ class AppResponsiveLayout extends StatelessWidget {
   const AppResponsiveLayout({
     super.key,
     required this.child,
-    this.maxWidth = 1100,
+    this.maxWidth = kMaxProjectWidth,
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
   });
+
+  static const double kMaxDesktopViewportWidth = 1800;
+  static const double kMaxProjectWidth = 920;
+  static const double kMaxFormWidth = 760;
+  static const double kMaxContentWidth = 960;
+  static const double kMaxCompactWidth = 600;
 
   final Widget child;
   final double maxWidth;

@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:garage_card/core/firebase/firebase_config.dart';
+import 'package:garage_card/core/services/image_upload_service.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 
 import '../Model/customer_profile_state.dart';
@@ -169,25 +169,16 @@ class CustomerProfileViewModel extends Notifier<CustomerProfileState> {
 
     state = state.copyWith(isSaving: true, errorMessage: null);
     try {
-      final bytes = await file.readAsBytes();
-      final ext = file.name.split('.').last;
-      final refPath =
-          'users/${current.uid}/avatars/avatar_${DateTime.now().millisecondsSinceEpoch}.$ext';
+      final imageService = ref.read(imageUploadServiceProvider);
+      final uploaded = await imageService.uploadImage(
+        file: file,
+        folder: 'users/${current.uid}/avatars',
+        entityId: 'avatar',
+        profile: ImageProfile.thumbnail,
+        previousImageUrl: current.avatarUrl,
+      );
 
-      String downloadUrl = '';
-      if (FirebaseConfig.isInitialized) {
-        final storageRef = FirebaseStorage.instance.ref(refPath);
-        final metadata = SettableMetadata(
-          contentType: file.mimeType ?? 'image/jpeg',
-        );
-        final task = await storageRef.putData(bytes, metadata);
-        downloadUrl = await task.ref.getDownloadURL();
-      }
-
-      if (downloadUrl.isEmpty) {
-        downloadUrl = file.path;
-      }
-
+      final downloadUrl = uploaded.downloadUrl;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_avatar_${current.uid}', downloadUrl);
 

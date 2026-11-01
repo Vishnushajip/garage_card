@@ -272,7 +272,7 @@ class CustomerSearchResultCard extends StatelessWidget {
                       AppWhatsAppButton(
                         phoneNumber: garage.phone,
                         message:
-                            'Hello ${garage.name}, I found your workshop on V-Fix.',
+                            'Hello ${garage.name}, I found your workshop on WeFix.',
                         variant: WhatsAppButtonVariant.iconOnly,
                       ),
                     ],

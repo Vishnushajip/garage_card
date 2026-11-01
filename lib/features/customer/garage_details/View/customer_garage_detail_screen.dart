@@ -293,7 +293,7 @@ class _CustomerGarageDetailScreenState
                       onTap: () => WhatsAppShareService.openWhatsAppChat(
                         phoneNumber: garage.phone,
                         text:
-                            'Hello ${garage.name}, I found your garage on V-Fix and would like to inquire about your services.',
+                            'Hello ${garage.name}, I found your garage on WeFix and would like to inquire about your services.',
                       ),
                     ),
                     const SizedBox(width: 8),

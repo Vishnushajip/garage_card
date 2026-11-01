@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:garage_card/core/branding/app_logo.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/localization/app_localizations.dart';
@@ -16,6 +17,7 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     this.subtitle,
     this.leading,
     this.actions,
+    this.showLogo = true,
     this.showAccountSwitch = false,
     this.showNotifications = false,
     this.unreadNotificationCount = 0,
@@ -30,6 +32,7 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final String? subtitle;
   final Widget? leading;
   final List<Widget>? actions;
+  final bool showLogo;
   final bool showAccountSwitch;
   final bool showNotifications;
   final int unreadNotificationCount;
@@ -60,32 +63,75 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isMerchant = authState.activeExperience == 'merchant';
 
     Widget? effectiveLeading = leading;
-    if (effectiveLeading == null && canPop) {
-      effectiveLeading = Center(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 12),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () => Navigator.of(context).pop(),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? AppColors.backgroundDark
-                    : AppColors.backgroundLight,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: borderColor),
+    if (effectiveLeading == null) {
+      if (canPop) {
+        effectiveLeading = SizedBox(
+          height: 59,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 12),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.backgroundDark
+                          : AppColors.backgroundLight,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: borderColor),
+                    ),
+                    child: Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      size: 15,
+                      color: primaryTextColor,
+                    ),
+                  ),
+                ),
               ),
-              child: Icon(
-                Icons.arrow_back_ios_new_rounded,
-                size: 15,
-                color: primaryTextColor,
-              ),
-            ),
+              if (showLogo) ...[
+                const SizedBox(width: 8),
+                InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: () {
+                    context.go(
+                      isMerchant ? RoutePaths.merchant : RoutePaths.customer,
+                    );
+                  },
+                  child: const AppLogo(size: 28, showBadge: true),
+                ),
+              ],
+            ],
           ),
-        ),
-      );
+        );
+      } else if (showLogo) {
+        effectiveLeading = SizedBox(
+          height: 59,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 16),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: () {
+                    context.go(
+                      isMerchant ? RoutePaths.merchant : RoutePaths.customer,
+                    );
+                  },
+                  child: const AppLogo(size: 32, showBadge: true),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
     }
 
     final effectiveActions = <Widget>[...?actions];
@@ -160,7 +206,7 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
           )
         : null;
 
-    final barWidget = Container(
+    return Container(
       decoration: BoxDecoration(
         color: bgColor,
         border: Border(bottom: BorderSide(color: borderColor, width: 1)),
@@ -171,27 +217,36 @@ class AppCustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
-                height: 59,
-                child: NavigationToolbar(
-                  leading: effectiveLeading,
-                  middle: effectiveMiddle,
-                  trailing: effectiveTrailing,
-                  centerMiddle: centerTitle,
-                  middleSpacing: 12,
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppResponsiveLayout.kMaxProjectWidth,
+                  ),
+                  child: SizedBox(
+                    height: 59,
+                    child: NavigationToolbar(
+                      leading: effectiveLeading,
+                      middle: effectiveMiddle,
+                      trailing: effectiveTrailing,
+                      centerMiddle: centerTitle,
+                      middleSpacing: 12,
+                    ),
+                  ),
                 ),
               ),
-              ?bottom,
+              if (bottom != null)
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: AppResponsiveLayout.kMaxProjectWidth,
+                    ),
+                    child: bottom!,
+                  ),
+                ),
             ],
           ),
         ),
       ),
-    );
-
-    return AppResponsiveLayout(
-      maxWidth: 1200,
-      padding: EdgeInsets.zero,
-      child: barWidget,
     );
   }
 }

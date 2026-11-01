@@ -7,9 +7,9 @@ import 'package:garage_card/features/splash/Widgets/splash_reveal_painter.dart';
 import 'package:garage_card/features/splash/Widgets/splash_tachometer_painter.dart';
 
 void main() {
-  group('V-Fix Branding & Logo Tests', () {
-    test('AppBranding constants reflect V-Fix brand identity', () {
-      expect(AppBranding.appName, equals('V-Fix'));
+  group('WeFix Branding & Logo Tests', () {
+    test('AppBranding constants reflect WeFix brand identity', () {
+      expect(AppBranding.appName, equals('WeFix'));
       expect(
         AppBranding.appSlogan,
         equals('Smarter Garage Management. Better Vehicle Care.'),
@@ -18,7 +18,7 @@ void main() {
         AppBranding.appTagline,
         equals('Smarter Garage Management. Better Vehicle Care.'),
       );
-      expect(AppBranding.defaultSupportEmail, equals('support@vfix.app'));
+      expect(AppBranding.defaultSupportEmail, equals('support@wefix.app'));
     });
 
     testWidgets('AppLogo renders with default badge', (tester) async {

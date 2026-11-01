@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 
 import '../Model/garage_profile_state.dart';
@@ -75,6 +76,12 @@ class GarageProfileHeaderCard extends StatelessWidget {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
 
+    final double bannerHeight = AppResponsiveLayout.isDesktop(context)
+        ? 340
+        : AppResponsiveLayout.isTablet(context)
+        ? 240
+        : 180;
+
     return Card(
       color: cardBg,
       clipBehavior: Clip.antiAlias,
@@ -85,8 +92,9 @@ class GarageProfileHeaderCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AspectRatio(
-            aspectRatio: 2.8,
+          SizedBox(
+            height: bannerHeight,
+            width: double.infinity,
             child: Stack(
               fit: StackFit.expand,
               children: [

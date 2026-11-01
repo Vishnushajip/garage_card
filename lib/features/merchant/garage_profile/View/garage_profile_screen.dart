@@ -1,23 +1,22 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/notifications/notification_event_matrix.dart';
 import 'package:garage_card/core/notifications/push_notification_service.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
+import 'package:garage_card/core/services/location_service.dart';
 import 'package:garage_card/core/shared_widgets/account_switcher_list_view.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_dialog.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
+import 'package:garage_card/core/shared_widgets/app_map_location_picker.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/models/user_profile_model.dart';
+import 'package:garage_card/features/shared/models/working_hours_model.dart';
 import 'package:go_router/go_router.dart';
 
 import '../Model/garage_profile_state.dart';
@@ -40,16 +39,16 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
   late final TextEditingController _phoneCtrl;
   late final TextEditingController _emailCtrl;
   late final TextEditingController _addressCtrl;
-  late final TextEditingController _googleAddressCtrl;
-  late final TextEditingController _googleMapsUrlCtrl;
   late final TextEditingController _taxCtrl;
   late final TextEditingController _hoursCtrl;
+  List<DayWorkingHours> _workingSchedule =
+      WorkingHoursSchedule.defaultSchedule();
 
   String _selectedCurrency = 'INR';
   bool _hasInitializedFields = false;
   double? _detectedLat;
   double? _detectedLng;
-  bool _isGeocoding = false;
+  bool _isLocatingGps = false;
 
   @override
   void initState() {
@@ -58,8 +57,6 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
     _phoneCtrl = TextEditingController();
     _emailCtrl = TextEditingController();
     _addressCtrl = TextEditingController();
-    _googleAddressCtrl = TextEditingController();
-    _googleMapsUrlCtrl = TextEditingController();
     _taxCtrl = TextEditingController();
     _hoursCtrl = TextEditingController(text: '8:30 AM - 7:30 PM');
   }
@@ -70,8 +67,6 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
     _phoneCtrl.dispose();
     _emailCtrl.dispose();
     _addressCtrl.dispose();
-    _googleAddressCtrl.dispose();
-    _googleMapsUrlCtrl.dispose();
     _taxCtrl.dispose();
     _hoursCtrl.dispose();
     super.dispose();
@@ -88,18 +83,14 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
       _phoneCtrl.text = garage.phone;
       _emailCtrl.text = garage.email;
       _addressCtrl.text = garage.address;
-      if (garage.googleAddress != null) {
-        _googleAddressCtrl.text = garage.googleAddress!;
-      }
-      if (garage.googleMapsUrl != null) {
-        _googleMapsUrlCtrl.text = garage.googleMapsUrl!;
-      }
       _detectedLat = garage.latitude;
       _detectedLng = garage.longitude;
       _taxCtrl.text = garage.taxNumber;
-      _hoursCtrl.text = garage.openHours.isNotEmpty
-          ? garage.openHours
-          : '8:30 AM - 7:30 PM';
+      _workingSchedule = WorkingHoursSchedule.parse(
+        garage.dailyWorkingHours,
+        garage.openHours,
+      );
+      _hoursCtrl.text = WorkingHoursSchedule.toDisplaySummary(_workingSchedule);
       if (garage.currencyCode.isNotEmpty) {
         _selectedCurrency = garage.currencyCode;
       }
@@ -114,83 +105,90 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
     }
   }
 
-  void _detectCoordinatesFromUrl(String url) {
-    if (url.isEmpty) return;
-    final regex = RegExp(r'[@\?&](?:q=)?(-?\d+\.\d+),(-?\d+\.\d+)');
-    final match = regex.firstMatch(url);
-    if (match != null) {
-      final lat = double.tryParse(match.group(1)!);
-      final lng = double.tryParse(match.group(2)!);
-      if (lat != null && lng != null) {
+  Future<void> _openMapPicker() async {
+    final result = await AppMapLocationPicker.show(
+      context,
+      initialLatitude: _detectedLat,
+      initialLongitude: _detectedLng,
+      initialAddress: _addressCtrl.text.trim(),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _detectedLat = result.latitude;
+        _detectedLng = result.longitude;
+        if (result.address.isNotEmpty) {
+          _addressCtrl.text = result.address;
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Workshop location pinned: ${result.latitude.toStringAsFixed(4)}, ${result.longitude.toStringAsFixed(4)}',
+          ),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
+  }
+
+  Future<void> _autoDetectCurrentGpsLocation() async {
+    setState(() => _isLocatingGps = true);
+    try {
+      final pos = await LocationService.instance.getCurrentPosition();
+      if (pos == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Could not detect current location. Please grant location permissions in your browser or device settings.',
+              ),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+        return;
+      }
+
+      final lat = pos.latitude;
+      final lng = pos.longitude;
+      final details = await LocationService.instance.reverseGeocode(
+        latitude: lat,
+        longitude: lng,
+      );
+
+      if (mounted) {
         setState(() {
           _detectedLat = lat;
           _detectedLng = lng;
-        });
-      }
-    }
-  }
-
-  Future<void> _geocodeAddress() async {
-    final query = _googleAddressCtrl.text.trim().isNotEmpty
-        ? _googleAddressCtrl.text.trim()
-        : _addressCtrl.text.trim();
-    if (query.isEmpty) return;
-
-    setState(() => _isGeocoding = true);
-    try {
-      final uri = Uri.parse(
-        'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&limit=1',
-      );
-      final client = http.Client();
-      final response = await client
-          .get(uri, headers: {'User-Agent': 'GarageCardApp/1.0'})
-          .timeout(const Duration(seconds: 5));
-      client.close();
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body) as List<dynamic>;
-        if (data.isNotEmpty) {
-          final first = data.first as Map<String, dynamic>;
-          final lat = double.tryParse(first['lat']?.toString() ?? '');
-          final lon = double.tryParse(first['lon']?.toString() ?? '');
-          if (lat != null && lon != null && mounted) {
-            setState(() {
-              _detectedLat = lat;
-              _detectedLng = lon;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Location coordinates detected: ${lat.toStringAsFixed(4)}, ${lon.toStringAsFixed(4)}',
-                ),
-                backgroundColor: AppColors.success,
-              ),
-            );
+          if (details != null && details.shortAddress.isNotEmpty) {
+            if (_addressCtrl.text.trim().isEmpty) {
+              _addressCtrl.text = details.shortAddress;
+            }
           }
-        }
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'GPS location detected: ${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}',
+            ),
+            backgroundColor: AppColors.success,
+          ),
+        );
       }
-    } catch (_) {}
-    if (mounted) setState(() => _isGeocoding = false);
-  }
-
-  Future<void> _testLocationOnMap() async {
-    final urlString = _googleMapsUrlCtrl.text.trim();
-    Uri? launchUri;
-    if (urlString.isNotEmpty &&
-        (urlString.startsWith('http://') || urlString.startsWith('https://'))) {
-      launchUri = Uri.tryParse(urlString);
-    } else if (_detectedLat != null && _detectedLng != null) {
-      launchUri = Uri.parse(
-        'https://www.google.com/maps/search/?api=1&query=$_detectedLat,$_detectedLng',
-      );
-    } else if (_googleAddressCtrl.text.trim().isNotEmpty) {
-      launchUri = Uri.parse(
-        'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(_googleAddressCtrl.text.trim())}',
-      );
-    }
-
-    if (launchUri != null) {
-      await launchUrl(launchUri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to detect GPS location: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLocatingGps = false);
+      }
     }
   }
 
@@ -199,10 +197,7 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
     int filled = 0;
     if (_nameCtrl.text.trim().isNotEmpty) filled++;
     if (_addressCtrl.text.trim().isNotEmpty) filled++;
-    if (_googleAddressCtrl.text.trim().isNotEmpty ||
-        _googleMapsUrlCtrl.text.trim().isNotEmpty) {
-      filled++;
-    }
+    if (_detectedLat != null && _detectedLng != null) filled++;
     if (_phoneCtrl.text.trim().isNotEmpty) filled++;
     if (_emailCtrl.text.trim().isNotEmpty) filled++;
     if (_taxCtrl.text.trim().isNotEmpty) filled++;
@@ -218,11 +213,11 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
         .updateProfile(
           name: _nameCtrl.text.trim(),
           address: _addressCtrl.text.trim(),
-          googleAddress: _googleAddressCtrl.text.trim().isNotEmpty
-              ? _googleAddressCtrl.text.trim()
+          googleAddress: _addressCtrl.text.trim().isNotEmpty
+              ? _addressCtrl.text.trim()
               : null,
-          googleMapsUrl: _googleMapsUrlCtrl.text.trim().isNotEmpty
-              ? _googleMapsUrlCtrl.text.trim()
+          googleMapsUrl: _detectedLat != null && _detectedLng != null
+              ? 'https://www.google.com/maps/search/?api=1&query=$_detectedLat,$_detectedLng'
               : null,
           latitude: _detectedLat,
           longitude: _detectedLng,
@@ -231,6 +226,7 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
           taxNumber: _taxCtrl.text.trim(),
           currencyCode: _selectedCurrency,
           openHours: _hoursCtrl.text.trim(),
+          dailyWorkingHours: _workingSchedule.map((d) => d.toMap()).toList(),
         )
         .then((success) {
           if (success && mounted) {
@@ -289,6 +285,7 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
         onRefresh: vm.refresh,
         child: SingleChildScrollView(
           child: AppResponsiveLayout(
+            maxWidth: AppResponsiveLayout.kMaxFormWidth,
             child: Form(
               key: _formKey,
               child: Column(
@@ -318,12 +315,20 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                           GarageProfileBusinessForm(
                             nameCtrl: _nameCtrl,
                             addressCtrl: _addressCtrl,
-                            googleAddressCtrl: _googleAddressCtrl,
-                            googleMapsUrlCtrl: _googleMapsUrlCtrl,
                             phoneCtrl: _phoneCtrl,
                             emailCtrl: _emailCtrl,
                             taxCtrl: _taxCtrl,
                             hoursCtrl: _hoursCtrl,
+                            workingSchedule: _workingSchedule,
+                            onScheduleChanged: (schedule) {
+                              setState(() {
+                                _workingSchedule = schedule;
+                                _hoursCtrl.text =
+                                    WorkingHoursSchedule.toDisplaySummary(
+                                      schedule,
+                                    );
+                              });
+                            },
                             selectedCurrency: _selectedCurrency,
                             onCurrencyChanged: (val) {
                               if (val != null) {
@@ -332,13 +337,9 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                             },
                             detectedLat: _detectedLat,
                             detectedLng: _detectedLng,
-                            isGeocoding: _isGeocoding,
-                            onDetectCoordinatesFromUrl: (val) {
-                              _detectCoordinatesFromUrl(val);
-                              setState(() {});
-                            },
-                            onGeocodeAddress: _geocodeAddress,
-                            onTestLocationOnMap: _testLocationOnMap,
+                            isLocatingGps: _isLocatingGps,
+                            onOpenMapPicker: _openMapPicker,
+                            onAutoDetectGps: _autoDetectCurrentGpsLocation,
                             onSave: _save,
                             isSaving: state.isSaving,
                             onChanged: () => setState(() {}),
@@ -504,7 +505,7 @@ class _GarageProfileScreenState extends ConsumerState<GarageProfileScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'V-Fix Garage',
+                                      'WeFix Garage',
                                       style: AppFonts.labelSmall(
                                         color: primaryTextColor,
                                       ).copyWith(fontWeight: FontWeight.bold),

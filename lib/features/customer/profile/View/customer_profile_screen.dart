@@ -137,7 +137,7 @@ class _CustomerProfileScreenState extends ConsumerState<CustomerProfileScreen> {
       ),
       body: SingleChildScrollView(
         child: AppResponsiveLayout(
-          maxWidth: 1160,
+          maxWidth: AppResponsiveLayout.kMaxFormWidth,
           child: LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth >= 768;

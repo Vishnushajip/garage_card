@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/localization/app_localizations.dart';
+import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/core/shared_widgets/account_switcher_list_view.dart';
+import 'package:go_router/go_router.dart';
 
 class CustomerProfilePreferencesCard extends StatelessWidget {
   const CustomerProfilePreferencesCard({
@@ -10,6 +12,7 @@ class CustomerProfilePreferencesCard extends StatelessWidget {
     required this.locale,
     required this.onLanguageChanged,
     required this.onNavigateToWarranties,
+    this.onNavigateToSupport,
     required this.onAccountSwitched,
     required this.onSignOut,
   });
@@ -17,6 +20,7 @@ class CustomerProfilePreferencesCard extends StatelessWidget {
   final Locale locale;
   final ValueChanged<String> onLanguageChanged;
   final VoidCallback onNavigateToWarranties;
+  final VoidCallback? onNavigateToSupport;
   final ValueChanged<String> onAccountSwitched;
   final VoidCallback onSignOut;
 
@@ -134,6 +138,48 @@ class CustomerProfilePreferencesCard extends StatelessWidget {
             side: BorderSide(color: borderColor),
           ),
           child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.accentBlue.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.support_agent_rounded,
+                  color: AppColors.accentBlue,
+                  size: 20,
+                ),
+              ),
+              title: Text(
+                context.tr('helpAndSupport'),
+                style: AppFonts.titleMedium(color: primaryTextColor)
+                    .copyWith(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                context.tr('customerTicketsSubtitle'),
+                style: AppFonts.labelSmall(color: secondaryTextColor),
+              ),
+              trailing: const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.textSecondaryLight,
+              ),
+              onTap:
+                  onNavigateToSupport ??
+                  () => context.push(RoutePaths.customerSupport),
+            ),
+          ),
+        ),
+        const SizedBox(height: 18),
+        Card(
+          color: cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: borderColor),
+          ),
+          child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,7 +240,7 @@ class CustomerProfilePreferencesCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'V-Fix Garage',
+                      'WeFix Garage',
                       style: AppFonts.labelSmall(color: primaryTextColor)
                           .copyWith(fontWeight: FontWeight.bold),
                       overflow: TextOverflow.ellipsis,

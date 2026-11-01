@@ -20,6 +20,7 @@ class GarageModel {
     this.rating = 4.8,
     this.reviewCount = 0,
     this.openHours = '9:00 AM - 7:00 PM',
+    this.dailyWorkingHours,
     this.isVerified = true,
     required this.ownerUid,
     this.taxNumber = '',
@@ -48,6 +49,7 @@ class GarageModel {
   final double rating;
   final int reviewCount;
   final String openHours;
+  final List<Map<String, dynamic>>? dailyWorkingHours;
   final bool isVerified;
   final String ownerUid;
   final String taxNumber;
@@ -76,6 +78,7 @@ class GarageModel {
       'rating': rating,
       'reviewCount': reviewCount,
       'openHours': openHours,
+      'dailyWorkingHours': dailyWorkingHours,
       'isVerified': isVerified,
       'ownerUid': ownerUid,
       'taxNumber': taxNumber,
@@ -108,6 +111,9 @@ class GarageModel {
       rating: (data['rating'] as num?)?.toDouble() ?? 4.8,
       reviewCount: (data['reviewCount'] as num?)?.toInt() ?? 0,
       openHours: data['openHours'] as String? ?? '9:00 AM - 7:00 PM',
+      dailyWorkingHours: (data['dailyWorkingHours'] as List<dynamic>?)
+          ?.map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
       isVerified: data['isVerified'] as bool? ?? true,
       ownerUid: data['ownerUid'] as String? ?? '',
       taxNumber: data['taxNumber'] as String? ?? '',
@@ -148,6 +154,7 @@ class GarageModel {
     double? rating,
     int? reviewCount,
     String? openHours,
+    List<Map<String, dynamic>>? dailyWorkingHours,
     bool? isVerified,
     String? ownerUid,
     String? taxNumber,
@@ -176,6 +183,7 @@ class GarageModel {
       rating: rating ?? this.rating,
       reviewCount: reviewCount ?? this.reviewCount,
       openHours: openHours ?? this.openHours,
+      dailyWorkingHours: dailyWorkingHours ?? this.dailyWorkingHours,
       isVerified: isVerified ?? this.isVerified,
       ownerUid: ownerUid ?? this.ownerUid,
       taxNumber: taxNumber ?? this.taxNumber,

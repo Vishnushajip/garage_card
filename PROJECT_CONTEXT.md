@@ -3,8 +3,8 @@
 ## 1. Project Overview
 
 ### 1.1 Project Identity
-- **Project Name:** Garage Card (Commercial Brand: **V-Fix**)
-- **Brand Slogan:** *V-Fix – Smarter Garage Management. Better Vehicle Care.*
+- **Project Name:** Garage Card (Commercial Brand: **WeFix**)
+- **Brand Slogan:** *WeFix – Smarter Garage Management. Better Vehicle Care.*
 - **Platform Application:** Multi-Tenant Automotive Service & Garage Management Platform
 - **Form Factors:** Mobile (Android/iOS), Tablet, Laptop, and Web (Desktop / Mobile Browsers)
 - **Codebase Strategy:** Unified single Flutter codebase supporting dual distinct experiences (Customer & Merchant) with multi-device responsive adaptations.
@@ -288,6 +288,55 @@ The application incorporates a dynamic bilingual localization architecture suppo
 - **Status Code Translation Engine:** Translates normalized backend status codes (`in_progress`, `completed`, `received`, `waiting_for_parts`, `ready_for_collection`, `paid`, `unpaid`, `overdue`, `due_soon`) into natural localized labels via `loc.status(rawStatus)`, `loc.repairStatus(rawStatus)`, and `loc.invoiceStatus(rawStatus)`.
 - **Strict Business Data Preservation:** User-generated and database-stored business records (garage names, customer names, registration numbers, notes, custom services) are never altered or translated.
 - **Automotive Typography & Zero-Overflow Layouts:** Leverages Malayalam font fallbacks (`Manjari`, `Gayathri`, `Noto Sans Malayalam`) maintaining zero `RenderFlex` overflows across all device form factors down to 320px.
+
+### 5.9 Customer–Merchant Support & Ticket Management System (`/customer/support`, `/merchant/support`)
+The application features a production-ready, multi-tenant bidirectional ticketing architecture:
+- **Customer Ticketing:** Customers raise structured support tickets linked to their vehicles, garages, repair jobs, and invoices with categories (`vehicle_issue`, `repair_delay`, `estimate_inquiry`, `invoice_dispute`, `service_quality`, `general_support`), priority levels, contact preferences, and attachments.
+- **Merchant Helpdesk & Operational KPIs:** Garage staff manage inbound tickets via dedicated dashboard metrics (Total, Open, In Progress, Waiting Customer, Waiting Merchant, Resolved, Closed) and filter by priority, category, and garage.
+- **Staff-Only Internal Notes:** Merchants can publish private internal notes (`isInternal: true`) that are strictly invisible to customers and cryptographically blocked at the Firestore Security Rules layer.
+- **Audit Trails & Real-Time Messaging:** Every ticket maintains an immutable timeline history (`history/{id}`) and real-time message stream (`messages/{id}`) with automated customer and merchant notifications.
+- **Lifecycle Management:** Tickets transition through `open`, `assigned`, `in_progress`, `waiting_for_customer`, `waiting_for_merchant`, `resolved`, `closed`, and `reopened`, supporting customer reopening and merchant resolution comments.
+
+### 5.10 Centralized Image Compression, Optimization & Firebase Storage Pipeline
+The platform includes an automated, visually lossless image optimization and storage infrastructure:
+- **Centralized Engine (`ImageUploadService`):** Provides an unified API across all features to handle validation, EXIF orientation correction, metadata stripping, aspect-ratio downscaling, and compression before transmission to Firebase Storage.
+- **Visual Losslessness & Smart Encoding:** `ImageCompressionProcessor` automatically detects transparency: images with transparent alpha channels are encoded as compressed PNGs (`level: 6`), while opaque photographs are compressed to high-efficiency JPEGs (`quality: 82–88`). EXIF rotation tags are permanently baked into raw pixel buffers via `bakeOrientation`.
+- **Predefined Use-Case Profiles:** `ImageProfile.thumbnail` (300×300), `ImageProfile.card` (800×800), `ImageProfile.standard` (1200×1200), and `ImageProfile.large` (1920×1920) prevent arbitrary file uploads from wasting bandwidth and storage.
+- **Safe Asset Lifecycle & Replacement:** Uploading replacements cleanly purges previous assets from Firebase Storage only after new uploads and Firestore document references succeed.
+- **Frontend Memory Optimization:** `AppCachedImage` constraints memory cache (`memCacheWidth`, `memCacheHeight`), preventing raw bitmaps from exhausting device GPU memory. `AppImagePickerBox` provides unified picking, progress tracking, and removal micro-interactions.
+
+### 5.11 WhatsApp Business Style Operating Hours & Daily Schedule System
+The merchant profile includes an interactive, WhatsApp Business-style operating hours and schedule system:
+- **Individual Day-by-Day Configuration:** Merchants select and toggle each day of the week individually (Monday through Sunday), configuring custom opening and closing times per day.
+- **Structured Schedule Model (`DayWorkingHours` & `WorkingHoursSchedule`):** Stores structured daily schedules under `dailyWorkingHours` in `GarageModel` while atomically generating human-readable schedule summaries in `openHours` for backward compatibility.
+- **Native Material Time Pickers:** Integrated 12-hour AM/PM time pickers allowing merchants to tap opens-at and closes-at chips for individual days.
+- **Quick Schedule Presets & Batch Actions:** One-tap presets for "Mon - Sat", "Mon - Fri", "All 7 Days", and "24/7 Always Open", plus a "Copy to all" action copying any day's custom schedule to all other open days.
+- **Real-Time Open/Closed Status:** Live operational intelligence evaluates whether the workshop is currently open right now based on day of week and current local time.
+- **Customer Side Weekly Schedule Breakdown:** Customers can expand the operating hours section in the garage details screen to view the complete Monday–Sunday weekly schedule.
+
+### 5.12 Multi-Tenant Cloud Firestore Schema Architecture & Tenant Isolation
+The database utilizes a secure, multi-tenant hierarchical subcollection design anchored under `garages/{garageId}/*`:
+- **Top-Level Identity Collections:**
+  - `users/{uid}`: Authenticated profile, role (`customer` | `merchant` | `admin`), garage affiliation, and `fcmTokens` array (capped at 4).
+  - `users/{uid}/notifications/{id}`: Private user push and in-app alerts.
+  - `garages/{garageId}`: Public profile, location coordinates, business hours, services offered, and verified badge.
+  - `conversations/{id}` & `conversations/{id}/messages/{msgId}`: Multi-party customer–merchant communication thread.
+- **Tenant Subcollections (`garages/{garageId}/*`):**
+  - `serviceJobs/{jobId}`: Digital repair job card, vehicle information, assigned technician, status machine, and audit history subcollection `history/{id}`.
+  - `estimates/{estimateId}`: Line-itemized costs with customer approval transitions (`approved`, `rejected`).
+  - `invoices/{invoiceId}`: Finalized billing documents, tax calculations, balance tracking, and PDF receipts.
+  - `payments/{paymentId}`: Immutable payment ledger records.
+  - `inventory/{itemId}`: Parts and fluids inventory with low-stock alerts and unit cost tracking.
+  - `serviceCatalog/{serviceId}`: Dynamic service definitions with multi-vehicle pricing rules.
+  - `reviews/{reviewId}`: Customer verified review scores and comments.
+- **Security & Tenant Boundary:** Direct Firestore Security Rules enforce default-deny, garage member ownership (`request.auth.uid in get(...).data.memberUids`), and strict customer data partitioning (`customerId == request.auth.uid`).
+
+### 5.13 Cross-Platform Flutter Map & GPS Location Architecture
+The merchant address and workshop positioning system uses OpenStreetMap and cross-platform GPS:
+- **Interactive OpenStreetMap (`flutter_map`):** `AppMapLocationPicker` allows merchants to pan, zoom, and tap to pin their exact workshop location.
+- **Cross-Platform GPS Auto-Detection:** `LocationService.instance.getCurrentPosition()` seamlessly operates across **Web** (HTML5 Geolocation) and **Android** (native `ACCESS_FINE_LOCATION` with fallback accuracy).
+- **Google Maps Share Link Tool:** Accepts external Google Maps links (e.g. `maps.app.goo.gl`, `@lat,lng`, `q=lat,lng`) inside the map picker to jump to exact coordinates without requiring paid Google Maps APIs.
+- **Reverse Geocoding:** Reverse-geocodes pinned coordinates into structured street and city addresses via OpenStreetMap Nominatim.
 
 ---
 

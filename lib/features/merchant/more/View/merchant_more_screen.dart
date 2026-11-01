@@ -179,6 +179,13 @@ class MerchantMoreScreen extends ConsumerWidget {
         color: AppColors.accentBlue,
         onTap: (ctx) => ctx.push(RoutePaths.merchantInventory),
       ),
+      _MenuItemData(
+        title: 'Customer Support Tickets',
+        subtitle: 'Resolve vehicle inquiries, repair delays & disputes',
+        icon: Icons.support_agent_rounded,
+        color: AppColors.primaryRed,
+        onTap: (ctx) => ctx.push(RoutePaths.merchantSupport),
+      ),
     ];
 
     final workshopItems = [
@@ -358,7 +365,7 @@ class MerchantMoreScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'V-Fix Garage',
+                          'WeFix Garage',
                           style: AppFonts.labelSmall(color: primaryTextColor)
                               .copyWith(fontWeight: FontWeight.bold),
                         ),

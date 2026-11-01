@@ -2,6 +2,47 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ===============================================================
+    // Assumed Data Models
+    // ===============================================================
+    //
+    // Collection: supportTickets/{ticketId}
+    // Fields:
+    //   - customerId: string (required, 1..128 chars, immutable) - Firebase Auth UID of the customer
+    //   - ticketNumber: string (required, 1..50 chars, immutable) - e.g. TKT-202611-1234
+    //   - subject: string (required, 1..200 chars) - ticket summary
+    //   - description: string (required, 1..5000 chars) - issue details
+    //   - category: string (required, 1..50 chars) - e.g. general, billing, technical
+    //   - status: string (required, enum: open, assigned, in_progress, waiting_for_customer, waiting_for_merchant, resolved, closed, reopened)
+    //   - priority: string (required, enum: low, medium, high, urgent)
+    //   - garageId: string (optional, 0..128 chars, immutable) - target garage ID
+    //   - customerName, customerPhone, merchantId, garageName, vehicleId, vehicleDisplay, vehiclePlate,
+    //     jobId, jobNumber, invoiceId, invoiceNumber, assignedTo, preferredContact, resolutionComment,
+    //     resolvedAt, closedAt, reopenedAt, createdAt, updatedAt, lastMessageAt, lastMessageBy,
+    //     lastMessagePreview, unreadCustomer, unreadMerchant, attachments
+    //
+    // Subcollection: supportTickets/{ticketId}/messages/{messageId}
+    // Fields:
+    //   - senderId: string (required, 1..128 chars) - Firebase Auth UID of sender
+    //   - senderRole: string (required, enum: customer, merchant, system)
+    //   - message: string (required, 0..5000 chars) - message content
+    //   - isInternal: bool (required) - true if internal merchant note (hidden from customer)
+    //   - attachments: list (optional, <= 10 items)
+    //   - senderName, createdAt, readAt, clientMessageId
+    //
+    // Subcollection: supportTickets/{ticketId}/history/{historyId}
+    // Fields:
+    //   - performedBy: string (required, 1..128 chars) - Firebase Auth UID of actor
+    //   - action: string (required, 1..50 chars) - e.g. created, status_changed, priority_changed
+    //   - performedByRole: string (required, enum: customer, merchant, system)
+    //   - previousValue, newValue, performedByName, comment, createdAt
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -23,6 +64,96 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/garages/$(garageId)) &&
         get(/databases/$(database)/documents/garages/$(garageId)).data.ownerUid == request.auth.uid;
     }
+
+    function isValidOptionalString(data, field, maxLen) {
+      return !(field in data) || data[field] == null || (data[field] is string && data[field].size() <= maxLen);
+    }
+
+    function isTicketCustomer(ticketId) {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/supportTickets/$(ticketId)) &&
+         get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.customerId == request.auth.uid) ||
+        (!exists(/databases/$(database)/documents/supportTickets/$(ticketId)) &&
+         getAfter(/databases/$(database)/documents/supportTickets/$(ticketId)).data.customerId == request.auth.uid)
+      );
+    }
+
+    function isTicketGarageMember(ticketId) {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/supportTickets/$(ticketId)) &&
+         isGarageMember(get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.garageId)) ||
+        (!exists(/databases/$(database)/documents/supportTickets/$(ticketId)) &&
+         isGarageMember(getAfter(/databases/$(database)/documents/supportTickets/$(ticketId)).data.garageId))
+      );
+    }
+
+    function isValidSupportTicket(data) {
+      return data.customerId is string && data.customerId.size() > 0 && data.customerId.size() <= 128 &&
+        data.ticketNumber is string && data.ticketNumber.size() > 0 && data.ticketNumber.size() <= 50 &&
+        data.subject is string && data.subject.size() > 0 && data.subject.size() <= 200 &&
+        data.description is string && data.description.size() > 0 && data.description.size() <= 5000 &&
+        data.category is string && data.category.size() > 0 && data.category.size() <= 50 &&
+        data.status in ['open', 'assigned', 'in_progress', 'waiting_for_customer', 'waiting_for_merchant', 'resolved', 'closed', 'reopened'] &&
+        data.priority in ['low', 'medium', 'high', 'urgent'] &&
+        isValidOptionalString(data, 'id', 64) &&
+        isValidOptionalString(data, 'customerName', 100) &&
+        isValidOptionalString(data, 'customerPhone', 30) &&
+        isValidOptionalString(data, 'merchantId', 128) &&
+        isValidOptionalString(data, 'garageId', 128) &&
+        isValidOptionalString(data, 'garageName', 100) &&
+        isValidOptionalString(data, 'vehicleId', 128) &&
+        isValidOptionalString(data, 'vehicleDisplay', 100) &&
+        isValidOptionalString(data, 'vehiclePlate', 30) &&
+        isValidOptionalString(data, 'jobId', 128) &&
+        isValidOptionalString(data, 'jobNumber', 50) &&
+        isValidOptionalString(data, 'invoiceId', 128) &&
+        isValidOptionalString(data, 'invoiceNumber', 50) &&
+        isValidOptionalString(data, 'assignedTo', 128) &&
+        isValidOptionalString(data, 'preferredContact', 30) &&
+        isValidOptionalString(data, 'resolutionComment', 2000) &&
+        isValidOptionalString(data, 'resolvedAt', 50) &&
+        isValidOptionalString(data, 'closedAt', 50) &&
+        isValidOptionalString(data, 'reopenedAt', 50) &&
+        isValidOptionalString(data, 'createdAt', 50) &&
+        isValidOptionalString(data, 'updatedAt', 50) &&
+        isValidOptionalString(data, 'lastMessageAt', 50) &&
+        isValidOptionalString(data, 'lastMessageBy', 30) &&
+        isValidOptionalString(data, 'lastMessagePreview', 1000) &&
+        (!('unreadCustomer' in data) || data.unreadCustomer is bool) &&
+        (!('unreadMerchant' in data) || data.unreadMerchant is bool) &&
+        (!('attachments' in data) || (data.attachments is list && data.attachments.size() <= 10));
+    }
+
+    function isValidTicketMessage(data) {
+      return data.senderId is string && data.senderId.size() > 0 && data.senderId.size() <= 128 &&
+        data.senderRole in ['customer', 'merchant', 'system'] &&
+        data.message is string && data.message.size() <= 5000 &&
+        data.isInternal is bool &&
+        isValidOptionalString(data, 'id', 64) &&
+        isValidOptionalString(data, 'ticketId', 64) &&
+        isValidOptionalString(data, 'senderName', 100) &&
+        isValidOptionalString(data, 'createdAt', 50) &&
+        isValidOptionalString(data, 'readAt', 50) &&
+        isValidOptionalString(data, 'clientMessageId', 64) &&
+        (!('attachments' in data) || (data.attachments is list && data.attachments.size() <= 10));
+    }
+
+    function isValidTicketHistory(data) {
+      return data.performedBy is string && data.performedBy.size() > 0 && data.performedBy.size() <= 128 &&
+        data.action is string && data.action.size() > 0 && data.action.size() <= 50 &&
+        data.performedByRole in ['customer', 'merchant', 'system'] &&
+        isValidOptionalString(data, 'id', 64) &&
+        isValidOptionalString(data, 'ticketId', 64) &&
+        isValidOptionalString(data, 'performedByName', 100) &&
+        isValidOptionalString(data, 'previousValue', 200) &&
+        isValidOptionalString(data, 'newValue', 200) &&
+        isValidOptionalString(data, 'comment', 2000) &&
+        isValidOptionalString(data, 'createdAt', 50);
+    }
+
+    // ===============================================================
+    // Root Collections
+    // ===============================================================
 
     match /users/{userId} {
       allow read: if isOwner(userId);
@@ -171,6 +302,83 @@ service cloud.firestore {
       }
     }
 
+    match /supportTickets/{ticketId} {
+      // Customer Read: Allowed if caller is ticket customer.
+      // Merchant Read: Allowed if caller is member of assigned garage.
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        isGarageMember(resource.data.garageId)
+      );
+
+      // Create: Authenticated customer opening a ticket for themselves.
+      allow create: if isAuthenticated() &&
+        request.resource.data.customerId == request.auth.uid &&
+        isValidSupportTicket(request.resource.data);
+
+      // Customer / Merchant Update: Validated data with immutable ownership/id checks.
+      allow update: if isAuthenticated() &&
+        isValidSupportTicket(request.resource.data) &&
+        request.resource.data.customerId == resource.data.customerId &&
+        request.resource.data.garageId == resource.data.garageId &&
+        (!('id' in resource.data) || !('id' in request.resource.data) || request.resource.data.id == resource.data.id) &&
+        (!('ticketNumber' in resource.data) || !('ticketNumber' in request.resource.data) || request.resource.data.ticketNumber == resource.data.ticketNumber) &&
+        (!('createdAt' in resource.data) || !('createdAt' in request.resource.data) || request.resource.data.createdAt == resource.data.createdAt) &&
+        (
+          resource.data.customerId == request.auth.uid ||
+          isGarageMember(resource.data.garageId)
+        );
+
+      // Deletion is strictly forbidden for ticket audit retention.
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        // Customer Read: Allowed only if ticket belongs to customer AND message is NOT internal.
+        // Merchant Read: Allowed if caller is member of the ticket's garage.
+        allow read: if isAuthenticated() && exists(/databases/$(database)/documents/supportTickets/$(ticketId)) && (
+          isGarageMember(get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.garageId) ||
+          (get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.customerId == request.auth.uid &&
+           resource.data.isInternal != true)
+        );
+
+        // Customer Create: Allowed if ticket belongs to customer, senderId is caller, isInternal is false.
+        // Merchant Create: Allowed if caller is garage member of ticket's garage, senderId is caller.
+        allow create: if isAuthenticated() &&
+          isValidTicketMessage(request.resource.data) &&
+          request.resource.data.senderId == request.auth.uid &&
+          (
+            (isTicketCustomer(ticketId) && request.resource.data.isInternal == false) ||
+            isTicketGarageMember(ticketId)
+          );
+
+        // Messages are append-only.
+        allow update, delete: if false;
+      }
+
+      match /history/{historyId} {
+        // Read: Allowed if customer owns ticket or caller is garage member of ticket's garage.
+        allow read: if isAuthenticated() && exists(/databases/$(database)/documents/supportTickets/$(ticketId)) && (
+          get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.customerId == request.auth.uid ||
+          isGarageMember(get(/databases/$(database)/documents/supportTickets/$(ticketId)).data.garageId)
+        );
+
+        // Create: Allowed if customer owns ticket or caller is garage member of ticket's garage.
+        allow create: if isAuthenticated() &&
+          isValidTicketHistory(request.resource.data) &&
+          request.resource.data.performedBy == request.auth.uid &&
+          (
+            isTicketCustomer(ticketId) ||
+            isTicketGarageMember(ticketId)
+          );
+
+        // Audit history is immutable and append-only.
+        allow update, delete: if false;
+      }
+    }
+
+    // ===============================================================
+    // Collection Group Queries
+    // ===============================================================
+
     match /{path=**}/serviceJobs/{jobId} {
       allow read: if isAuthenticated() && (
         resource.data.customerId == request.auth.uid ||
@@ -230,6 +438,14 @@ service cloud.firestore {
 
     match /{path=**}/history/{historyId} {
       allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    match /{path=**}/supportTickets/{ticketId} {
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid ||
+        isGarageMember(resource.data.garageId)
+      );
       allow write: if false;
     }
   }

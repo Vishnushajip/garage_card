@@ -1,11 +1,11 @@
 {
-    "name": "V-Fix | Garage Management & Vehicle Service Platform",
-    "short_name": "V-Fix",
+    "name": "WeFix | Garage Management & Vehicle Service Platform",
+    "short_name": "WeFix",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0F172A",
     "theme_color": "#DC2626",
-    "description": "V-Fix – Smarter Garage Management. Better Vehicle Care. Modern vehicle servicing and workshop management platform.",
+    "description": "WeFix – Smarter Garage Management. Better Vehicle Care. Modern vehicle servicing and workshop management platform.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

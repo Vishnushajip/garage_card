@@ -4,6 +4,7 @@ import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/core/shared_widgets/app_whatsapp_button.dart';
 import 'package:garage_card/features/shared/models/garage_model.dart';
+import 'package:garage_card/features/shared/models/working_hours_model.dart';
 
 class GarageDetailAboutTab extends StatelessWidget {
   const GarageDetailAboutTab({super.key, required this.garage});
@@ -40,21 +41,73 @@ class GarageDetailAboutTab extends StatelessWidget {
           style: AppFonts.titleMedium(color: primaryText),
         ),
         const SizedBox(height: 12),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: const Icon(
-            Icons.access_time_rounded,
-            color: AppColors.primaryRed,
+        if (garage.dailyWorkingHours != null &&
+            garage.dailyWorkingHours!.isNotEmpty) ...[
+          Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: const EdgeInsets.only(left: 36, bottom: 8),
+              leading: const Icon(
+                Icons.access_time_rounded,
+                color: AppColors.primaryRed,
+              ),
+              title: Text(
+                garage.openHours,
+                style: AppFonts.bodyMedium(color: primaryText),
+              ),
+              subtitle: Text(
+                'Weekly business hours',
+                style: AppFonts.bodySmall(color: secondaryText),
+              ),
+              children:
+                  WorkingHoursSchedule.parse(
+                    garage.dailyWorkingHours,
+                    garage.openHours,
+                  ).map((day) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 3),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            day.dayLabel,
+                            style: AppFonts.labelSmall(color: primaryText)
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            day.isOpen
+                                ? '${day.openTime} - ${day.closeTime}'
+                                : 'Closed',
+                            style: AppFonts.labelSmall(
+                              color: day.isOpen
+                                  ? secondaryText
+                                  : AppColors.error,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+            ),
           ),
-          title: Text(
-            garage.openHours,
-            style: AppFonts.bodyMedium(color: primaryText),
+        ] else ...[
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(
+              Icons.access_time_rounded,
+              color: AppColors.primaryRed,
+            ),
+            title: Text(
+              garage.openHours,
+              style: AppFonts.bodyMedium(color: primaryText),
+            ),
+            subtitle: Text(
+              'Opening hours',
+              style: AppFonts.bodySmall(color: secondaryText),
+            ),
           ),
-          subtitle: Text(
-            'Opening hours',
-            style: AppFonts.bodySmall(color: secondaryText),
-          ),
-        ),
+        ],
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(
