@@ -61,29 +61,64 @@ class _RevenueBarChartState extends State<RevenueBarChart> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 12,
-              runSpacing: 8,
-              children: [
-                Column(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 420;
+                if (isWide) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Revenue, Collections & Costs',
+                              style: AppFonts.titleMedium(
+                                color: primaryTextColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Periodic comparison breakdown',
+                              style: AppFonts.labelSmall(
+                                color: secondaryTextColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildLegend(isDark),
+                    ],
+                  );
+                }
+                return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Revenue, Collections & Costs',
                       style: AppFonts.titleMedium(color: primaryTextColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Periodic comparison breakdown',
                       style: AppFonts.labelSmall(color: secondaryTextColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 8),
+                    _buildLegend(isDark),
                   ],
-                ),
-                _buildLegend(isDark),
-              ],
+                );
+              },
             ),
             if (!hasData) ...[
               const SizedBox(height: 16),

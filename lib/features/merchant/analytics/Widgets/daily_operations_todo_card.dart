@@ -70,13 +70,10 @@ class DailyOperationsTodoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 12,
-              runSpacing: 8,
-              children: [
-                Row(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 420;
+                final content = Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
@@ -102,19 +99,23 @@ class DailyOperationsTodoCard extends StatelessWidget {
                             style: AppFonts.titleMedium(
                               color: primaryTextColor,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             'Auto-generated from scheduled vehicle logs & bills',
                             style: AppFonts.labelSmall(
                               color: secondaryTextColor,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
                   ],
-                ),
-                Container(
+                );
+                final badge = Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 4,
@@ -127,8 +128,23 @@ class DailyOperationsTodoCard extends StatelessWidget {
                     '${items.where((i) => !i.isDone).length} Pending',
                     style: AppFonts.labelSmall(color: AppColors.accentBlue),
                   ),
-                ),
-              ],
+                );
+
+                if (isWide) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(child: content),
+                      const SizedBox(width: 8),
+                      badge,
+                    ],
+                  );
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [content, const SizedBox(height: 8), badge],
+                );
+              },
             ),
             const SizedBox(height: 16),
             if (items.isEmpty)

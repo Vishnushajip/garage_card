@@ -20,8 +20,22 @@ class ServicePipelineSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isWide = constraints.maxWidth > 600;
-        final count = isWide ? 4 : 2;
+        final width = constraints.maxWidth;
+        final int count;
+        final double ratio;
+        if (width >= 900) {
+          count = 4;
+          ratio = 1.9;
+        } else if (width >= 600) {
+          count = 4;
+          ratio = 1.5;
+        } else if (width >= 360) {
+          count = 2;
+          ratio = 1.18;
+        } else {
+          count = 2;
+          ratio = 1.05;
+        }
 
         return GridView.count(
           crossAxisCount: count,
@@ -29,7 +43,7 @@ class ServicePipelineSummary extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: isWide ? 1.8 : 1.5,
+          childAspectRatio: ratio,
           children: [
             _buildCard(
               context,
@@ -95,7 +109,7 @@ class ServicePipelineSummary extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -111,17 +125,25 @@ class ServicePipelineSummary extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                const SizedBox(width: 4),
                 Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, color: color, size: 16),
+                  child: Icon(icon, color: color, size: 15),
                 ),
               ],
             ),
-            Text(value, style: AppFonts.titleLarge(color: primaryTextColor)),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: AppFonts.titleLarge(color: primaryTextColor),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
             Text(
               subtitle,
               style: AppFonts.labelSmall(color: secondaryTextColor),

@@ -33,13 +33,10 @@ class ProfitLossCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 12,
-              runSpacing: 8,
-              children: [
-                Row(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 380;
+                final content = Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
@@ -73,13 +70,15 @@ class ProfitLossCard extends StatelessWidget {
                           Text(
                             '${isProfit ? "+" : ""}${CurrencyFormatter.format(metrics.netProfit, currencyCode: metrics.currencyCode)}',
                             style: AppFonts.displayMedium(color: statusColor),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
                   ],
-                ),
-                Container(
+                );
+                final badge = Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 6,
@@ -92,8 +91,23 @@ class ProfitLossCard extends StatelessWidget {
                     '${metrics.profitMargin.toStringAsFixed(1)}% Margin',
                     style: AppFonts.labelSmall(color: statusColor),
                   ),
-                ),
-              ],
+                );
+
+                if (isWide) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(child: content),
+                      const SizedBox(width: 8),
+                      badge,
+                    ],
+                  );
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [content, const SizedBox(height: 10), badge],
+                );
+              },
             ),
             const SizedBox(height: 20),
             const Divider(height: 1),

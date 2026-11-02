@@ -40,31 +40,47 @@ class BillAnalyticsList extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 12,
-              runSpacing: 8,
-              children: [
-                Column(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 420;
+                final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Bill-by-Bill Revenue & Settlement Log',
                       style: AppFonts.titleMedium(color: primaryTextColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       'Billed amount vs discount vs paid vs balance',
                       style: AppFonts.bodyMedium(color: secondaryTextColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                ),
-                Text(
+                );
+                final badge = Text(
                   '${invoices.length} Bills',
                   style: AppFonts.labelSmall(color: AppColors.accentBlue),
-                ),
-              ],
+                );
+
+                if (isWide) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(child: titleCol),
+                      const SizedBox(width: 8),
+                      badge,
+                    ],
+                  );
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [titleCol, const SizedBox(height: 6), badge],
+                );
+              },
             ),
             const SizedBox(height: 16),
             if (invoices.isEmpty)
@@ -98,12 +114,17 @@ class BillAnalyticsList extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                inv.invoiceNumber,
-                                style: AppFonts.labelLarge(
-                                  color: AppColors.accentBlue,
+                              Expanded(
+                                child: Text(
+                                  inv.invoiceNumber,
+                                  style: AppFonts.labelLarge(
+                                    color: AppColors.accentBlue,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
+                              const SizedBox(width: 8),
                               AppStatusBadge(status: inv.status),
                             ],
                           ),
