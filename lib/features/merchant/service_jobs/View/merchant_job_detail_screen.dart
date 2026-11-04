@@ -3,25 +3,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
-import 'package:garage_card/core/formatting/date_formatter.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
+import 'package:garage_card/core/shared_widgets/app_date_text.dart';
+import 'package:garage_card/core/shared_widgets/app_dropdown.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
+import 'package:garage_card/core/shared_widgets/app_text_field.dart';
+import 'package:garage_card/core/shared_widgets/app_whatsapp_icon.dart';
 import 'package:garage_card/features/customer/service_jobs/Widgets/status_timeline_view.dart';
-import 'package:garage_card/features/shared/models/qc_checklist_model.dart';
+import 'package:garage_card/features/merchant/dashboard/ViewModel/merchant_dashboard_view_model.dart';
+import 'package:garage_card/features/merchant/service_jobs/Widgets/add_extra_work_dialog.dart';
+import 'package:garage_card/features/merchant/service_jobs/Widgets/complete_job_billing_dialog.dart';
+import 'package:garage_card/features/merchant/service_jobs/Widgets/edit_invoice_dialog.dart';
+import 'package:garage_card/features/merchant/service_jobs/Widgets/job_whatsapp_share_dialog.dart';
+import 'package:garage_card/features/merchant/service_jobs/Widgets/update_payment_dialog.dart';
+import 'package:garage_card/features/shared/documents/pdf_generator_service.dart';
+import 'package:garage_card/features/shared/models/invoice_model.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
 
 import '../ViewModel/merchant_jobs_view_model.dart';
-import '../Widgets/add_supplemental_work_dialog.dart';
-import '../Widgets/complete_repair_dialog.dart';
-import '../Widgets/gate_pass_verification_dialog.dart';
-import '../Widgets/job_status_dialog.dart';
-import '../Widgets/qc_checklist_dialog.dart';
-import '../Widgets/start_repair_dialog.dart';
 
 class MerchantJobDetailScreen extends ConsumerStatefulWidget {
   const MerchantJobDetailScreen({super.key, required this.jobId});
@@ -43,114 +48,211 @@ class _MerchantJobDetailScreenState
     });
   }
 
-  void _openStartRepairDialog(BuildContext context, ServiceJobModel job) {
-    showDialog(
-      context: context,
-      builder: (ctx) => StartRepairDialog(
-        job: job,
-        onStartRepair: (technicianName, notes) => ref
-            .read(merchantJobsViewModelProvider.notifier)
-            .startRepair(
-              jobId: job.id,
-              technicianName: technicianName,
-              notes: notes,
-            ),
-      ),
-    );
-  }
+  void _openChangeMechanicDialog(BuildContext context, ServiceJobModel job) {
+    final state = ref.read(merchantJobsViewModelProvider);
+    final mechanicSet = <String>{
+      'Suresh Kumar',
+      'Rahul Nair',
+      'Anand K',
+      'Manoj P',
+    };
+    for (final j in state.jobs) {
+      if (j.technicianName.trim().isNotEmpty) {
+        mechanicSet.add(j.technicianName.trim());
+      }
+    }
+    final mechanicList = mechanicSet.toList();
 
-  void _openCompleteRepairDialog(BuildContext context, ServiceJobModel job) {
-    showDialog(
-      context: context,
-      builder: (ctx) => CompleteRepairDialog(
-        job: job,
-        onCompleteRepair:
-            ({
-              required int finalOdometer,
-              DateTime? nextServiceDue,
-              int? nextServiceOdometer,
-              String? nextServiceType,
-              String? notes,
-            }) => ref
-                .read(merchantJobsViewModelProvider.notifier)
-                .completeRepair(
-                  jobId: job.id,
-                  finalOdometer: finalOdometer,
-                  nextServiceDue: nextServiceDue,
-                  nextServiceOdometer: nextServiceOdometer,
-                  nextServiceType: nextServiceType,
-                  notes: notes,
-                ),
-      ),
-    );
-  }
+    String? selected =
+        job.technicianName.isNotEmpty &&
+            mechanicList.contains(job.technicianName)
+        ? job.technicianName
+        : (mechanicList.isNotEmpty ? mechanicList.first : null);
+    final customCtrl = TextEditingController();
+    bool isCustom = false;
 
-  void _openStatusDialog(BuildContext context, ServiceJobModel job) {
     showDialog(
       context: context,
       builder: (dialogCtx) {
-        return JobStatusDialog(
-          currentStatus: job.status,
-          customerName: job.customerName.isNotEmpty
-              ? job.customerName
-              : 'Customer',
-          vehicleDisplay: job.vehicleDisplay,
-          jobNumber: job.jobNumber,
-          garageName: 'Authorized Service Center',
-          customerPhone: job.customerPhone,
-          customerWhatsApp: job.customerWhatsApp,
-          onUpdateStatus: (newStatus, notes) {
-            return ref
-                .read(merchantJobsViewModelProvider.notifier)
-                .updateStatus(
-                  jobId: widget.jobId,
-                  newStatus: newStatus,
-                  notes: notes,
-                );
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return AlertDialog(
+              title: const Text('Change Assigned Mechanic'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppDropdown<String>(
+                    label: 'Mechanic',
+                    value: isCustom ? '__custom__' : selected,
+                    items: [
+                      ...mechanicList.map(
+                        (m) => AppDropdownItem(value: m, title: m),
+                      ),
+                      const AppDropdownItem(
+                        value: '__custom__',
+                        title: '+ Add Custom Mechanic',
+                      ),
+                    ],
+                    onChanged: (val) {
+                      if (val == '__custom__') {
+                        setDialogState(() {
+                          isCustom = true;
+                          selected = null;
+                        });
+                      } else {
+                        setDialogState(() {
+                          isCustom = false;
+                          selected = val;
+                        });
+                      }
+                    },
+                  ),
+                  if (isCustom) ...[
+                    const SizedBox(height: 12),
+                    AppTextField(
+                      controller: customCtrl,
+                      label: 'New Mechanic Name',
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogCtx).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final name = isCustom
+                        ? customCtrl.text.trim()
+                        : (selected ?? '');
+                    if (name.isEmpty) return;
+                    Navigator.of(dialogCtx).pop();
+                    final ok = await ref
+                        .read(merchantJobsViewModelProvider.notifier)
+                        .assignMechanic(jobId: job.id, mechanicName: name);
+                    if (ok) {
+                      AppNotificationService.success(
+                        'Mechanic assigned: $name',
+                      );
+                    }
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
+            );
           },
         );
       },
     );
   }
 
-  void _openGatePassVerification(BuildContext context, ServiceJobModel job) {
+  void _openAddExtraWorkDialog(BuildContext context, ServiceJobModel job) {
     showDialog(
       context: context,
-      builder: (ctx) => GatePassVerificationDialog(
+      builder: (ctx) => AddExtraWorkDialog(job: job),
+    );
+  }
+
+  void _openCompleteJobBillingDialog(
+    BuildContext context,
+    ServiceJobModel job,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => CompleteJobBillingDialog(job: job),
+    );
+  }
+
+  void _openEditInvoiceDialog(
+    BuildContext context,
+    ServiceJobModel job,
+    InvoiceModel invoice,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => EditInvoiceDialog(invoice: invoice, job: job),
+    );
+  }
+
+  void _openUpdatePaymentDialog(
+    BuildContext context,
+    ServiceJobModel job,
+    InvoiceModel invoice,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => UpdatePaymentDialog(invoice: invoice, job: job),
+    );
+  }
+
+  Future<void> _downloadPdf(
+    BuildContext context,
+    ServiceJobModel job,
+    InvoiceModel invoice,
+  ) async {
+    final dashState = ref.read(merchantDashboardViewModelProvider);
+    final garage = dashState.garage;
+    if (garage == null) {
+      AppNotificationService.warning('Garage details not loaded');
+      return;
+    }
+    try {
+      await PdfGeneratorService.printOrShareJobInvoice(
+        garage: garage,
         job: job,
-        onVerify: (otp) => ref
-            .read(merchantJobsViewModelProvider.notifier)
-            .verifyGatePass(jobId: job.id, otp: otp),
+        invoice: invoice,
+      );
+    } catch (e) {
+      AppNotificationService.error('Failed to generate PDF invoice: $e');
+    }
+  }
+
+  void _openWhatsAppDialog(
+    BuildContext context,
+    ServiceJobModel job,
+    InvoiceModel? invoice,
+    WhatsAppNotificationType type,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => JobWhatsAppShareDialog(
+        type: type,
+        customerName: job.customerName,
+        customerPhone: job.customerPhone,
+        bikeNumber: job.vehicleDisplay,
+        problem: job.complaints.isNotEmpty
+            ? job.complaints.first
+            : 'Service Request',
+        jobNumber: job.jobNumber,
+        mechanic: job.technicianName,
+        extraWork: job.supplementalItems.isNotEmpty
+            ? job.supplementalItems.map((e) => e.title).join(', ')
+            : '',
+        finalBillAmount: invoice?.totalAmount ?? 0.0,
+        paidAmount: invoice?.paidAmount ?? 0.0,
+        balanceDue: invoice?.balanceDue ?? 0.0,
+        invoiceNumber: invoice?.invoiceNumber ?? job.jobNumber,
+        paymentStatus: invoice?.status ?? 'unpaid',
       ),
     );
   }
 
-  void _openQcDialog(BuildContext context, ServiceJobModel job) {
-    showDialog(
-      context: context,
-      builder: (ctx) => QCChecklistDialog(
-        job: job,
-        onSave: (checklist, inspector) => ref
-            .read(merchantJobsViewModelProvider.notifier)
-            .updateQcChecklist(
-              jobId: job.id,
-              checklist: checklist,
-              inspectorName: inspector,
-            ),
-      ),
-    );
-  }
-
-  void _openSupplementalDialog(BuildContext context, ServiceJobModel job) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AddSupplementalWorkDialog(
-        jobId: job.id,
-        onAdd: (item) => ref
-            .read(merchantJobsViewModelProvider.notifier)
-            .addSupplementalWork(jobId: job.id, item: item),
-      ),
-    );
+  Future<void> _startRepairWork(ServiceJobModel job) async {
+    final ok = await ref
+        .read(merchantJobsViewModelProvider.notifier)
+        .updateStatus(
+          jobId: job.id,
+          newStatus: 'in_progress',
+          notes:
+              'Repair work started by ${job.technicianName.isNotEmpty ? job.technicianName : "foreman"}',
+        );
+    if (ok) {
+      AppNotificationService.success('Repair work marked In Progress');
+    }
   }
 
   @override
@@ -166,6 +268,9 @@ class _MerchantJobDetailScreenState
         : AppColors.textSecondaryLight;
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
     final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final sectionBg = isDark
+        ? AppColors.backgroundDark
+        : AppColors.backgroundLight;
 
     if (state.isLoading) {
       return const Scaffold(body: AppLoading(message: 'Loading job record...'));
@@ -182,15 +287,38 @@ class _MerchantJobDetailScreenState
       );
     }
 
+    final invoice = state.selectedInvoice;
+    final isCompleted =
+        job.status.toLowerCase() == 'completed' ||
+        job.status.toLowerCase() == 'closed' ||
+        job.status.toLowerCase() == 'delivered';
+    final isInProgress =
+        job.status.toLowerCase() == 'in_progress' ||
+        job.status.toLowerCase() == 'inprogress' ||
+        job.status.toLowerCase() == 'awaiting_parts';
+    final isPending = !isCompleted && !isInProgress;
+
+    final extraWorkTotal = job.supplementalItems.fold(
+      0.0,
+      (acc, item) => acc + item.totalAmount,
+    );
+
     return Scaffold(
       appBar: AppCustomAppBar(
         title: job.jobNumber,
         subtitle: job.vehicleDisplay,
         actions: [
           IconButton(
-            tooltip: 'Inform Customer via WhatsApp',
-            icon: const Icon(Icons.chat_rounded, color: AppColors.success),
-            onPressed: () => _openStatusDialog(context, job),
+            tooltip: 'Inform Customer on WhatsApp',
+            icon: const AppWhatsAppIcon(size: 20, color: Color(0xFF25D366)),
+            onPressed: () => _openWhatsAppDialog(
+              context,
+              job,
+              invoice,
+              isCompleted
+                  ? WhatsAppNotificationType.invoiceSharing
+                  : WhatsAppNotificationType.jobCreated,
+            ),
           ),
         ],
       ),
@@ -203,13 +331,10 @@ class _MerchantJobDetailScreenState
               children: [
                 Card(
                   color: cardBg,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(
-                      color: isDark
-                          ? AppColors.borderDark
-                          : AppColors.borderLight,
-                    ),
+                    side: BorderSide(color: borderColor),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(20),
@@ -219,62 +344,179 @@ class _MerchantJobDetailScreenState
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              job.vehicleDisplay,
-                              style: AppFonts.titleLarge(
-                                color: primaryTextColor,
+                            Expanded(
+                              child: Text(
+                                job.vehicleDisplay,
+                                style: AppFonts.titleLarge(
+                                  color: primaryTextColor,
+                                ).copyWith(fontWeight: FontWeight.bold),
                               ),
                             ),
                             AppStatusBadge(status: job.status),
                           ],
                         ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Text(
+                              'Customer: ',
+                              style: AppFonts.bodySmall(
+                                color: secondaryTextColor,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                '${job.customerName}${job.customerPhone.isNotEmpty ? " (${job.customerPhone})" : ""}',
+                                style: AppFonts.bodyMedium(
+                                  color: primaryTextColor,
+                                ).copyWith(fontWeight: FontWeight.w600),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Text(
+                              'Assigned Mechanic: ',
+                              style: AppFonts.bodySmall(
+                                color: secondaryTextColor,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                job.technicianName.isNotEmpty
+                                    ? job.technicianName
+                                    : 'Not assigned',
+                                style: AppFonts.bodyMedium(
+                                  color: AppColors.accentBlue,
+                                ).copyWith(fontWeight: FontWeight.w600),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            InkWell(
+                              onTap: () =>
+                                  _openChangeMechanicDialog(context, job),
+                              borderRadius: BorderRadius.circular(4),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                child: Text(
+                                  'Change',
+                                  style:
+                                      AppFonts.labelSmall(
+                                        color: AppColors.accentBlue,
+                                      ).copyWith(
+                                        decoration: TextDecoration.underline,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 8),
-                        Text(
-                          'Customer: ${job.customerName} • Odometer: ${job.odometerReading} km',
-                          style: AppFonts.bodyMedium(color: secondaryTextColor),
-                        ),
-                        Text(
-                          'Assigned Technician: ${job.technicianName.isNotEmpty ? job.technicianName : "Not assigned"}',
-                          style: AppFonts.labelSmall(color: secondaryTextColor),
-                        ),
-                        const SizedBox(height: 16),
-                        if (!job.isActiveRepair && !job.isCompletedRepair) ...[
-                          AppButton(
-                            label: 'Start Repair Work',
-                            icon: const Icon(
-                              Icons.play_arrow_rounded,
-                              size: 18,
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 4,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Created: ',
+                                  style: AppFonts.bodySmall(
+                                    color: secondaryTextColor,
+                                  ),
+                                ),
+                                AppDateText(
+                                  date: job.createdAt,
+                                  style: AppFonts.bodySmall(
+                                    color: primaryTextColor,
+                                  ).copyWith(fontWeight: FontWeight.w600),
+                                ),
+                              ],
                             ),
-                            onPressed: () =>
-                                _openStartRepairDialog(context, job),
-                            variant: AppButtonVariant.primary,
-                            isFullWidth: true,
-                            height: 44,
-                          ),
-                          const SizedBox(height: 10),
-                          AppButton(
-                            label: 'Update Status & Notify Customer',
-                            icon: const Icon(
-                              Icons.edit_notifications_rounded,
-                              size: 18,
-                            ),
-                            onPressed: () => _openStatusDialog(context, job),
-                            variant: AppButtonVariant.outline,
-                            isFullWidth: true,
-                            height: 42,
-                          ),
-                        ] else if (job.isActiveRepair) ...[
+                            if (job.completedDate != null)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Completed: ',
+                                    style: AppFonts.bodySmall(
+                                      color: secondaryTextColor,
+                                    ),
+                                  ),
+                                  AppDateText(
+                                    date: job.completedDate,
+                                    style: AppFonts.bodySmall(
+                                      color: primaryTextColor,
+                                    ).copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        if (isPending) ...[
                           Row(
                             children: [
                               Expanded(
                                 child: AppButton(
-                                  label: 'Update Status',
+                                  label: 'Start Repair Work',
                                   icon: const Icon(
-                                    Icons.edit_notifications_rounded,
+                                    Icons.play_arrow_rounded,
+                                    size: 18,
+                                  ),
+                                  onPressed: () => _startRepairWork(job),
+                                  variant: AppButtonVariant.primary,
+                                  height: 44,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF25D366),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    minimumSize: const Size.fromHeight(44),
+                                  ),
+                                  icon: const AppWhatsAppIcon(
+                                    size: 16,
+                                    color: Colors.white,
+                                  ),
+                                  label: const Text('Notify Customer'),
+                                  onPressed: () => _openWhatsAppDialog(
+                                    context,
+                                    job,
+                                    invoice,
+                                    WhatsAppNotificationType.jobCreated,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ] else if (isInProgress) ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                child: AppButton(
+                                  label: '+ Extra Work',
+                                  icon: const Icon(
+                                    Icons.add_task_rounded,
                                     size: 16,
                                   ),
                                   onPressed: () =>
-                                      _openStatusDialog(context, job),
+                                      _openAddExtraWorkDialog(context, job),
                                   variant: AppButtonVariant.outline,
                                   height: 44,
                                 ),
@@ -282,13 +524,16 @@ class _MerchantJobDetailScreenState
                               const SizedBox(width: 10),
                               Expanded(
                                 child: AppButton(
-                                  label: 'Complete Repair',
+                                  label: 'Complete & Bill',
                                   icon: const Icon(
                                     Icons.check_circle_rounded,
-                                    size: 16,
+                                    size: 18,
                                   ),
                                   onPressed: () =>
-                                      _openCompleteRepairDialog(context, job),
+                                      _openCompleteJobBillingDialog(
+                                        context,
+                                        job,
+                                      ),
                                   variant: AppButtonVariant.primary,
                                   height: 44,
                                 ),
@@ -296,106 +541,85 @@ class _MerchantJobDetailScreenState
                             ],
                           ),
                         ] else ...[
-                          AppButton(
-                            label: 'Update Delivery Notes',
-                            onPressed: () => _openStatusDialog(context, job),
-                            variant: AppButtonVariant.outline,
-                            isFullWidth: true,
-                            height: 44,
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              if (invoice != null) ...[
+                                ElevatedButton.icon(
+                                  onPressed: () => _openEditInvoiceDialog(
+                                    context,
+                                    job,
+                                    invoice,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.edit_note_rounded,
+                                    size: 16,
+                                  ),
+                                  label: const Text('Edit Bill / Discount'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.accentBlue,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                ),
+                                if (invoice.balanceDue > 0)
+                                  ElevatedButton.icon(
+                                    onPressed: () => _openUpdatePaymentDialog(
+                                      context,
+                                      job,
+                                      invoice,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.payment_rounded,
+                                      size: 16,
+                                    ),
+                                    label: const Text('Record Payment'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.success,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                  ),
+                                OutlinedButton.icon(
+                                  onPressed: () =>
+                                      _downloadPdf(context, job, invoice),
+                                  icon: const Icon(
+                                    Icons.picture_as_pdf_rounded,
+                                    size: 16,
+                                  ),
+                                  label: const Text('PDF Invoice'),
+                                ),
+                              ],
+                              ElevatedButton.icon(
+                                onPressed: () => _openWhatsAppDialog(
+                                  context,
+                                  job,
+                                  invoice,
+                                  WhatsAppNotificationType.invoiceSharing,
+                                ),
+                                icon: const AppWhatsAppIcon(
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                                label: const Text('Share on WhatsApp'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF25D366),
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ],
                     ),
                   ),
                 ),
-                if (job.status == 'readyForCollection' ||
-                    job.status == 'completed') ...[
-                  const SizedBox(height: 16),
-                  Card(
-                    color: cardBg,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: job.isGatePassVerified
-                            ? AppColors.success.withValues(alpha: 0.5)
-                            : AppColors.accentBlue.withValues(alpha: 0.5),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    job.isGatePassVerified
-                                        ? Icons.verified_user_rounded
-                                        : Icons.qr_code_scanner_rounded,
-                                    color: job.isGatePassVerified
-                                        ? AppColors.success
-                                        : AppColors.accentBlue,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Delivery Gate Pass Verification',
-                                    style: AppFonts.titleMedium(
-                                      color: primaryTextColor,
-                                    ).copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                              AppStatusBadge(
-                                status: job.isGatePassVerified
-                                    ? 'completed'
-                                    : 'readyForCollection',
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            job.isGatePassVerified
-                                ? 'Vehicle release verified on ${DateFormatter.formatDateTime(job.gatePassVerifiedAt)}. Delivery completed.'
-                                : 'Customer has been issued a 6-digit cryptographic OTP gate pass. Security or foreman must verify the OTP to release vehicle.',
-                            style: AppFonts.bodySmall(
-                              color: secondaryTextColor,
-                            ),
-                          ),
-                          if (!job.isGatePassVerified) ...[
-                            const SizedBox(height: 12),
-                            AppButton(
-                              label: 'Verify Gate OTP & Release Vehicle',
-                              icon: const Icon(
-                                Icons.security_rounded,
-                                size: 16,
-                              ),
-                              variant: AppButtonVariant.primary,
-                              isFullWidth: true,
-                              height: 40,
-                              onPressed: () =>
-                                  _openGatePassVerification(context, job),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
                 const SizedBox(height: 16),
                 Card(
                   color: cardBg,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(
-                      color: job.isQcPassed
-                          ? AppColors.success.withValues(alpha: 0.4)
-                          : borderColor,
-                    ),
+                    side: BorderSide(color: borderColor),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -403,79 +627,49 @@ class _MerchantJobDetailScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  job.isQcPassed
-                                      ? Icons.verified_rounded
-                                      : Icons.checklist_rtl_rounded,
-                                  color: job.isQcPassed
-                                      ? AppColors.success
-                                      : AppColors.accentBlue,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '9-Point QC Inspection',
-                                  style: AppFonts.titleMedium(
-                                    color: primaryTextColor,
-                                  ).copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
+                            const Icon(
+                              Icons.report_problem_rounded,
+                              color: AppColors.accentAmber,
+                              size: 20,
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color:
-                                    (job.isQcPassed
-                                            ? AppColors.success
-                                            : AppColors.accentAmber)
-                                        .withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                job.isQcPassed
-                                    ? 'Passed'
-                                    : '${QCChecklistModel.passedCount(job.qcChecklist)}/9 Passed',
-                                style: AppFonts.labelSmall(
-                                  color: job.isQcPassed
-                                      ? AppColors.success
-                                      : AppColors.accentAmber,
-                                ).copyWith(fontWeight: FontWeight.bold),
-                              ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Original Reported Work',
+                              style: AppFonts.titleMedium(
+                                color: primaryTextColor,
+                              ).copyWith(fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          job.isQcPassed
-                              ? 'Signed off by ${job.qcInspectorName ?? "Lead Technician"} on ${DateFormatter.formatDateTime(job.qcInspectedAt)}.'
-                              : 'Mandatory pre-delivery quality inspection checklist before handing over vehicle.',
-                          style: AppFonts.bodySmall(color: secondaryTextColor),
-                        ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.accentBlue,
-                            side: const BorderSide(color: AppColors.accentBlue),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                        const SizedBox(height: 10),
+                        if (job.complaints.isEmpty)
+                          Text(
+                            'General Bike Service requested.',
+                            style: AppFonts.bodySmall(
+                              color: secondaryTextColor,
                             ),
-                            minimumSize: const Size.fromHeight(40),
-                          ),
-                          icon: const Icon(Icons.edit_note_rounded, size: 18),
-                          label: Text(
-                            job.isQcPassed
-                                ? 'Review Checklist'
-                                : 'Complete QC Checklist',
-                          ),
-                          onPressed: () => _openQcDialog(context, job),
-                        ),
+                          )
+                        else
+                          for (final complaint in job.complaints) ...[
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('•  '),
+                                  Expanded(
+                                    child: Text(
+                                      complaint,
+                                      style: AppFonts.bodyMedium(
+                                        color: primaryTextColor,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                       ],
                     ),
                   ),
@@ -483,6 +677,7 @@ class _MerchantJobDetailScreenState
                 const SizedBox(height: 16),
                 Card(
                   color: cardBg,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(color: borderColor),
@@ -498,117 +693,141 @@ class _MerchantJobDetailScreenState
                             Row(
                               children: [
                                 const Icon(
-                                  Icons.add_alert_rounded,
-                                  color: AppColors.accentAmber,
+                                  Icons.add_task_rounded,
+                                  color: AppColors.accentBlue,
                                   size: 20,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Supplemental Work',
+                                  'Extra Work Details',
                                   style: AppFonts.titleMedium(
                                     color: primaryTextColor,
                                   ).copyWith(fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
-                            IconButton(
-                              tooltip: 'Request Supplemental Work',
-                              icon: const Icon(
-                                Icons.add_circle_outline_rounded,
-                                color: AppColors.accentBlue,
+                            if (!isCompleted)
+                              IconButton(
+                                tooltip: 'Add Extra Work',
+                                icon: const Icon(
+                                  Icons.add_circle_outline_rounded,
+                                  color: AppColors.accentBlue,
+                                ),
+                                onPressed: () =>
+                                    _openAddExtraWorkDialog(context, job),
                               ),
-                              onPressed: () =>
-                                  _openSupplementalDialog(context, job),
-                            ),
                           ],
                         ),
                         if (job.supplementalItems.isEmpty) ...[
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           Text(
-                            'No unexpected damage or supplemental work requests recorded.',
+                            'No additional problems or extra work recorded.',
                             style: AppFonts.bodySmall(
                               color: secondaryTextColor,
                             ),
                           ),
+                          if (!isCompleted) ...[
+                            const SizedBox(height: 10),
+                            OutlinedButton.icon(
+                              onPressed: () =>
+                                  _openAddExtraWorkDialog(context, job),
+                              icon: const Icon(Icons.add_rounded, size: 16),
+                              label: const Text('Add Extra Work'),
+                            ),
+                          ],
                         ] else ...[
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 10),
                           for (final supp in job.supplementalItems) ...[
                             Container(
                               margin: const EdgeInsets.only(bottom: 8),
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: isDark
-                                    ? AppColors.backgroundDark
-                                    : AppColors.backgroundLight,
+                                color: sectionBg,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: borderColor),
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
                                           supp.title,
                                           style:
-                                              AppFonts.titleSmall(
+                                              AppFonts.labelLarge(
                                                 color: primaryTextColor,
                                               ).copyWith(
                                                 fontWeight: FontWeight.bold,
                                               ),
                                         ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              (supp.isApproved
-                                                      ? AppColors.success
-                                                      : supp.isDeclined
-                                                      ? AppColors.error
-                                                      : AppColors.accentAmber)
-                                                  .withValues(alpha: 0.12),
-                                          borderRadius: BorderRadius.circular(
-                                            6,
+                                        if (supp.reason.isNotEmpty &&
+                                            supp.reason != supp.title) ...[
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            supp.reason,
+                                            style: AppFonts.bodySmall(
+                                              color: secondaryTextColor,
+                                            ),
                                           ),
-                                        ),
-                                        child: Text(
-                                          supp.status.toUpperCase(),
-                                          style:
-                                              AppFonts.labelSmall(
-                                                color: supp.isApproved
-                                                    ? AppColors.success
-                                                    : supp.isDeclined
-                                                    ? AppColors.error
-                                                    : AppColors.accentAmber,
-                                              ).copyWith(
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    supp.reason,
-                                    style: AppFonts.bodySmall(
-                                      color: secondaryTextColor,
+                                        ],
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
                                   Text(
-                                    'Parts: ${CurrencyFormatter.format(supp.partsCost)} • Labor: ${CurrencyFormatter.format(supp.laborCost)} • Total: ${CurrencyFormatter.format(supp.totalAmount)}',
-                                    style: AppFonts.labelSmall(
-                                      color: primaryTextColor,
-                                    ).copyWith(fontWeight: FontWeight.w600),
+                                    CurrencyFormatter.format(supp.totalAmount),
+                                    style: AppFonts.titleSmall(
+                                      color: AppColors.accentBlue,
+                                    ).copyWith(fontWeight: FontWeight.bold),
                                   ),
                                 ],
+                              ),
+                            ),
+                          ],
+                          const Divider(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total Extra Work Charges:',
+                                style: AppFonts.titleSmall(
+                                  color: primaryTextColor,
+                                ).copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                CurrencyFormatter.format(extraWorkTotal),
+                                style: AppFonts.titleSmall(
+                                  color: AppColors.accentBlue,
+                                ).copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          if (!isCompleted) ...[
+                            const SizedBox(height: 12),
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF25D366),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                minimumSize: const Size.fromHeight(42),
+                              ),
+                              icon: const AppWhatsAppIcon(
+                                size: 16,
+                                color: Colors.white,
+                              ),
+                              label: const Text(
+                                'Inform Customer about Extra Work (WhatsApp)',
+                              ),
+                              onPressed: () => _openWhatsAppDialog(
+                                context,
+                                job,
+                                invoice,
+                                WhatsAppNotificationType.extraWorkAdded,
                               ),
                             ),
                           ],
@@ -617,54 +836,191 @@ class _MerchantJobDetailScreenState
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Card(
-                  color: cardBg,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(
-                      color: isDark
-                          ? AppColors.borderDark
-                          : AppColors.borderLight,
+                if (invoice != null) ...[
+                  const SizedBox(height: 16),
+                  Card(
+                    color: cardBg,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: borderColor),
                     ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Internal Mechanic Notes (Private)',
-                          style: AppFonts.titleMedium(
-                            color: AppColors.accentAmber,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.receipt_rounded,
+                                    color: AppColors.success,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Invoice & Payment Summary',
+                                    style: AppFonts.titleMedium(
+                                      color: primaryTextColor,
+                                    ).copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                invoice.invoiceNumber,
+                                style: AppFonts.labelMedium(
+                                  color: AppColors.accentBlue,
+                                ).copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          job.internalNotes.isNotEmpty
-                              ? job.internalNotes
-                              : 'No private mechanic notes added.',
-                          style: AppFonts.bodyMedium(color: secondaryTextColor),
-                        ),
-                      ],
+                          const SizedBox(height: 14),
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: sectionBg,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: borderColor),
+                            ),
+                            child: Column(
+                              children: [
+                                for (final item in invoice.items) ...[
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '${item.description} (x${item.quantity})',
+                                          style: AppFonts.bodySmall(
+                                            color: primaryTextColor,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        CurrencyFormatter.format(
+                                          item.totalPrice,
+                                        ),
+                                        style: AppFonts.bodySmall(
+                                          color: primaryTextColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                ],
+                                if (invoice.discountAmount > 0) ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Discount:',
+                                        style: AppFonts.bodySmall(
+                                          color: AppColors.error,
+                                        ),
+                                      ),
+                                      Text(
+                                        '-${CurrencyFormatter.format(invoice.discountAmount)}',
+                                        style: AppFonts.bodySmall(
+                                          color: AppColors.error,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                                const Divider(height: 16),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Final Bill Amount:',
+                                      style: AppFonts.titleSmall(
+                                        color: primaryTextColor,
+                                      ).copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      CurrencyFormatter.format(
+                                        invoice.totalAmount,
+                                      ),
+                                      style: AppFonts.titleMedium(
+                                        color: AppColors.accentBlue,
+                                      ).copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Amount Paid:',
+                                      style: AppFonts.bodyMedium(
+                                        color: AppColors.success,
+                                      ),
+                                    ),
+                                    Text(
+                                      CurrencyFormatter.format(
+                                        invoice.paidAmount,
+                                      ),
+                                      style: AppFonts.titleSmall(
+                                        color: AppColors.success,
+                                      ).copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Balance Due:',
+                                      style: AppFonts.titleSmall(
+                                        color: invoice.balanceDue > 0
+                                            ? AppColors.error
+                                            : AppColors.success,
+                                      ).copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      CurrencyFormatter.format(
+                                        invoice.balanceDue,
+                                      ),
+                                      style: AppFonts.titleSmall(
+                                        color: invoice.balanceDue > 0
+                                            ? AppColors.error
+                                            : AppColors.success,
+                                      ).copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 20),
                 Text(
-                  'Job History & Audit Log',
-                  style: AppFonts.titleLarge(color: primaryTextColor),
+                  'Job History & Status Timeline',
+                  style: AppFonts.titleMedium(color: primaryTextColor)
+                      .copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
                 Card(
                   color: cardBg,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(
-                      color: isDark
-                          ? AppColors.borderDark
-                          : AppColors.borderLight,
-                    ),
+                    side: BorderSide(color: borderColor),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),

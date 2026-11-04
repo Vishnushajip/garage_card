@@ -236,6 +236,75 @@ mixin ServiceJobRepository on GarageRepositoryStore {
     );
   }
 
+  Future<void> clearAllGarageTestData(String garageId, String userId) async {
+    if (!FirebaseConfig.isInitialized ||
+        FirebaseAuth.instance.currentUser == null) {
+      return;
+    }
+    final db = FirebaseFirestore.instance;
+    try {
+      if (garageId.isNotEmpty) {
+        final jobs = await db
+            .collection('garages')
+            .doc(garageId)
+            .collection('serviceJobs')
+            .get();
+        for (final doc in jobs.docs) {
+          await doc.reference.delete();
+        }
+
+        final invoices = await db
+            .collection('garages')
+            .doc(garageId)
+            .collection('invoices')
+            .get();
+        for (final doc in invoices.docs) {
+          await doc.reference.delete();
+        }
+
+        final estimates = await db
+            .collection('garages')
+            .doc(garageId)
+            .collection('estimates')
+            .get();
+        for (final doc in estimates.docs) {
+          await doc.reference.delete();
+        }
+
+        final appts = await db
+            .collection('garages')
+            .doc(garageId)
+            .collection('appointments')
+            .get();
+        for (final doc in appts.docs) {
+          await doc.reference.delete();
+        }
+      }
+
+      if (userId.isNotEmpty) {
+        final vehicles = await db
+            .collection('users')
+            .doc(userId)
+            .collection('vehicles')
+            .get();
+        for (final doc in vehicles.docs) {
+          await doc.reference.delete();
+        }
+
+        final reminders = await db
+            .collection('users')
+            .doc(userId)
+            .collection('serviceReminders')
+            .get();
+        for (final doc in reminders.docs) {
+          await doc.reference.delete();
+        }
+      }
+    } catch (e) {
+      debugPrint('GARAGE_REPO_CLEAR_TEST_DATA_ERROR: $e');
+    }
+  }
+
   Future<ServiceJobModel> createServiceJob(ServiceJobModel job) async {
     final id = job.id.isNotEmpty ? job.id : const Uuid().v4();
     final newJob = job.copyWith(

@@ -235,4 +235,144 @@ class WhatsAppShareService {
         '$link\n\n'
         'Thank you,\n$garageName';
   }
+
+  static String composeJobCreatedNotification({
+    required String customerName,
+    required String garageName,
+    required String bikeNumber,
+    String? bikeModel,
+    required String problem,
+    required String jobNumber,
+    required String mechanic,
+    String language = 'english',
+  }) {
+    final vehicle = (bikeModel != null && bikeModel.isNotEmpty)
+        ? '$bikeNumber ($bikeModel)'
+        : bikeNumber;
+    if (language.toLowerCase() == 'malayalam') {
+      return 'നമസ്കാരം $customerName,\n\n'
+          'താങ്കളുടെ വാഹനം ($vehicle) സർവീസിനായി $garageName-ൽ രജിസ്റ്റർ ചെയ്തിട്ടുണ്ട്.\n'
+          '• ജോബ് നമ്പർ: $jobNumber\n'
+          '• വാഹനം: $vehicle\n'
+          '• പ്രശ്നം: $problem\n'
+          '• ചുമതലയുള്ള മെക്കാനിക്ക്: $mechanic\n'
+          '• നിലവിലെ അവസ്ഥ: രജിസ്റ്റർ ചെയ്തു\n\n'
+          'റിപ്പയർ ജോലികൾ പുരോഗമിക്കുമ്പോൾ ഞങ്ങൾ വിവരങ്ങൾ അറിയിക്കുന്നതാണ്.\n'
+          'നന്ദി,\n$garageName';
+    }
+    return 'Hello $customerName,\n\n'
+        'Your vehicle ($vehicle) has been registered for service at $garageName.\n'
+        '• Job Number: $jobNumber\n'
+        '• Vehicle: $vehicle\n'
+        '• Reported Problem: $problem\n'
+        '• Assigned Mechanic: $mechanic\n'
+        '• Status: Pending / Registered\n\n'
+        'We will keep you updated as the work progresses.\n'
+        'Thank you,\n$garageName';
+  }
+
+  static String composeExtraWorkNotification({
+    required String customerName,
+    required String garageName,
+    required String bikeNumber,
+    required String extraWorkTitle,
+    required double estimatedCharge,
+    String language = 'english',
+  }) {
+    final formattedCharge = '₹${estimatedCharge.toStringAsFixed(0)}';
+    if (language.toLowerCase() == 'malayalam') {
+      return 'നമസ്കാരം $customerName,\n\n'
+          '$garageName-ൽ നൽകിയ താങ്കളുടെ വാഹനം ($bikeNumber) പരിശോധിച്ചപ്പോൾ അധിക റിപ്പയർ ജോലി ആവശ്യമായി വന്നിട്ടുണ്ട്:\n'
+          '• അധിക ജോലി: $extraWorkTitle\n'
+          '• അധിക തുക: $formattedCharge\n\n'
+          'ഈ അധിക ജോലി മുന്നോട്ട് കൊണ്ടുപോകുന്നതിനായി താങ്കളുടെ അനുമതി അറിയിക്കുമല്ലോ.\n'
+          'നന്ദി,\n$garageName';
+    }
+    return 'Hello $customerName,\n\n'
+        'During the inspection of your vehicle ($bikeNumber) at $garageName, additional work was found to be needed:\n'
+        '• Extra Work: $extraWorkTitle\n'
+        '• Estimated Additional Charge: $formattedCharge\n\n'
+        'Please confirm if you approve this additional work.\n'
+        'Thank you,\n$garageName';
+  }
+
+  static String composeWorkCompletedNotification({
+    required String customerName,
+    required String garageName,
+    required String bikeNumber,
+    String? bikeModel,
+    required String originalWork,
+    String? extraWork,
+    required double finalBillAmount,
+    String language = 'english',
+  }) {
+    final vehicle = (bikeModel != null && bikeModel.isNotEmpty)
+        ? '$bikeNumber ($bikeModel)'
+        : bikeNumber;
+    final formattedTotal = '₹${finalBillAmount.toStringAsFixed(0)}';
+    if (language.toLowerCase() == 'malayalam') {
+      final extraText = (extraWork != null && extraWork.isNotEmpty)
+          ? '\n• അധിക ജോലി: $extraWork'
+          : '';
+      return 'നമസ്കാരം $customerName,\n\n'
+          '$garageName-ൽ നൽകിയിരുന്ന താങ്കളുടെ വാഹനം ($vehicle) റിപ്പയർ ജോലികൾ വിജയകരമായി പൂർത്തിയായി!\n'
+          '• പൂർത്തിയാക്കിയ ജോലി: $originalWork'
+          '$extraText\n'
+          '• ആകെ ബിൽ തുക: $formattedTotal\n\n'
+          'താങ്കളുടെ വാഹനം ഡെലിവറിക്ക് തയ്യാറാണ്.\n'
+          'നന്ദി,\n$garageName';
+    }
+    final extraText = (extraWork != null && extraWork.isNotEmpty)
+        ? '\n• Extra Work: $extraWork'
+        : '';
+    return 'Hello $customerName,\n\n'
+        'Your vehicle ($vehicle) service and repairs have been completed at $garageName!\n'
+        '• Completed Work: $originalWork'
+        '$extraText\n'
+        '• Final Bill Amount: $formattedTotal\n\n'
+        'Your vehicle is ready for pickup.\n'
+        'Thank you,\n$garageName';
+  }
+
+  static String composeJobInvoiceNotification({
+    required String customerName,
+    required String garageName,
+    required String bikeNumber,
+    required String invoiceNumber,
+    required double finalAmount,
+    required double paidAmount,
+    required double balanceDue,
+    required String paymentStatus,
+    String language = 'english',
+  }) {
+    final formattedFinal = '₹${finalAmount.toStringAsFixed(0)}';
+    final formattedPaid = '₹${paidAmount.toStringAsFixed(0)}';
+    final formattedBalance = '₹${balanceDue.toStringAsFixed(0)}';
+    if (language.toLowerCase() == 'malayalam') {
+      String mlStatus = 'അടച്ചിട്ടില്ല';
+      if (paymentStatus.toLowerCase().contains('paid') &&
+          !paymentStatus.toLowerCase().contains('unpaid') &&
+          !paymentStatus.toLowerCase().contains('partially')) {
+        mlStatus = 'പൂർണ്ണമായി അടച്ചു';
+      } else if (paymentStatus.toLowerCase().contains('partially')) {
+        mlStatus = 'ഭാഗികമായി അടച്ചു';
+      }
+      return 'നമസ്കാരം $customerName,\n\n'
+          '$garageName-ൽ നിന്നുള്ള താങ്കളുടെ വാഹനം ($bikeNumber) സർവീസ് ഇൻവോയ്സ് വിവരങ്ങൾ:\n'
+          '• ഇൻവോയ്സ് നമ്പർ: $invoiceNumber\n'
+          '• ആകെ ബിൽ തുക: $formattedFinal\n'
+          '• അടച്ച തുക: $formattedPaid\n'
+          '• ബാക്കി നൽകാനുള്ള തുക: $formattedBalance\n'
+          '• പേയ്‌മെന്റ് അവസ്ഥ: $mlStatus\n\n'
+          'ഞങ്ങളുടെ സർവീസ് തിരഞ്ഞെടുത്തതിന് നന്ദി!\n$garageName';
+    }
+    return 'Hello $customerName,\n\n'
+        'Here are the invoice details from $garageName for your vehicle ($bikeNumber):\n'
+        '• Invoice Number: $invoiceNumber\n'
+        '• Total Amount: $formattedFinal\n'
+        '• Amount Paid: $formattedPaid\n'
+        '• Balance Due: $formattedBalance\n'
+        '• Payment Status: ${paymentStatus.toUpperCase()}\n\n'
+        'Thank you for your business!\n$garageName';
+  }
 }

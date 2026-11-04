@@ -8,6 +8,11 @@ class DateFormatter {
     return DateFormat('dd MMM yyyy').format(date);
   }
 
+  static String formatGarageDate(DateTime? date) {
+    if (date == null) return '-';
+    return DateFormat('dd MMM yy').format(date);
+  }
+
   static String formatDateTime(DateTime? date) {
     if (date == null) return '-';
     return DateFormat('dd MMM yyyy, hh:mm a').format(date);

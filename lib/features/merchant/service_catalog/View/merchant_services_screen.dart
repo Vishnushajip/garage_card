@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_dialog.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_error_state.dart';
@@ -38,11 +39,8 @@ class MerchantServicesScreen extends ConsumerWidget {
         : AppColors.textSecondaryLight;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Services & Smart Pricing',
-          style: AppFonts.titleLarge(color: primaryText),
-        ),
+      appBar: AppCustomAppBar(
+        title: 'Services & Smart Pricing',
         actions: [
           IconButton(
             icon: const Icon(Icons.add_rounded),

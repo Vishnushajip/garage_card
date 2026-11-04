@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
+import 'package:garage_card/core/shared_widgets/app_whatsapp_icon.dart';
 import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -242,9 +243,9 @@ class DailyOperationsTodoCard extends StatelessWidget {
                             onPressed: () => _callCustomer(item.customerPhone),
                           ),
                           IconButton(
-                            icon: const Icon(
-                              Icons.chat_bubble_outline_rounded,
+                            icon: const AppWhatsAppIcon(
                               size: 18,
+                              color: AppColors.success,
                             ),
                             color: AppColors.success,
                             tooltip: 'Send WhatsApp Update',

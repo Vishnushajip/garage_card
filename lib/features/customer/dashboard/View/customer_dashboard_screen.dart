@@ -80,26 +80,9 @@ class CustomerDashboardScreen extends ConsumerWidget {
       appBar: AppCustomAppBar(
         title: customerGreeting,
         subtitle: 'Discover workshops, packages & service tracking',
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.chat_bubble_outline_rounded, size: 22),
-            tooltip: context.tr('messages'),
-            onPressed: () => context.push(RoutePaths.chatList),
-          ),
-          IconButton(
-            icon: Badge(
-              isLabelVisible: unreadNotifCount > 0,
-              label: Text(
-                unreadNotifCount > 99 ? '99+' : unreadNotifCount.toString(),
-              ),
-              backgroundColor: AppColors.primaryRed,
-              child: const Icon(Icons.notifications_outlined, size: 22),
-            ),
-            tooltip: context.tr('notifications'),
-            onPressed: () => context.push(RoutePaths.customerNotifications),
-          ),
-          const SizedBox(width: 4),
-        ],
+        showChat: true,
+        showNotifications: true,
+        unreadNotificationCount: unreadNotifCount,
       ),
       body: AppRefresh(
         onRefresh: () async {

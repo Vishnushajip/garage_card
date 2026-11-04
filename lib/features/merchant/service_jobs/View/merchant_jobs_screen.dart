@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
-import 'package:garage_card/core/notifications/app_notification_service.dart';
-import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_firestore_paginated_list_view.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
 import 'package:garage_card/core/utils/debouncer.dart';
+import 'package:garage_card/features/merchant/service_jobs/Widgets/active_job_card.dart';
+import 'package:garage_card/features/merchant/service_jobs/Widgets/completed_job_card.dart';
+import 'package:garage_card/features/merchant/service_jobs/Widgets/create_job_dialog.dart';
+import 'package:garage_card/features/merchant/service_jobs/Widgets/jobs_analytics_view.dart';
+import 'package:garage_card/features/shared/models/invoice_model.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
 
 import '../ViewModel/merchant_jobs_view_model.dart';
@@ -33,16 +36,34 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
     super.dispose();
   }
 
-  void _showNewJobSheet(BuildContext context) {
-    showModalBottomSheet(
+  void _showCreateJobDialog(BuildContext context) {
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).cardColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => const _NewJobSheet(),
+      barrierDismissible: false,
+      builder: (ctx) => const CreateJobDialog(),
     );
+  }
+
+  void _navigateToDetail(BuildContext context, String jobId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => MerchantJobDetailScreen(jobId: jobId)),
+    );
+  }
+
+  String _tabTitle(int index) {
+    switch (index) {
+      case 1:
+        return 'Pending';
+      case 2:
+        return 'In Progress';
+      case 3:
+        return 'Completed';
+      case 4:
+        return 'Analytics & Revenue';
+      default:
+        return 'All Jobs';
+    }
   }
 
   @override
@@ -53,259 +74,263 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
     final primaryTextColor = isDark
         ? AppColors.textPrimaryDark
         : AppColors.textPrimaryLight;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
+    final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
+
+    final invoiceMap = <String, InvoiceModel>{};
+    for (final inv in state.invoices) {
+      if (inv.jobId.isNotEmpty) {
+        invoiceMap[inv.jobId] = inv;
+      }
+    }
+
+    final isAnalyticsTab = state.activeTabIndex == 4;
 
     return Scaffold(
-      appBar: const AppCustomAppBar(title: 'Service Jobs Management'),
+      appBar: AppCustomAppBar(
+        title: 'Service Jobs Management',
+        subtitle: isAnalyticsTab
+            ? 'Revenue & Financial Analytics'
+            : (state.activeTabIndex == 0
+                  ? 'Workshop Orders & Repairs'
+                  : '${_tabTitle(state.activeTabIndex)} Orders'),
+        showChat: true,
+        showNotifications: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, size: 20),
+            tooltip: 'Refresh',
+            onPressed: () => vm.refresh(),
+          ),
+        ],
+      ),
       body: AppResponsiveLayout(
         child: Column(
           children: [
-            AppTextField(
-              controller: _searchCtrl,
-              hint: 'Search by job number, customer or vehicle...',
-              prefixIcon: const Icon(Icons.search_rounded, size: 20),
-              suffixIcon: _searchCtrl.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded, size: 18),
-                      onPressed: () {
-                        _searchCtrl.clear();
-                        vm.search('');
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: AppTextField(
+                      controller: _searchCtrl,
+                      hint: 'Search bike number, customer, job ID...',
+                      prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                      suffixIcon: _searchCtrl.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded, size: 18),
+                              onPressed: () {
+                                _searchCtrl.clear();
+                                vm.search('');
+                              },
+                            )
+                          : null,
+                      onChanged: (val) {
+                        _debouncer.run(() => vm.search(val));
                       },
-                    )
-                  : null,
-              onChanged: (val) {
-                _debouncer.run(() => vm.search(val));
-              },
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: AppFirestorePaginatedListView<ServiceJobModel>(
-                items: state.jobs,
-                isInitialLoading: state.isLoading,
-                isFetchingNextPage: state.isFetchingNextPage,
-                hasMore: state.hasMore,
-                onPrefetchNextPage: vm.fetchNextPage,
-                onRefresh: vm.refresh,
-                errorMessage: state.errorMessage,
-                separator: const SizedBox(height: 10),
-                emptyState: AppEmptyState(
-                  title: 'No Repair Jobs Found',
-                  message: 'Create a new job order when a vehicle arrives.',
-                  icon: Icons.car_repair_rounded,
-                  actionLabel: 'Create New Job',
-                  onAction: () => _showNewJobSheet(context),
-                ),
-                itemBuilder: (ctx, job, index) {
-                  return Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: isDark
-                            ? AppColors.borderDark
-                            : AppColors.borderLight,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    height: 48,
+                    width: 48,
+                    decoration: BoxDecoration(
+                      color: cardBg,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: state.activeTabIndex != 0
+                            ? AppColors.accentBlue
+                            : borderColor,
+                        width: state.activeTabIndex != 0 ? 1.5 : 1,
                       ),
                     ),
-                    child: ListTile(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                MerchantJobDetailScreen(jobId: job.id),
-                          ),
-                        );
-                      },
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 6,
+                    child: PopupMenuButton<int>(
+                      tooltip: 'Filter Jobs',
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(color: borderColor),
                       ),
-                      title: Row(
+                      color: cardBg,
+                      icon: Icon(
+                        Icons.more_vert_rounded,
+                        color: state.activeTabIndex != 0
+                            ? AppColors.accentBlue
+                            : primaryTextColor,
+                        size: 22,
+                      ),
+                      onSelected: (int index) {
+                        vm.setActiveTab(index);
+                      },
+                      itemBuilder: (BuildContext context) => [
+                        _buildFilterItem(
+                          0,
+                          'All Jobs',
+                          Icons.all_inbox_rounded,
+                          state.activeTabIndex == 0,
+                        ),
+                        _buildFilterItem(
+                          1,
+                          'Pending',
+                          Icons.schedule_rounded,
+                          state.activeTabIndex == 1,
+                        ),
+                        _buildFilterItem(
+                          2,
+                          'In Progress',
+                          Icons.build_circle_outlined,
+                          state.activeTabIndex == 2,
+                        ),
+                        _buildFilterItem(
+                          3,
+                          'Completed',
+                          Icons.check_circle_outline_rounded,
+                          state.activeTabIndex == 3,
+                        ),
+                        const PopupMenuDivider(),
+                        _buildFilterItem(
+                          4,
+                          'Analytics & Revenue',
+                          Icons.analytics_outlined,
+                          state.activeTabIndex == 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (state.activeTabIndex != 0)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentBlue.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: AppColors.accentBlue.withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            job.jobNumber,
-                            style: AppFonts.labelLarge(
+                            _tabTitle(state.activeTabIndex),
+                            style: AppFonts.labelSmall(
                               color: AppColors.accentBlue,
-                            ),
+                            ).copyWith(fontWeight: FontWeight.bold),
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              job.vehicleDisplay,
-                              style: AppFonts.bodyLarge(
-                                color: primaryTextColor,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                          const SizedBox(width: 6),
+                          InkWell(
+                            onTap: () => vm.setActiveTab(0),
+                            child: const Icon(
+                              Icons.close_rounded,
+                              size: 14,
+                              color: AppColors.accentBlue,
                             ),
                           ),
                         ],
                       ),
-                      subtitle: Text(
-                        'Customer: ${job.customerName} • Tech: ${job.technicianName.isNotEmpty ? job.technicianName : "Unassigned"}',
-                        style: AppFonts.labelSmall(
-                          color: AppColors.textSecondaryLight,
-                        ),
-                      ),
-                      trailing: const Icon(
-                        Icons.chevron_right_rounded,
-                        size: 20,
-                      ),
                     ),
-                  );
-                },
+                    const Spacer(),
+                    Text(
+                      '${state.jobs.length} jobs',
+                      style: AppFonts.labelSmall(color: secondaryTextColor),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            if (!isAnalyticsTab) ...[
+              Expanded(
+                child: AppFirestorePaginatedListView<ServiceJobModel>(
+                  items: state.jobs,
+                  isInitialLoading: state.isLoading,
+                  isFetchingNextPage: state.isFetchingNextPage,
+                  hasMore: state.hasMore,
+                  onPrefetchNextPage: vm.fetchNextPage,
+                  onRefresh: vm.refresh,
+                  errorMessage: state.errorMessage,
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
+                  emptyState: AppEmptyState(
+                    title: 'No Service Jobs Found',
+                    message: state.activeTabIndex == 3
+                        ? 'Completed repair jobs with finalized invoices will appear here.'
+                        : 'Create a new bike job order when a customer arrives.',
+                    icon: Icons.two_wheeler_rounded,
+                    actionLabel: 'New Bike Job Order',
+                    onAction: () => _showCreateJobDialog(context),
+                  ),
+                  itemBuilder: (ctx, job, index) {
+                    if (state.activeTabIndex == 3 ||
+                        job.status.toLowerCase() == 'completed' ||
+                        job.status.toLowerCase() == 'closed' ||
+                        job.status.toLowerCase() == 'delivered') {
+                      return CompletedJobCard(
+                        job: job,
+                        invoice: invoiceMap[job.id],
+                        onViewDetails: () => _navigateToDetail(context, job.id),
+                      );
+                    }
+
+                    return ActiveJobCard(
+                      job: job,
+                      onViewDetails: () => _navigateToDetail(context, job.id),
+                    );
+                  },
+                ),
+              ),
+            ] else ...[
+              const Expanded(child: JobsAnalyticsView()),
+            ],
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showNewJobSheet(context),
+        onPressed: () => _showCreateJobDialog(context),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('New Job Order'),
+        label: const Text('New Bike Job'),
         backgroundColor: AppColors.accentBlue,
         foregroundColor: Colors.white,
       ),
     );
   }
-}
 
-class _NewJobSheet extends ConsumerStatefulWidget {
-  const _NewJobSheet();
-
-  @override
-  ConsumerState<_NewJobSheet> createState() => _NewJobSheetState();
-}
-
-class _NewJobSheetState extends ConsumerState<_NewJobSheet> {
-  final _formKey = GlobalKey<FormState>();
-  final _custCtrl = TextEditingController(text: 'Arjun Menon');
-  final _vehCtrl = TextEditingController(
-    text: '2022 Hyundai Creta (KL 07 CD 4488)',
-  );
-  final _complaintCtrl = TextEditingController();
-  final _odometerCtrl = TextEditingController(text: '34500');
-  final _techCtrl = TextEditingController(text: 'Suresh Kumar');
-
-  @override
-  void dispose() {
-    _custCtrl.dispose();
-    _vehCtrl.dispose();
-    _complaintCtrl.dispose();
-    _odometerCtrl.dispose();
-    _techCtrl.dispose();
-    super.dispose();
-  }
-
-  void _save() {
-    if (!_formKey.currentState!.validate()) return;
-
-    ref
-        .read(merchantJobsViewModelProvider.notifier)
-        .createJob(
-          customerName: _custCtrl.text.trim(),
-          vehicleDisplay: _vehCtrl.text.trim(),
-          complaint: _complaintCtrl.text.trim(),
-          odometerReading: int.tryParse(_odometerCtrl.text.trim()) ?? 0,
-          technicianName: _techCtrl.text.trim(),
-        )
-        .then((success) {
-          if (success && mounted) {
-            Navigator.pop(context);
-            AppNotificationService.success(
-              'Repair job created and logged successfully!',
-            );
-          }
-        });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(merchantJobsViewModelProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor = isDark
-        ? AppColors.textPrimaryDark
-        : AppColors.textPrimaryLight;
-
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.cardDark : AppColors.borderLight,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
+  PopupMenuItem<int> _buildFilterItem(
+    int value,
+    String label,
+    IconData icon,
+    bool isSelected,
+  ) {
+    return PopupMenuItem<int>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: isSelected ? AppColors.accentBlue : null),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? AppColors.accentBlue : null,
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Open New Repair Job Order',
-                style: AppFonts.titleLarge(color: primaryTextColor),
-              ),
-              const SizedBox(height: 16),
-              AppTextField(
-                controller: _custCtrl,
-                label: 'Customer Name',
-                required: true,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 14),
-              AppTextField(
-                controller: _vehCtrl,
-                label: 'Vehicle (Year Make Model Plate)',
-                required: true,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 14),
-              AppTextField(
-                controller: _complaintCtrl,
-                label: 'Primary Concern / Customer Request',
-                hint: 'e.g. Brake vibration, Periodic Service, AC weak...',
-                maxLines: 2,
-                required: true,
-                validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: AppTextField(
-                      controller: _odometerCtrl,
-                      label: 'Odometer (km)',
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: AppTextField(
-                      controller: _techCtrl,
-                      label: 'Assigned Mechanic',
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              AppButton(
-                label: 'Create Repair Job',
-                onPressed: _save,
-                isLoading: state.isCreatingJob,
-                height: 48,
-              ),
-            ],
+            ),
           ),
-        ),
+          if (isSelected)
+            const Icon(
+              Icons.check_rounded,
+              size: 18,
+              color: AppColors.accentBlue,
+            ),
+        ],
       ),
     );
   }

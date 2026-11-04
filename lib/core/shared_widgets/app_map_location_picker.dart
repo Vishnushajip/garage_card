@@ -7,6 +7,7 @@ import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/services/location_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
+import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -273,17 +274,8 @@ class _AppMapLocationPickerState extends State<AppMapLocationPicker> {
         : AppColors.textSecondaryLight;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Select Workshop Location',
-          style: AppFonts.titleMedium(color: primaryTextColor),
-        ),
-        backgroundColor: cardBg,
-        elevation: 1,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+      appBar: AppCustomAppBar(
+        title: 'Select Workshop Location',
         actions: [
           IconButton(
             tooltip: 'Paste Google Maps link',

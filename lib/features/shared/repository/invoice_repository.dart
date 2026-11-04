@@ -322,6 +322,54 @@ mixin InvoiceRepository on GarageRepositoryStore {
     }).toList();
   }
 
+  Future<InvoiceModel> updateInvoice(InvoiceModel invoice) async {
+    if (FirebaseConfig.isInitialized && invoice.garageId.isNotEmpty) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(invoice.garageId)
+            .collection('invoices')
+            .doc(invoice.id)
+            .set(invoice.toFirestore(), SetOptions(merge: true));
+      } catch (e) {
+        debugPrint('GARAGE_REPO_UPDATE_INVOICE_ERROR: $e');
+      }
+    }
+    final idx = invoices.indexWhere((i) => i.id == invoice.id);
+    if (idx >= 0) {
+      invoices[idx] = invoice;
+    } else {
+      invoices.insert(0, invoice);
+    }
+    return invoice;
+  }
+
+  Future<InvoiceModel?> getInvoiceByJobId(String garageId, String jobId) async {
+    if (FirebaseConfig.isInitialized && garageId.isNotEmpty) {
+      try {
+        final snap = await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('invoices')
+            .where('jobId', isEqualTo: jobId)
+            .limit(1)
+            .get();
+        if (snap.docs.isNotEmpty) {
+          return InvoiceModel.fromFirestore(
+            snap.docs.first.data(),
+            snap.docs.first.id,
+          );
+        }
+      } catch (e) {
+        debugPrint('GARAGE_REPO_GET_INVOICE_BY_JOB_ERROR: $e');
+      }
+    }
+    return invoices.cast<InvoiceModel?>().firstWhere(
+      (inv) => inv?.jobId == jobId,
+      orElse: () => null,
+    );
+  }
+
   Future<List<PaymentModel>> getPayments({
     String? garageId,
     String? invoiceId,

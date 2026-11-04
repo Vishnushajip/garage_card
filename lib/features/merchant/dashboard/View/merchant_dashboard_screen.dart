@@ -45,8 +45,8 @@ class MerchantDashboardScreen extends ConsumerWidget {
   Widget _buildAppBarLogoFallback(String name) {
     final initial = name.isNotEmpty ? name[0].toUpperCase() : 'G';
     return Container(
-      width: 36,
-      height: 36,
+      width: 38,
+      height: 38,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.accentBlue, AppColors.primaryRed],
@@ -171,36 +171,35 @@ class MerchantDashboardScreen extends ConsumerWidget {
       appBar: AppCustomAppBar(
         title: garageName,
         subtitle: 'Garage Operations & Overview',
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: AppCachedImage(
-            imageUrl: state.garage?.logoUrl,
-            width: 36,
-            height: 36,
-            borderRadius: BorderRadius.circular(10),
-            errorWidget: _buildAppBarLogoFallback(garageName),
+        leading: InkWell(
+          onTap: () => context.push(RoutePaths.merchantSettings),
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.borderDark
+                    : AppColors.borderLight,
+                width: 1,
+              ),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: AppCachedImage(
+              imageUrl: state.garage?.logoUrl,
+              width: 38,
+              height: 38,
+              fit: BoxFit.cover,
+              borderRadius: BorderRadius.circular(9),
+              errorWidget: _buildAppBarLogoFallback(garageName),
+            ),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.chat_bubble_outline_rounded, size: 22),
-            tooltip: 'Messages',
-            onPressed: () => context.push(RoutePaths.chatList),
-          ),
-          IconButton(
-            icon: Badge(
-              isLabelVisible: unreadNotifCount > 0,
-              label: Text(
-                unreadNotifCount > 99 ? '99+' : unreadNotifCount.toString(),
-              ),
-              backgroundColor: AppColors.primaryRed,
-              child: const Icon(Icons.notifications_outlined, size: 22),
-            ),
-            tooltip: 'Notifications',
-            onPressed: () => context.push(RoutePaths.merchantNotifications),
-          ),
-          const SizedBox(width: 4),
-        ],
+        showChat: true,
+        showNotifications: true,
+        unreadNotificationCount: unreadNotifCount,
       ),
       body: AppRefresh(
         onRefresh: () async {

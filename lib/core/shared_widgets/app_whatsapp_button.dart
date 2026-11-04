@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/notifications/app_notification_service.dart';
+import 'package:garage_card/core/shared_widgets/app_whatsapp_icon.dart';
 import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
 
 enum WhatsAppButtonVariant { primary, outline, iconOnly }
@@ -54,13 +55,9 @@ class AppWhatsAppButton extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () => _handleTap(context),
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: const Icon(
-              Icons.chat_bubble_rounded,
-              color: Colors.white,
-              size: 20,
-            ),
+          child: const Padding(
+            padding: EdgeInsets.all(10),
+            child: AppWhatsAppIcon(color: Colors.white, size: 20),
           ),
         ),
       );
@@ -89,7 +86,7 @@ class AppWhatsAppButton extends StatelessWidget {
             mainAxisSize: isFullWidth ? MainAxisSize.max : MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.chat_bubble_rounded, color: fg, size: 18),
+              AppWhatsAppIcon(color: fg, size: 18),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(

@@ -6,6 +6,7 @@ import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_loading.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
+import 'package:garage_card/core/shared_widgets/app_whatsapp_icon.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/sharing/whatsapp_share_service.dart';
@@ -144,8 +145,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 IconButton(
                   tooltip: 'WhatsApp',
-                  icon: const Icon(Icons.chat_rounded, size: 20),
-                  color: AppColors.success,
+                  icon: const AppWhatsAppIcon(
+                    color: AppColors.success,
+                    size: 20,
+                  ),
                   onPressed: () => WhatsAppShareService.openWhatsApp(
                     phone: phone,
                     message:
@@ -325,8 +328,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     const SizedBox(width: 8),
                     IconButton.outlined(
                       tooltip: 'WhatsApp',
-                      icon: const Icon(Icons.chat_rounded, size: 18),
-                      color: AppColors.success,
+                      icon: const AppWhatsAppIcon(
+                        color: AppColors.success,
+                        size: 18,
+                      ),
                       onPressed: () => WhatsAppShareService.openWhatsApp(
                         phone: phone,
                         message:
@@ -392,8 +397,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
             IconButton(
               tooltip: 'WhatsApp',
-              icon: const Icon(Icons.chat_rounded, size: 20),
-              color: AppColors.success,
+              icon: const AppWhatsAppIcon(color: AppColors.success, size: 20),
               onPressed: () => WhatsAppShareService.openWhatsApp(
                 phone: phone,
                 message:

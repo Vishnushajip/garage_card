@@ -1,8 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
+import 'package:garage_card/features/shared/models/customer_model.dart';
+import 'package:garage_card/features/shared/models/invoice_model.dart';
+import 'package:garage_card/features/shared/models/line_item_model.dart';
+import 'package:garage_card/features/shared/models/payment_record_model.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:garage_card/features/shared/models/supplemental_work_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
+import 'package:uuid/uuid.dart';
 
 import '../Model/merchant_jobs_state.dart';
 
@@ -22,6 +28,7 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
   }
 
   Future<void> _loadJobs() async {
+    final garageId = _effectiveGarageId();
     state = state.copyWith(
       isLoading: true,
       errorMessage: null,
@@ -32,14 +39,25 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
       final res = await ref
           .read(garageRepositoryProvider)
           .getServiceJobsPaginated(
-            garageId: _effectiveGarageId(),
+            garageId: garageId,
             status: state.filterStatus,
             search: state.searchQuery,
-            limit: 15,
+            limit: 25,
           );
+
+      final invoices = await ref
+          .read(garageRepositoryProvider)
+          .getInvoices(garageId: garageId, limit: 100);
+
+      final customers = await ref
+          .read(garageRepositoryProvider)
+          .getCustomers(garageId: garageId);
+
       state = state.copyWith(
         isLoading: false,
         jobs: res.items,
+        invoices: invoices,
+        customers: customers,
         hasMore: res.hasMore,
         lastDocument: res.lastDocument,
       );
@@ -60,7 +78,7 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
             garageId: _effectiveGarageId(),
             status: state.filterStatus,
             search: state.searchQuery,
-            limit: 15,
+            limit: 25,
             lastDocument: state.lastDocument,
           );
       state = state.copyWith(
@@ -77,9 +95,10 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
   Future<void> selectJob(String jobId) async {
     state = state.copyWith(isLoading: true);
     try {
+      final garageId = _effectiveGarageId();
       final jobs = await ref
           .read(garageRepositoryProvider)
-          .getServiceJobs(garageId: _effectiveGarageId());
+          .getServiceJobs(garageId: garageId, limit: 100);
       final job = jobs.cast<ServiceJobModel?>().firstWhere(
         (j) => j?.id == jobId,
         orElse: () => null,
@@ -88,13 +107,98 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
           .read(garageRepositoryProvider)
           .getJobHistory(jobId);
 
+      final invoice = await ref
+          .read(garageRepositoryProvider)
+          .getInvoiceByJobId(garageId, jobId);
+
       state = state.copyWith(
         isLoading: false,
         selectedJob: job,
+        selectedInvoice: invoice,
         history: history,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    }
+  }
+
+  Future<bool> createJob({
+    required String customerName,
+    String? customerPhone,
+    required String bikeNumber,
+    String? bikeModel,
+    required String problem,
+    required String mechanicName,
+    String? customerId,
+  }) async {
+    state = state.copyWith(isCreatingJob: true, errorMessage: null);
+    try {
+      final garageId = _effectiveGarageId();
+      String effectiveCustId = customerId ?? '';
+
+      if (effectiveCustId.isEmpty) {
+        final existing = state.customers.where(
+          (c) =>
+              c.name.toLowerCase() == customerName.toLowerCase() ||
+              (customerPhone != null &&
+                  customerPhone.isNotEmpty &&
+                  c.phone.replaceAll(RegExp(r'\D'), '') ==
+                      customerPhone.replaceAll(RegExp(r'\D'), '')),
+        );
+        if (existing.isNotEmpty) {
+          effectiveCustId = existing.first.id;
+        } else {
+          final newCust = CustomerModel(
+            id: const Uuid().v4(),
+            garageId: garageId,
+            name: customerName,
+            phone: customerPhone ?? '',
+            whatsappNumber: customerPhone ?? '',
+            createdAt: DateTime.now(),
+          );
+          final savedCust = await ref
+              .read(garageRepositoryProvider)
+              .createCustomer(newCust);
+          effectiveCustId = savedCust.id;
+        }
+      }
+
+      final vehicleDisplay = (bikeModel != null && bikeModel.trim().isNotEmpty)
+          ? '${bikeModel.trim()} (${bikeNumber.trim()})'
+          : bikeNumber.trim();
+
+      final newJob = ServiceJobModel(
+        id: const Uuid().v4(),
+        garageId: garageId,
+        customerId: effectiveCustId,
+        vehicleId: '',
+        jobNumber:
+            'JOB-${DateTime.now().year}-${DateTime.now().millisecondsSinceEpoch % 10000}',
+        status: 'pending',
+        odometerReading: 0,
+        complaints: [problem.trim()],
+        technicianName: mechanicName.trim(),
+        customerName: customerName.trim(),
+        customerPhone: customerPhone?.trim() ?? '',
+        customerWhatsApp: customerPhone?.trim() ?? '',
+        vehicleDisplay: vehicleDisplay,
+        createdAt: DateTime.now(),
+      );
+
+      final created = await ref
+          .read(garageRepositoryProvider)
+          .createServiceJob(newJob);
+
+      state = state.copyWith(
+        isCreatingJob: false,
+        jobs: [created, ...state.jobs],
+      );
+
+      await _loadJobs();
+      return true;
+    } catch (e) {
+      state = state.copyWith(isCreatingJob: false, errorMessage: e.toString());
+      return false;
     }
   }
 
@@ -126,23 +230,21 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
     }
   }
 
-  Future<bool> startRepair({
+  Future<bool> assignMechanic({
     required String jobId,
-    String? technicianName,
-    String? notes,
+    required String mechanicName,
   }) async {
     state = state.copyWith(isUpdatingStatus: true, errorMessage: null);
     try {
-      final user = ref.read(authViewModelProvider).userProfile;
-      final staffUid = user?.uid ?? 'Staff';
+      final garageId = _effectiveGarageId();
       await ref
           .read(garageRepositoryProvider)
           .startRepair(
-            garageId: _effectiveGarageId(),
+            garageId: garageId,
             jobId: jobId,
-            startedByUid: staffUid,
-            technicianName: technicianName,
-            notes: notes,
+            startedByUid: 'Staff',
+            technicianName: mechanicName,
+            notes: 'Mechanic assigned: $mechanicName',
           );
       await selectJob(jobId);
       await _loadJobs();
@@ -157,77 +259,213 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
     }
   }
 
-  Future<bool> completeRepair({
+  Future<bool> addExtraWork({
     required String jobId,
-    int? finalOdometer,
-    DateTime? nextServiceDue,
-    int? nextServiceOdometer,
-    String? nextServiceType,
-    String? notes,
+    required String title,
+    required double charge,
+    String? description,
   }) async {
-    state = state.copyWith(isUpdatingStatus: true, errorMessage: null);
     try {
-      final user = ref.read(authViewModelProvider).userProfile;
-      final staffUid = user?.uid ?? 'Staff';
-      await ref
-          .read(garageRepositoryProvider)
-          .completeRepair(
-            garageId: _effectiveGarageId(),
-            jobId: jobId,
-            completedByUid: staffUid,
-            finalOdometer: finalOdometer,
-            nextServiceDue: nextServiceDue,
-            nextServiceOdometer: nextServiceOdometer,
-            nextServiceType: nextServiceType,
-            notes: notes,
-          );
-      await selectJob(jobId);
-      await _loadJobs();
-      state = state.copyWith(isUpdatingStatus: false);
-      return true;
-    } catch (e) {
-      state = state.copyWith(
-        isUpdatingStatus: false,
-        errorMessage: e.toString(),
-      );
-      return false;
-    }
-  }
-
-  Future<bool> createJob({
-    required String customerName,
-    required String vehicleDisplay,
-    required String complaint,
-    required int odometerReading,
-    required String technicianName,
-  }) async {
-    state = state.copyWith(isCreatingJob: true, errorMessage: null);
-    try {
-      final newJob = ServiceJobModel(
-        id: '',
-        garageId: _effectiveGarageId(),
-        customerId: '',
-        vehicleId: '',
-        jobNumber: 'JOB-2026-${DateTime.now().millisecondsSinceEpoch % 1000}',
-        status: 'received',
-        odometerReading: odometerReading,
-        complaints: [complaint],
-        technicianName: technicianName,
-        customerName: customerName,
-        vehicleDisplay: vehicleDisplay,
+      final garageId = _effectiveGarageId();
+      final item = SupplementalWorkItem(
+        id: const Uuid().v4(),
+        jobId: jobId,
+        title: title.trim(),
+        reason: (description != null && description.trim().isNotEmpty)
+            ? description.trim()
+            : title.trim(),
+        partsCost: charge,
+        laborCost: 0.0,
+        status: 'approved',
         createdAt: DateTime.now(),
       );
 
-      final created = await ref
+      await ref
           .read(garageRepositoryProvider)
-          .createServiceJob(newJob);
-      state = state.copyWith(
-        isCreatingJob: false,
-        jobs: [created, ...state.jobs],
+          .addSupplementalWork(garageId, jobId, item);
+
+      await selectJob(jobId);
+      await _loadJobs();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> completeJobWithBilling({
+    required String jobId,
+    required double laborCharges,
+    required List<LineItemModel> parts,
+    required double extraWorkCharges,
+    required double discountAmount,
+    required double paidAmount,
+    required String paymentMethod,
+    String? paymentNotes,
+  }) async {
+    state = state.copyWith(isSavingInvoice: true, errorMessage: null);
+    try {
+      final garageId = _effectiveGarageId();
+      final targetJob = state.jobs.cast<ServiceJobModel?>().firstWhere(
+        (j) => j?.id == jobId,
+        orElse: () => state.selectedJob,
       );
+
+      if (targetJob == null) {
+        throw Exception('Job not found');
+      }
+
+      final partsTotal = parts.fold<double>(
+        0.0,
+        (acc, item) => acc + item.totalPrice,
+      );
+      final subtotal = partsTotal + laborCharges + extraWorkCharges;
+      final finalAmount = (subtotal - discountAmount).clamp(
+        0.0,
+        double.infinity,
+      );
+
+      if (finalAmount <= 0.0) {
+        throw Exception('Final bill amount must be greater than zero');
+      }
+
+      final balanceDue = (finalAmount - paidAmount).clamp(0.0, double.infinity);
+      final paymentStatus = balanceDue <= 0.0
+          ? 'paid'
+          : (paidAmount > 0.0 ? 'partially_paid' : 'unpaid');
+
+      final lineItems = <LineItemModel>[];
+      lineItems.addAll(parts);
+
+      if (laborCharges > 0.0) {
+        lineItems.add(
+          LineItemModel(
+            id: const Uuid().v4(),
+            description: 'Labour Charges',
+            type: 'labor',
+            quantity: 1,
+            unitPrice: laborCharges,
+          ),
+        );
+      }
+
+      if (extraWorkCharges > 0.0) {
+        lineItems.add(
+          LineItemModel(
+            id: const Uuid().v4(),
+            description: 'Extra Work Charges',
+            type: 'extra',
+            quantity: 1,
+            unitPrice: extraWorkCharges,
+          ),
+        );
+      }
+
+      final invoiceId = const Uuid().v4();
+      final paymentRecords = <PaymentRecordModel>[];
+      if (paidAmount > 0.0) {
+        paymentRecords.add(
+          PaymentRecordModel(
+            id: const Uuid().v4(),
+            invoiceId: invoiceId,
+            amount: paidAmount,
+            method: paymentMethod,
+            recordedAt: DateTime.now(),
+            notes: paymentNotes ?? 'Initial payment at completion',
+          ),
+        );
+      }
+
+      final invoice = InvoiceModel(
+        id: invoiceId,
+        garageId: garageId,
+        jobId: jobId,
+        customerId: targetJob.customerId,
+        invoiceNumber:
+            'INV-${DateTime.now().year}-${DateTime.now().millisecondsSinceEpoch % 100000}',
+        items: lineItems,
+        subtotal: subtotal,
+        discountAmount: discountAmount,
+        totalAmount: finalAmount,
+        paidAmount: paidAmount,
+        balanceDue: balanceDue,
+        status: paymentStatus,
+        paymentRecords: paymentRecords,
+        issuedAt: DateTime.now(),
+        createdAt: DateTime.now(),
+      );
+
+      await ref.read(garageRepositoryProvider).createInvoice(invoice);
+
+      await ref
+          .read(garageRepositoryProvider)
+          .completeRepair(
+            garageId: garageId,
+            jobId: jobId,
+            completedByUid: 'Staff',
+            notes: 'Completed with bill ${invoice.invoiceNumber}',
+          );
+
+      await selectJob(jobId);
+      await _loadJobs();
+      state = state.copyWith(isSavingInvoice: false);
       return true;
     } catch (e) {
-      state = state.copyWith(isCreatingJob: false, errorMessage: e.toString());
+      debugPrint('COMPLETE_JOB_BILLING_ERROR: $e');
+      state = state.copyWith(
+        isSavingInvoice: false,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> updateInvoice(InvoiceModel invoice) async {
+    state = state.copyWith(isSavingInvoice: true, errorMessage: null);
+    try {
+      await ref.read(garageRepositoryProvider).updateInvoice(invoice);
+      await selectJob(invoice.jobId);
+      await _loadJobs();
+      state = state.copyWith(isSavingInvoice: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isSavingInvoice: false,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> recordPayment({
+    required String invoiceId,
+    required double amount,
+    required String paymentMethod,
+    String? reference,
+    String? notes,
+  }) async {
+    state = state.copyWith(isRecordingPayment: true, errorMessage: null);
+    try {
+      await ref
+          .read(garageRepositoryProvider)
+          .recordPayment(
+            invoiceId: invoiceId,
+            amount: amount,
+            paymentMethod: paymentMethod,
+            referenceNumber: reference ?? '',
+            notes: notes ?? '',
+            recordedByUid: 'Staff',
+          );
+      if (state.selectedJob != null) {
+        await selectJob(state.selectedJob!.id);
+      }
+      await _loadJobs();
+      state = state.copyWith(isRecordingPayment: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isRecordingPayment: false,
+        errorMessage: e.toString(),
+      );
       return false;
     }
   }
@@ -237,66 +475,17 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
     _loadJobs();
   }
 
-  void filterByStatus(String? status) {
-    state = state.copyWith(filterStatus: status);
+  void setActiveTab(int tabIndex) {
+    String? filter;
+    if (tabIndex == 1) {
+      filter = 'pending';
+    } else if (tabIndex == 2) {
+      filter = 'in_progress';
+    } else if (tabIndex == 3) {
+      filter = 'completed';
+    }
+    state = state.copyWith(activeTabIndex: tabIndex, filterStatus: filter);
     _loadJobs();
-  }
-
-  Future<bool> verifyGatePass({
-    required String jobId,
-    required String otp,
-  }) async {
-    try {
-      final garageId = _effectiveGarageId();
-      final success = await ref
-          .read(garageRepositoryProvider)
-          .verifyGatePass(garageId, jobId, otp);
-      if (success) {
-        await selectJob(jobId);
-        await _loadJobs();
-      }
-      return success;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  Future<bool> updateQcChecklist({
-    required String jobId,
-    required Map<String, bool> checklist,
-    required String inspectorName,
-  }) async {
-    try {
-      final garageId = _effectiveGarageId();
-      await ref
-          .read(garageRepositoryProvider)
-          .updateQcChecklist(
-            garageId,
-            jobId,
-            checklist,
-            inspectorName: inspectorName,
-          );
-      await selectJob(jobId);
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  Future<bool> addSupplementalWork({
-    required String jobId,
-    required SupplementalWorkItem item,
-  }) async {
-    try {
-      final garageId = _effectiveGarageId();
-      await ref
-          .read(garageRepositoryProvider)
-          .addSupplementalWork(garageId, jobId, item);
-      await selectJob(jobId);
-      return true;
-    } catch (_) {
-      return false;
-    }
   }
 
   Future<void> refresh() async {
