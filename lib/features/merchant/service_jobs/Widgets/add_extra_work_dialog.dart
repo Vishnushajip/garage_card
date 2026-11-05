@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
@@ -39,7 +40,7 @@ class _AddExtraWorkDialogState extends ConsumerState<AddExtraWorkDialog> {
 
     final charge = double.tryParse(_chargeCtrl.text.trim()) ?? 0.0;
     if (charge <= 0.0) {
-      AppNotificationService.warning('Please enter a valid extra work charge');
+      AppNotificationService.warning(context.tr('pleaseEnterValidCharge'));
       return;
     }
 
@@ -60,7 +61,7 @@ class _AddExtraWorkDialogState extends ConsumerState<AddExtraWorkDialog> {
       setState(() => _isSaving = false);
       if (success) {
         Navigator.of(context).pop(true);
-        AppNotificationService.success('Extra work added successfully');
+        AppNotificationService.success(context.tr('extraWorkAddedSuccess'));
 
         if (widget.job.customerPhone.isNotEmpty) {
           showDialog(
@@ -81,6 +82,7 @@ class _AddExtraWorkDialogState extends ConsumerState<AddExtraWorkDialog> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(localeProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark
         ? AppColors.textPrimaryDark
@@ -126,7 +128,7 @@ class _AddExtraWorkDialogState extends ConsumerState<AddExtraWorkDialog> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'Add Extra Work',
+                          context.tr('addExtraWork'),
                           style: AppFonts.titleLarge(color: primaryTextColor)
                               .copyWith(fontWeight: FontWeight.bold),
                         ),
@@ -141,17 +143,17 @@ class _AddExtraWorkDialogState extends ConsumerState<AddExtraWorkDialog> {
                 const SizedBox(height: 18),
                 AppTextField(
                   controller: _titleCtrl,
-                  label: 'Extra Work Title',
-                  hint: 'e.g. Brake pad replacement, Chain sprocket change',
+                  label: context.tr('extraWorkTitle'),
+                  hint: context.tr('extraWorkTitleHint'),
                   required: true,
                   validator: (v) => v == null || v.trim().isEmpty
-                      ? 'Title is required'
+                      ? context.tr('extraWorkTitleRequired')
                       : null,
                 ),
                 const SizedBox(height: 14),
                 AppTextField(
                   controller: _chargeCtrl,
-                  label: 'Extra Work Charge (₹)',
+                  label: context.tr('extraWorkCharge'),
                   hint: 'e.g. 450',
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
@@ -159,11 +161,11 @@ class _AddExtraWorkDialogState extends ConsumerState<AddExtraWorkDialog> {
                   required: true,
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) {
-                      return 'Charge is required';
+                      return context.tr('chargeRequired');
                     }
                     final num = double.tryParse(v.trim());
                     if (num == null || num <= 0) {
-                      return 'Must be greater than 0';
+                      return context.tr('mustBeGreaterThanZero');
                     }
                     return null;
                   },
@@ -171,8 +173,8 @@ class _AddExtraWorkDialogState extends ConsumerState<AddExtraWorkDialog> {
                 const SizedBox(height: 14),
                 AppTextField(
                   controller: _descCtrl,
-                  label: 'Problem Details / Reason (Optional)',
-                  hint: 'Describe reason for extra work to inform customer...',
+                  label: context.tr('extraWorkReasonOptional'),
+                  hint: context.tr('extraWorkReasonHint'),
                   maxLines: 2,
                 ),
                 const SizedBox(height: 24),
@@ -180,7 +182,7 @@ class _AddExtraWorkDialogState extends ConsumerState<AddExtraWorkDialog> {
                   children: [
                     Expanded(
                       child: AppButton(
-                        label: 'Cancel',
+                        label: context.tr('cancel'),
                         variant: AppButtonVariant.outline,
                         onPressed: () => Navigator.of(context).pop(),
                         height: 46,
@@ -190,7 +192,7 @@ class _AddExtraWorkDialogState extends ConsumerState<AddExtraWorkDialog> {
                     Expanded(
                       flex: 2,
                       child: AppButton(
-                        label: 'Save & Notify Customer',
+                        label: context.tr('saveAndNotifyCustomer'),
                         icon: const Icon(Icons.check_rounded, size: 18),
                         onPressed: _isSaving ? null : _submit,
                         isLoading: _isSaving,

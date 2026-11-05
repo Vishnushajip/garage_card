@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>62265849009-and7c7421at747pp67c6v3qpvmpo2sk0.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.62265849009-and7c7421at747pp67c6v3qpvmpo2sk0</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>62265849009-c17p7h4nupkpq25v6440ktqs38mjm0sa.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyB_4yjE3Xy05h8LPeUy24vA25S2qSgVDp8</string>
+	<key>GCM_SENDER_ID</key>
+	<string>62265849009</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.garageCard</string>
+	<key>PROJECT_ID</key>
+	<string>garage-b7ed1</string>
+	<key>STORAGE_BUCKET</key>
+	<string>garage-b7ed1.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:62265849009:ios:a58a147ffaec6bd8621e90</string>
+</dict>
+</plist>

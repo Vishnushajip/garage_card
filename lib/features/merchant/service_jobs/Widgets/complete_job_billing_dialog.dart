@@ -721,7 +721,7 @@ class _CompleteJobBillingDialogState
                     Expanded(
                       flex: 2,
                       child: AppButton(
-                        label: 'Save & Mark Job Completed',
+                        label: 'Save',
                         icon: const Icon(Icons.check_circle_rounded, size: 18),
                         onPressed: _isSaving ? null : _submit,
                         isLoading: _isSaving,

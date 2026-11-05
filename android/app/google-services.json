@@ -45,6 +45,13 @@
             {
               "client_id": "62265849009-mushlhju9uianaf4aqq4qtcj11kfiij5.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "62265849009-and7c7421at747pp67c6v3qpvmpo2sk0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.garageCard"
+              }
             }
           ]
         }

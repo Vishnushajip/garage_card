@@ -14,6 +14,11 @@ class FirestorePaths {
   static String garageMember(String garageId, String uid) =>
       'garages/$garageId/members/$uid';
 
+  static String garageMechanics(String garageId) =>
+      'garages/$garageId/mechanics';
+  static String garageMechanic(String garageId, String mechanicId) =>
+      'garages/$garageId/mechanics/$mechanicId';
+
   static String garageCustomers(String garageId) =>
       'garages/$garageId/customers';
   static String garageCustomer(String garageId, String customerId) =>

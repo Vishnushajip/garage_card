@@ -4,6 +4,7 @@ import 'package:garage_card/features/authentication/ViewModel/auth_view_model.da
 import 'package:garage_card/features/shared/models/customer_model.dart';
 import 'package:garage_card/features/shared/models/invoice_model.dart';
 import 'package:garage_card/features/shared/models/line_item_model.dart';
+import 'package:garage_card/features/shared/models/mechanic_model.dart';
 import 'package:garage_card/features/shared/models/payment_record_model.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:garage_card/features/shared/models/supplemental_work_model.dart';
@@ -49,20 +50,172 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
           .read(garageRepositoryProvider)
           .getInvoices(garageId: garageId, limit: 100);
 
-      final customers = await ref
+      final customersRes = await ref
           .read(garageRepositoryProvider)
-          .getCustomers(garageId: garageId);
+          .getCustomersPaginated(garageId: garageId, limit: 25);
+
+      final mechanicsRes = await ref
+          .read(garageRepositoryProvider)
+          .getMechanicsPaginated(garageId: garageId, limit: 25);
 
       state = state.copyWith(
         isLoading: false,
         jobs: res.items,
         invoices: invoices,
-        customers: customers,
+        customers: customersRes.items,
+        hasMoreCustomers: customersRes.hasMore,
+        customerLastDoc: customersRes.lastDocument,
+        mechanics: mechanicsRes.items,
+        hasMoreMechanics: mechanicsRes.hasMore,
+        mechanicLastDoc: mechanicsRes.lastDocument,
         hasMore: res.hasMore,
         lastDocument: res.lastDocument,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    }
+  }
+
+  Future<void> loadCustomers({bool refresh = false, String? search}) async {
+    final garageId = _effectiveGarageId();
+    if (garageId.isEmpty) return;
+
+    state = state.copyWith(
+      isLoadingCustomers: true,
+      customerLastDoc: refresh ? null : state.customerLastDoc,
+      hasMoreCustomers: refresh ? true : state.hasMoreCustomers,
+    );
+
+    try {
+      final res = await ref
+          .read(garageRepositoryProvider)
+          .getCustomersPaginated(
+            garageId: garageId,
+            search: search,
+            limit: 25,
+            lastDocument: refresh ? null : state.customerLastDoc,
+          );
+      state = state.copyWith(
+        isLoadingCustomers: false,
+        customers: refresh ? res.items : [...state.customers, ...res.items],
+        hasMoreCustomers: res.hasMore,
+        customerLastDoc: res.lastDocument,
+      );
+    } catch (_) {
+      state = state.copyWith(isLoadingCustomers: false);
+    }
+  }
+
+  Future<void> fetchNextCustomersPage({String? search}) async {
+    if (state.isLoadingCustomers || !state.hasMoreCustomers) return;
+    await loadCustomers(refresh: false, search: search);
+  }
+
+  Future<CustomerModel?> addCustomer({
+    required String name,
+    required String phone,
+    String email = '',
+    String address = '',
+  }) async {
+    final garageId = _effectiveGarageId();
+    if (garageId.isEmpty) return null;
+
+    state = state.copyWith(isAddingCustomer: true);
+    try {
+      final newCustomer = CustomerModel(
+        id: const Uuid().v4(),
+        garageId: garageId,
+        name: name.trim(),
+        phone: phone.trim(),
+        whatsappNumber: phone.trim(),
+        email: email.trim(),
+        address: address.trim(),
+        createdAt: DateTime.now(),
+      );
+      final saved = await ref
+          .read(garageRepositoryProvider)
+          .createCustomer(newCustomer);
+
+      final updatedList = [
+        saved,
+        ...state.customers.where((c) => c.id != saved.id),
+      ];
+
+      state = state.copyWith(isAddingCustomer: false, customers: updatedList);
+      return saved;
+    } catch (_) {
+      state = state.copyWith(isAddingCustomer: false);
+      return null;
+    }
+  }
+
+  Future<void> loadMechanics({bool refresh = false}) async {
+    final garageId = _effectiveGarageId();
+    if (garageId.isEmpty) return;
+
+    state = state.copyWith(
+      isLoadingMechanics: true,
+      mechanicLastDoc: refresh ? null : state.mechanicLastDoc,
+      hasMoreMechanics: refresh ? true : state.hasMoreMechanics,
+    );
+
+    try {
+      final res = await ref
+          .read(garageRepositoryProvider)
+          .getMechanicsPaginated(
+            garageId: garageId,
+            limit: 25,
+            lastDocument: refresh ? null : state.mechanicLastDoc,
+          );
+      state = state.copyWith(
+        isLoadingMechanics: false,
+        mechanics: refresh ? res.items : [...state.mechanics, ...res.items],
+        hasMoreMechanics: res.hasMore,
+        mechanicLastDoc: res.lastDocument,
+      );
+    } catch (_) {
+      state = state.copyWith(isLoadingMechanics: false);
+    }
+  }
+
+  Future<void> fetchNextMechanicsPage() async {
+    if (state.isLoadingMechanics || !state.hasMoreMechanics) return;
+    await loadMechanics(refresh: false);
+  }
+
+  Future<MechanicModel?> addMechanic({
+    required String name,
+    String phone = '',
+    String specialization = '',
+  }) async {
+    final garageId = _effectiveGarageId();
+    if (garageId.isEmpty) return null;
+
+    state = state.copyWith(isAddingMechanic: true);
+    try {
+      final newMechanic = MechanicModel(
+        id: const Uuid().v4(),
+        garageId: garageId,
+        name: name.trim(),
+        phone: phone.trim(),
+        specialization: specialization.trim(),
+        isActive: true,
+        createdAt: DateTime.now(),
+      );
+      final saved = await ref
+          .read(garageRepositoryProvider)
+          .createMechanic(newMechanic);
+
+      final updated = [
+        saved,
+        ...state.mechanics.where((m) => m.id != saved.id),
+      ];
+
+      state = state.copyWith(isAddingMechanic: false, mechanics: updated);
+      return saved;
+    } catch (_) {
+      state = state.copyWith(isAddingMechanic: false);
+      return null;
     }
   }
 
@@ -189,6 +342,23 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
           .read(garageRepositoryProvider)
           .createServiceJob(newJob);
 
+      if (mechanicName.trim().isNotEmpty) {
+        final exists = state.mechanics.any(
+          (m) =>
+              m.name.trim().toLowerCase() == mechanicName.trim().toLowerCase(),
+        );
+        if (!exists) {
+          final newMech = MechanicModel(
+            id: const Uuid().v4(),
+            garageId: garageId,
+            name: mechanicName.trim(),
+            isActive: true,
+            createdAt: DateTime.now(),
+          );
+          await ref.read(garageRepositoryProvider).createMechanic(newMech);
+        }
+      }
+
       state = state.copyWith(
         isCreatingJob: false,
         jobs: [created, ...state.jobs],
@@ -237,6 +407,22 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
     state = state.copyWith(isUpdatingStatus: true, errorMessage: null);
     try {
       final garageId = _effectiveGarageId();
+      if (mechanicName.trim().isNotEmpty) {
+        final exists = state.mechanics.any(
+          (m) =>
+              m.name.trim().toLowerCase() == mechanicName.trim().toLowerCase(),
+        );
+        if (!exists) {
+          final newMech = MechanicModel(
+            id: const Uuid().v4(),
+            garageId: garageId,
+            name: mechanicName.trim(),
+            isActive: true,
+            createdAt: DateTime.now(),
+          );
+          await ref.read(garageRepositoryProvider).createMechanic(newMech);
+        }
+      }
       await ref
           .read(garageRepositoryProvider)
           .startRepair(

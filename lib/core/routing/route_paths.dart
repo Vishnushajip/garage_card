@@ -26,7 +26,9 @@ class RoutePaths {
 
   static const String merchant = '/merchant';
   static const String merchantJobs = '/merchant/jobs';
+  static const String merchantCreateJob = '/merchant/jobs/create';
   static const String merchantJobDetail = '/merchant/jobs/:id';
+  static const String merchantCompleteJob = '/merchant/jobs/:id/complete';
   static const String merchantCustomers = '/merchant/customers';
   static const String merchantEstimates = '/merchant/estimates';
   static const String merchantInvoices = '/merchant/invoices';

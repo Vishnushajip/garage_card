@@ -207,11 +207,18 @@ Never automatically:
 - All temporary notifications must use `AppNotificationService` (`AppNotificationService.success()`, `.error()`, `.warning()`, `.info()`, `.loading()`).
 - Responsive floating banner hosted via `AppNotificationHost` at root level.
 
-### Rule 17: Application Localization (English & Malayalam)
-- Dynamic switching between English (`en`) and Malayalam (`ml`) via `localeProvider` without app restart.
-- Translate static UI strings via `context.tr(key)` / `AppLocalizations`. Preserve business and user data (names, license plates, notes).
-- Map normalized status codes through `loc.status(code)` for culturally appropriate Malayalam terms.
+### Rule 17: Application Localization (English & Malayalam) — MANDATORY FOR ALL NEW FEATURES
+- **Mandatory Bilingual Support for All New Features & Adding Options:** Every new feature, adding option, screen, dialog, bottom sheet, action button, form field label, hint/placeholder, dropdown choice, validation error message, empty state, and notification MUST fully support dynamic English (`en`) and Malayalam (`ml`) language switching.
+- **Single Localization Registry:** All new strings must be added to both `en` and `ml` maps in `AppLocalizations` (`lib/core/localization/app_localizations.dart`), with lower-cased lookup mappings registered in `_phraseToKeyMap`.
+- **Dynamic Language Switching via `localeProvider`:** Dynamic switching between English (`en`) and Malayalam (`ml`) occurs via `localeProvider` without app restart. Every widget presenting localized text must watch `ref.watch(localeProvider)` in its `build` method so translations react immediately upon language change.
+- **Zero Hardcoded User-Facing Strings:** Never hardcode raw English or Malayalam text directly inside UI widgets or alerts. All static UI strings must be resolved via `context.tr(key)` / `AppLocalizations`. Preserve business and user-entered data (names, license plates, notes).
+- **Status Normalization:** Map normalized status codes through `loc.status(code)` for culturally appropriate Malayalam terms.
+- **WhatsApp Bilingual Engine:** All customer notifications generated from new features (e.g. Job Created, Extra Work Added, Work Completed, Invoice Sharing) must offer a language selector (`English` / `മലയാളം`) and render entirely in the selected language without mixing.
 
 ### Rule 18: Technical SEO & Platform Separation
 - Maintain `sitemap.xml` and `robots.txt` at web root.
 - Keep web-specific SEO separate from shared Android code. Never index private or authenticated user routes.
+
+### Rule 19: Dedicated Full Pages for Core Workflows & Multi-Device Responsive Standards
+- **Primary Workflows as Full Pages:** Complex operations such as creating new service jobs (`MerchantCreateJobScreen`) or completing jobs with billing and settlements (`MerchantCompleteJobScreen`) must be dedicated full pages with proper `AppCustomAppBar` and canonical routes, never crammed inside modal `AlertDialog`s.
+- **Adaptive Multi-Device Responsiveness (Mobile & Tablet):** Every newly created page, dialog, bottom sheet, and form must be fully responsive down to 320px viewport width with zero `RenderFlex` overflow errors. Dynamic layouts must use `LayoutBuilder` or `Wrap` on narrow widths. Total horizontal margins on mobile viewports must remain clean and consistent (16px) without double padding.

@@ -1,6 +1,7 @@
 import 'package:garage_card/features/shared/models/customer_model.dart';
 import 'package:garage_card/features/shared/models/invoice_model.dart';
 import 'package:garage_card/features/shared/models/job_status_history_model.dart';
+import 'package:garage_card/features/shared/models/mechanic_model.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
 
 class MerchantJobsState {
@@ -8,6 +9,7 @@ class MerchantJobsState {
     this.jobs = const [],
     this.invoices = const [],
     this.customers = const [],
+    this.mechanics = const [],
     this.selectedJob,
     this.selectedInvoice,
     this.history = const [],
@@ -17,6 +19,14 @@ class MerchantJobsState {
     this.isSavingInvoice = false,
     this.isRecordingPayment = false,
     this.isFetchingNextPage = false,
+    this.isLoadingCustomers = false,
+    this.isAddingCustomer = false,
+    this.hasMoreCustomers = true,
+    this.customerLastDoc,
+    this.isLoadingMechanics = false,
+    this.isAddingMechanic = false,
+    this.hasMoreMechanics = true,
+    this.mechanicLastDoc,
     this.hasMore = true,
     this.lastDocument,
     this.errorMessage,
@@ -28,6 +38,7 @@ class MerchantJobsState {
   final List<ServiceJobModel> jobs;
   final List<InvoiceModel> invoices;
   final List<CustomerModel> customers;
+  final List<MechanicModel> mechanics;
   final ServiceJobModel? selectedJob;
   final InvoiceModel? selectedInvoice;
   final List<JobStatusHistoryModel> history;
@@ -37,6 +48,14 @@ class MerchantJobsState {
   final bool isSavingInvoice;
   final bool isRecordingPayment;
   final bool isFetchingNextPage;
+  final bool isLoadingCustomers;
+  final bool isAddingCustomer;
+  final bool hasMoreCustomers;
+  final Object? customerLastDoc;
+  final bool isLoadingMechanics;
+  final bool isAddingMechanic;
+  final bool hasMoreMechanics;
+  final Object? mechanicLastDoc;
   final bool hasMore;
   final Object? lastDocument;
   final String? errorMessage;
@@ -48,6 +67,7 @@ class MerchantJobsState {
     List<ServiceJobModel>? jobs,
     List<InvoiceModel>? invoices,
     List<CustomerModel>? customers,
+    List<MechanicModel>? mechanics,
     ServiceJobModel? selectedJob,
     InvoiceModel? selectedInvoice,
     List<JobStatusHistoryModel>? history,
@@ -57,6 +77,14 @@ class MerchantJobsState {
     bool? isSavingInvoice,
     bool? isRecordingPayment,
     bool? isFetchingNextPage,
+    bool? isLoadingCustomers,
+    bool? isAddingCustomer,
+    bool? hasMoreCustomers,
+    Object? customerLastDoc,
+    bool? isLoadingMechanics,
+    bool? isAddingMechanic,
+    bool? hasMoreMechanics,
+    Object? mechanicLastDoc,
     bool? hasMore,
     Object? lastDocument,
     String? errorMessage,
@@ -68,6 +96,7 @@ class MerchantJobsState {
       jobs: jobs ?? this.jobs,
       invoices: invoices ?? this.invoices,
       customers: customers ?? this.customers,
+      mechanics: mechanics ?? this.mechanics,
       selectedJob: selectedJob ?? this.selectedJob,
       selectedInvoice: selectedInvoice ?? this.selectedInvoice,
       history: history ?? this.history,
@@ -77,6 +106,14 @@ class MerchantJobsState {
       isSavingInvoice: isSavingInvoice ?? this.isSavingInvoice,
       isRecordingPayment: isRecordingPayment ?? this.isRecordingPayment,
       isFetchingNextPage: isFetchingNextPage ?? this.isFetchingNextPage,
+      isLoadingCustomers: isLoadingCustomers ?? this.isLoadingCustomers,
+      isAddingCustomer: isAddingCustomer ?? this.isAddingCustomer,
+      hasMoreCustomers: hasMoreCustomers ?? this.hasMoreCustomers,
+      customerLastDoc: customerLastDoc ?? this.customerLastDoc,
+      isLoadingMechanics: isLoadingMechanics ?? this.isLoadingMechanics,
+      isAddingMechanic: isAddingMechanic ?? this.isAddingMechanic,
+      hasMoreMechanics: hasMoreMechanics ?? this.hasMoreMechanics,
+      mechanicLastDoc: mechanicLastDoc ?? this.mechanicLastDoc,
       hasMore: hasMore ?? this.hasMore,
       lastDocument: lastDocument ?? this.lastDocument,
       errorMessage: errorMessage,

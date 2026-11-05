@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
 import 'package:garage_card/core/shared_widgets/app_firestore_paginated_list_view.dart';
@@ -10,12 +11,12 @@ import 'package:garage_card/core/shared_widgets/app_text_field.dart';
 import 'package:garage_card/core/utils/debouncer.dart';
 import 'package:garage_card/features/merchant/service_jobs/Widgets/active_job_card.dart';
 import 'package:garage_card/features/merchant/service_jobs/Widgets/completed_job_card.dart';
-import 'package:garage_card/features/merchant/service_jobs/Widgets/create_job_dialog.dart';
 import 'package:garage_card/features/merchant/service_jobs/Widgets/jobs_analytics_view.dart';
 import 'package:garage_card/features/shared/models/invoice_model.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
 
 import '../ViewModel/merchant_jobs_view_model.dart';
+import 'merchant_create_job_screen.dart';
 import 'merchant_job_detail_screen.dart';
 
 class MerchantJobsScreen extends ConsumerStatefulWidget {
@@ -36,11 +37,10 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
     super.dispose();
   }
 
-  void _showCreateJobDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => const CreateJobDialog(),
+  void _showCreateJobPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const MerchantCreateJobScreen()),
     );
   }
 
@@ -51,23 +51,24 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
     );
   }
 
-  String _tabTitle(int index) {
+  String _tabTitle(BuildContext context, int index) {
     switch (index) {
       case 1:
-        return 'Pending';
+        return context.tr('pendingJobs');
       case 2:
-        return 'In Progress';
+        return context.tr('inProgressJobs');
       case 3:
-        return 'Completed';
+        return context.tr('completedJobsTab');
       case 4:
-        return 'Analytics & Revenue';
+        return context.tr('analyticsRevenueTab');
       default:
-        return 'All Jobs';
+        return context.tr('allJobs');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(localeProvider);
     final state = ref.watch(merchantJobsViewModelProvider);
     final vm = ref.read(merchantJobsViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -91,23 +92,24 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
 
     return Scaffold(
       appBar: AppCustomAppBar(
-        title: 'Service Jobs Management',
+        title: context.tr('jobsManagement'),
         subtitle: isAnalyticsTab
-            ? 'Revenue & Financial Analytics'
+            ? context.tr('revenueFinancialAnalytics')
             : (state.activeTabIndex == 0
-                  ? 'Workshop Orders & Repairs'
-                  : '${_tabTitle(state.activeTabIndex)} Orders'),
+                  ? context.tr('workshopOrdersRepairs')
+                  : '${_tabTitle(context, state.activeTabIndex)} ${context.tr('orders')}'),
         showChat: true,
         showNotifications: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded, size: 20),
-            tooltip: 'Refresh',
+            tooltip: context.tr('refresh'),
             onPressed: () => vm.refresh(),
           ),
         ],
       ),
       body: AppResponsiveLayout(
+        padding: EdgeInsets.zero,
         child: Column(
           children: [
             Padding(
@@ -117,7 +119,7 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
                   Expanded(
                     child: AppTextField(
                       controller: _searchCtrl,
-                      hint: 'Search bike number, customer, job ID...',
+                      hint: context.tr('searchJobsHint'),
                       prefixIcon: const Icon(Icons.search_rounded, size: 20),
                       suffixIcon: _searchCtrl.text.isNotEmpty
                           ? IconButton(
@@ -148,7 +150,7 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
                       ),
                     ),
                     child: PopupMenuButton<int>(
-                      tooltip: 'Filter Jobs',
+                      tooltip: context.tr('filterJobs'),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                         side: BorderSide(color: borderColor),
@@ -164,35 +166,35 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
                       onSelected: (int index) {
                         vm.setActiveTab(index);
                       },
-                      itemBuilder: (BuildContext context) => [
+                      itemBuilder: (BuildContext popupCtx) => [
                         _buildFilterItem(
                           0,
-                          'All Jobs',
+                          context.tr('allJobs'),
                           Icons.all_inbox_rounded,
                           state.activeTabIndex == 0,
                         ),
                         _buildFilterItem(
                           1,
-                          'Pending',
+                          context.tr('pendingJobs'),
                           Icons.schedule_rounded,
                           state.activeTabIndex == 1,
                         ),
                         _buildFilterItem(
                           2,
-                          'In Progress',
+                          context.tr('inProgressJobs'),
                           Icons.build_circle_outlined,
                           state.activeTabIndex == 2,
                         ),
                         _buildFilterItem(
                           3,
-                          'Completed',
+                          context.tr('completedJobsTab'),
                           Icons.check_circle_outline_rounded,
                           state.activeTabIndex == 3,
                         ),
                         const PopupMenuDivider(),
                         _buildFilterItem(
                           4,
-                          'Analytics & Revenue',
+                          context.tr('analyticsRevenueTab'),
                           Icons.analytics_outlined,
                           state.activeTabIndex == 4,
                         ),
@@ -223,7 +225,7 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            _tabTitle(state.activeTabIndex),
+                            _tabTitle(context, state.activeTabIndex),
                             style: AppFonts.labelSmall(
                               color: AppColors.accentBlue,
                             ).copyWith(fontWeight: FontWeight.bold),
@@ -242,7 +244,7 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
                     ),
                     const Spacer(),
                     Text(
-                      '${state.jobs.length} jobs',
+                      '${state.jobs.length} ${context.tr('jobsCount')}',
                       style: AppFonts.labelSmall(color: secondaryTextColor),
                     ),
                   ],
@@ -260,13 +262,13 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
                   errorMessage: state.errorMessage,
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
                   emptyState: AppEmptyState(
-                    title: 'No Service Jobs Found',
+                    title: context.tr('noJobsFound'),
                     message: state.activeTabIndex == 3
-                        ? 'Completed repair jobs with finalized invoices will appear here.'
-                        : 'Create a new bike job order when a customer arrives.',
+                        ? context.tr('completedJobsEmptyMsg')
+                        : context.tr('activeJobsEmptyMsg'),
                     icon: Icons.two_wheeler_rounded,
-                    actionLabel: 'New Bike Job Order',
-                    onAction: () => _showCreateJobDialog(context),
+                    actionLabel: context.tr('newJobOrder'),
+                    onAction: () => _showCreateJobPage(context),
                   ),
                   itemBuilder: (ctx, job, index) {
                     if (state.activeTabIndex == 3 ||
@@ -294,9 +296,9 @@ class _MerchantJobsScreenState extends ConsumerState<MerchantJobsScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCreateJobDialog(context),
+        onPressed: () => _showCreateJobPage(context),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('New Bike Job'),
+        label: Text(context.tr('newJob')),
         backgroundColor: AppColors.accentBlue,
         foregroundColor: Colors.white,
       ),

@@ -5,8 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/firebase/firebase_config.dart';
+import 'package:garage_card/core/pagination/paginated_result.dart';
 
 import '../models/customer_model.dart';
+import '../models/mechanic_model.dart';
 import '../models/vehicle_model.dart';
 import 'garage_repository_store.dart';
 
@@ -88,6 +90,167 @@ mixin CustomerDataRepository on GarageRepositoryStore {
 
     customers.insert(0, newCust);
     return newCust;
+  }
+
+  Future<PaginatedResult<CustomerModel>> getCustomersPaginated({
+    required String garageId,
+    String? search,
+    int limit = 20,
+    Object? lastDocument,
+  }) async {
+    if (garageId.isEmpty) {
+      return const PaginatedResult<CustomerModel>(
+        items: [],
+        lastDocument: null,
+        hasMore: false,
+      );
+    }
+
+    if (FirebaseConfig.isInitialized &&
+        FirebaseAuth.instance.currentUser != null) {
+      try {
+        Query<Map<String, dynamic>> query = FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('customers')
+            .limit(limit);
+
+        if (lastDocument is DocumentSnapshot<Map<String, dynamic>>) {
+          query = query.startAfterDocument(lastDocument);
+        }
+
+        final snap = await query.get().timeout(const Duration(seconds: 4));
+        var items = snap.docs
+            .map((d) => CustomerModel.fromFirestore(d.data(), d.id))
+            .toList();
+
+        if (search != null && search.trim().isNotEmpty) {
+          final q = search.trim().toLowerCase();
+          items = items.where((c) {
+            return c.name.toLowerCase().contains(q) ||
+                c.phone.toLowerCase().contains(q) ||
+                c.email.toLowerCase().contains(q);
+          }).toList();
+        }
+
+        final lastDoc = snap.docs.isNotEmpty ? snap.docs.last : null;
+        final hasMore = snap.docs.length >= limit;
+
+        return PaginatedResult<CustomerModel>(
+          items: items,
+          lastDocument: lastDoc,
+          hasMore: hasMore,
+        );
+      } catch (e) {
+        debugPrint('GARAGE_REPO_GET_CUSTOMERS_PAGINATED_ERROR: $e');
+        return const PaginatedResult<CustomerModel>(
+          items: [],
+          lastDocument: null,
+          hasMore: false,
+        );
+      }
+    }
+
+    var filtered = customers.where((c) => c.garageId == garageId).toList();
+    if (search != null && search.trim().isNotEmpty) {
+      final q = search.trim().toLowerCase();
+      filtered = filtered.where((c) {
+        return c.name.toLowerCase().contains(q) ||
+            c.phone.toLowerCase().contains(q) ||
+            c.email.toLowerCase().contains(q);
+      }).toList();
+    }
+
+    return PaginatedResult<CustomerModel>(
+      items: filtered.take(limit).toList(),
+      lastDocument: null,
+      hasMore: filtered.length > limit,
+    );
+  }
+
+  Future<PaginatedResult<MechanicModel>> getMechanicsPaginated({
+    required String garageId,
+    int limit = 20,
+    Object? lastDocument,
+  }) async {
+    if (garageId.isEmpty) {
+      return const PaginatedResult<MechanicModel>(
+        items: [],
+        lastDocument: null,
+        hasMore: false,
+      );
+    }
+
+    if (FirebaseConfig.isInitialized &&
+        FirebaseAuth.instance.currentUser != null) {
+      try {
+        Query<Map<String, dynamic>> query = FirebaseFirestore.instance
+            .collection('garages')
+            .doc(garageId)
+            .collection('mechanics')
+            .where('isActive', isEqualTo: true)
+            .limit(limit);
+
+        if (lastDocument is DocumentSnapshot<Map<String, dynamic>>) {
+          query = query.startAfterDocument(lastDocument);
+        }
+
+        final snap = await query.get().timeout(const Duration(seconds: 4));
+        final items = snap.docs
+            .map((d) => MechanicModel.fromFirestore(d.data(), d.id))
+            .toList();
+
+        final lastDoc = snap.docs.isNotEmpty ? snap.docs.last : null;
+        final hasMore = snap.docs.length >= limit;
+
+        return PaginatedResult<MechanicModel>(
+          items: items,
+          lastDocument: lastDoc,
+          hasMore: hasMore,
+        );
+      } catch (e) {
+        debugPrint('GARAGE_REPO_GET_MECHANICS_PAGINATED_ERROR: $e');
+        return const PaginatedResult<MechanicModel>(
+          items: [],
+          lastDocument: null,
+          hasMore: false,
+        );
+      }
+    }
+
+    final filtered = mechanics
+        .where((m) => m.garageId == garageId && m.isActive)
+        .take(limit)
+        .toList();
+
+    return PaginatedResult<MechanicModel>(
+      items: filtered,
+      lastDocument: null,
+      hasMore: false,
+    );
+  }
+
+  Future<MechanicModel> createMechanic(MechanicModel mechanic) async {
+    final newMechanic = mechanic.copyWith(
+      id: mechanic.id.isNotEmpty ? mechanic.id : const Uuid().v4(),
+      createdAt: mechanic.createdAt ?? DateTime.now(),
+    );
+
+    if (FirebaseConfig.isInitialized && newMechanic.garageId.isNotEmpty) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('garages')
+            .doc(newMechanic.garageId)
+            .collection('mechanics')
+            .doc(newMechanic.id)
+            .set(newMechanic.toFirestore(), SetOptions(merge: true));
+      } catch (e) {
+        debugPrint('GARAGE_REPO_CREATE_MECHANIC_ERROR: $e');
+      }
+    }
+
+    mechanics.insert(0, newMechanic);
+    return newMechanic;
   }
 
   Future<List<VehicleModel>> getVehicles({

@@ -8,6 +8,7 @@ import '../models/garage_service_model.dart';
 import '../models/inventory_item_model.dart';
 import '../models/invoice_model.dart';
 import '../models/job_status_history_model.dart';
+import '../models/mechanic_model.dart';
 import '../models/notification_model.dart';
 import '../models/payment_model.dart';
 import '../models/review_model.dart';
@@ -19,6 +20,7 @@ import '../models/vehicle_model.dart';
 abstract class GarageRepositoryStore {
   final List<GarageModel> garages = [];
   final List<CustomerModel> customers = [];
+  final List<MechanicModel> mechanics = [];
   final List<VehicleModel> vehicles = [];
   final List<ServiceJobModel> jobs = [];
   final List<EstimateModel> estimates = [];

@@ -204,7 +204,7 @@ class _JobWhatsAppShareDialogState
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 540),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -212,28 +212,35 @@ class _JobWhatsAppShareDialogState
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF25D366)
-                              .withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(10),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF25D366)
+                                .withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const AppWhatsAppIcon(
+                            color: Color(0xFF25D366),
+                            size: 20,
+                          ),
                         ),
-                        child: const AppWhatsAppIcon(
-                          color: Color(0xFF25D366),
-                          size: 20,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _getTypeTitle(),
+                            style: AppFonts.titleLarge(color: primaryTextColor)
+                                .copyWith(fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        _getTypeTitle(),
-                        style: AppFonts.titleLarge(color: primaryTextColor)
-                            .copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 4),
                   IconButton(
                     icon: const Icon(Icons.close_rounded, size: 20),
                     onPressed: () => Navigator.of(context).pop(),

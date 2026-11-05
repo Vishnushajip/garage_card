@@ -11,7 +11,7 @@ service cloud.firestore {
     //   - Subcollections: services, serviceCatalog, reviews, customers,
     //     vehicles, serviceJobs, jobs, inspections, estimates, invoices,
     //     payments, appointments, serviceRequests, reminders, inventory,
-    //     parts, members, settings, subscriptions, notifications.
+    //     parts, members, mechanics, settings, subscriptions, notifications.
     //
     // users/{userId}
     //   - User profile (customer or merchant) managed with Firebase Auth.
@@ -95,6 +95,11 @@ service cloud.firestore {
       }
 
       match /reviews/{reviewId} {
+        allow read: if true;
+        allow write: if isAuthenticated();
+      }
+
+      match /mechanics/{mechanicId} {
         allow read: if true;
         allow write: if isAuthenticated();
       }
@@ -265,6 +270,11 @@ service cloud.firestore {
 
     match /{path=**}/supportTickets/{id} {
       allow read, write: if isAuthenticated();
+    }
+
+    match /{path=**}/mechanics/{id} {
+      allow read: if true;
+      allow write: if isAuthenticated();
     }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/shared_widgets/app_date_text.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
 import 'package:garage_card/core/shared_widgets/app_whatsapp_icon.dart';
@@ -196,7 +197,7 @@ class ActiveJobCard extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: onViewDetails,
                     icon: const Icon(Icons.visibility_outlined, size: 16),
-                    label: const Text('View Details'),
+                    label: Text(context.tr('viewDetails')),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
@@ -213,7 +214,7 @@ class ActiveJobCard extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () => _openWhatsApp(context),
                     icon: const AppWhatsAppIcon(size: 16, color: Colors.white),
-                    label: const Text('WhatsApp Update'),
+                    label: Text(context.tr('update')),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF25D366),
                       foregroundColor: Colors.white,

@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
+import 'package:flutter/foundation.dart'
+    show debugPrint, defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:garage_card/core/errors/app_exception.dart';
 import 'package:garage_card/core/firebase/firebase_config.dart';
+import 'package:garage_card/firebase_options.dart';
 import 'package:garage_card/features/shared/models/garage_model.dart';
 import 'package:garage_card/features/shared/models/user_profile_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
@@ -352,7 +354,11 @@ class AuthViewModel extends Notifier<AuthState> {
       } else {
         const webClientId =
             '62265849009-mushlhju9uianaf4aqq4qtcj11kfiij5.apps.googleusercontent.com';
+        final iosClientId = defaultTargetPlatform == TargetPlatform.iOS
+            ? DefaultFirebaseOptions.currentPlatform.iosClientId
+            : null;
         final googleSignIn = GoogleSignIn(
+          clientId: iosClientId,
           serverClientId: webClientId,
           scopes: const ['email', 'profile'],
         );

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
@@ -18,7 +19,7 @@ import 'package:garage_card/core/shared_widgets/app_whatsapp_icon.dart';
 import 'package:garage_card/features/customer/service_jobs/Widgets/status_timeline_view.dart';
 import 'package:garage_card/features/merchant/dashboard/ViewModel/merchant_dashboard_view_model.dart';
 import 'package:garage_card/features/merchant/service_jobs/Widgets/add_extra_work_dialog.dart';
-import 'package:garage_card/features/merchant/service_jobs/Widgets/complete_job_billing_dialog.dart';
+import 'package:garage_card/features/merchant/service_jobs/View/merchant_complete_job_screen.dart';
 import 'package:garage_card/features/merchant/service_jobs/Widgets/edit_invoice_dialog.dart';
 import 'package:garage_card/features/merchant/service_jobs/Widgets/job_whatsapp_share_dialog.dart';
 import 'package:garage_card/features/merchant/service_jobs/Widgets/update_payment_dialog.dart';
@@ -50,12 +51,12 @@ class _MerchantJobDetailScreenState
 
   void _openChangeMechanicDialog(BuildContext context, ServiceJobModel job) {
     final state = ref.read(merchantJobsViewModelProvider);
-    final mechanicSet = <String>{
-      'Suresh Kumar',
-      'Rahul Nair',
-      'Anand K',
-      'Manoj P',
-    };
+    final mechanicSet = <String>{};
+    for (final m in state.mechanics) {
+      if (m.name.trim().isNotEmpty) {
+        mechanicSet.add(m.name.trim());
+      }
+    }
     for (final j in state.jobs) {
       if (j.technicianName.trim().isNotEmpty) {
         mechanicSet.add(j.technicianName.trim());
@@ -77,20 +78,20 @@ class _MerchantJobDetailScreenState
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
             return AlertDialog(
-              title: const Text('Change Assigned Mechanic'),
+              title: Text(context.tr('changeAssignedMechanic')),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   AppDropdown<String>(
-                    label: 'Mechanic',
+                    label: context.tr('mechanic'),
                     value: isCustom ? '__custom__' : selected,
                     items: [
                       ...mechanicList.map(
                         (m) => AppDropdownItem(value: m, title: m),
                       ),
-                      const AppDropdownItem(
+                      AppDropdownItem(
                         value: '__custom__',
-                        title: '+ Add Custom Mechanic',
+                        title: context.tr('addCustomMechanic'),
                       ),
                     ],
                     onChanged: (val) {
@@ -111,7 +112,7 @@ class _MerchantJobDetailScreenState
                     const SizedBox(height: 12),
                     AppTextField(
                       controller: customCtrl,
-                      label: 'New Mechanic Name',
+                      label: context.tr('newMechanicName'),
                     ),
                   ],
                 ],
@@ -119,7 +120,7 @@ class _MerchantJobDetailScreenState
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogCtx).pop(),
-                  child: const Text('Cancel'),
+                  child: Text(context.tr('cancel')),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -127,17 +128,17 @@ class _MerchantJobDetailScreenState
                         ? customCtrl.text.trim()
                         : (selected ?? '');
                     if (name.isEmpty) return;
+                    final successMsg =
+                        '${context.tr("mechanicAssignedSuccess")}: $name';
                     Navigator.of(dialogCtx).pop();
                     final ok = await ref
                         .read(merchantJobsViewModelProvider.notifier)
                         .assignMechanic(jobId: job.id, mechanicName: name);
                     if (ok) {
-                      AppNotificationService.success(
-                        'Mechanic assigned: $name',
-                      );
+                      AppNotificationService.success(successMsg);
                     }
                   },
-                  child: const Text('Save'),
+                  child: Text(context.tr('save')),
                 ),
               ],
             );
@@ -158,10 +159,9 @@ class _MerchantJobDetailScreenState
     BuildContext context,
     ServiceJobModel job,
   ) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => CompleteJobBillingDialog(job: job),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => MerchantCompleteJobScreen(job: job)),
     );
   }
 
@@ -257,6 +257,7 @@ class _MerchantJobDetailScreenState
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(localeProvider);
     final state = ref.watch(merchantJobsViewModelProvider);
     final vm = ref.read(merchantJobsViewModelProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -359,7 +360,7 @@ class _MerchantJobDetailScreenState
                         Row(
                           children: [
                             Text(
-                              'Customer: ',
+                              context.tr('customerLabel'),
                               style: AppFonts.bodySmall(
                                 color: secondaryTextColor,
                               ),
@@ -380,7 +381,7 @@ class _MerchantJobDetailScreenState
                         Row(
                           children: [
                             Text(
-                              'Assigned Mechanic: ',
+                              context.tr('assignedMechanicLabel'),
                               style: AppFonts.bodySmall(
                                 color: secondaryTextColor,
                               ),
@@ -389,7 +390,7 @@ class _MerchantJobDetailScreenState
                               child: Text(
                                 job.technicianName.isNotEmpty
                                     ? job.technicianName
-                                    : 'Not assigned',
+                                    : context.tr('notAssigned'),
                                 style: AppFonts.bodyMedium(
                                   color: AppColors.accentBlue,
                                 ).copyWith(fontWeight: FontWeight.w600),
@@ -408,7 +409,7 @@ class _MerchantJobDetailScreenState
                                   vertical: 2,
                                 ),
                                 child: Text(
-                                  'Change',
+                                  context.tr('change'),
                                   style:
                                       AppFonts.labelSmall(
                                         color: AppColors.accentBlue,
@@ -430,7 +431,7 @@ class _MerchantJobDetailScreenState
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  'Created: ',
+                                  context.tr('createdLabel'),
                                   style: AppFonts.bodySmall(
                                     color: secondaryTextColor,
                                   ),
@@ -448,7 +449,7 @@ class _MerchantJobDetailScreenState
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    'Completed: ',
+                                    context.tr('completedLabel'),
                                     style: AppFonts.bodySmall(
                                       color: secondaryTextColor,
                                     ),
@@ -469,7 +470,7 @@ class _MerchantJobDetailScreenState
                             children: [
                               Expanded(
                                 child: AppButton(
-                                  label: 'Start Repair Work',
+                                  label: context.tr('startRepairWork'),
                                   icon: const Icon(
                                     Icons.play_arrow_rounded,
                                     size: 18,
@@ -494,7 +495,7 @@ class _MerchantJobDetailScreenState
                                     size: 16,
                                     color: Colors.white,
                                   ),
-                                  label: const Text('Notify Customer'),
+                                  label: Text(context.tr('notifyCustomer')),
                                   onPressed: () => _openWhatsAppDialog(
                                     context,
                                     job,
@@ -510,7 +511,7 @@ class _MerchantJobDetailScreenState
                             children: [
                               Expanded(
                                 child: AppButton(
-                                  label: '+ Extra Work',
+                                  label: '+ ${context.tr("extraWork")}',
                                   icon: const Icon(
                                     Icons.add_task_rounded,
                                     size: 16,
@@ -524,7 +525,7 @@ class _MerchantJobDetailScreenState
                               const SizedBox(width: 10),
                               Expanded(
                                 child: AppButton(
-                                  label: 'Complete & Bill',
+                                  label: context.tr('completeAndBill'),
                                   icon: const Icon(
                                     Icons.check_circle_rounded,
                                     size: 18,
@@ -556,7 +557,7 @@ class _MerchantJobDetailScreenState
                                     Icons.edit_note_rounded,
                                     size: 16,
                                   ),
-                                  label: const Text('Edit Bill / Discount'),
+                                  label: Text(context.tr('editBillDiscount')),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.accentBlue,
                                     foregroundColor: Colors.white,
@@ -573,7 +574,7 @@ class _MerchantJobDetailScreenState
                                       Icons.payment_rounded,
                                       size: 16,
                                     ),
-                                    label: const Text('Record Payment'),
+                                    label: Text(context.tr('recordPayment')),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.success,
                                       foregroundColor: Colors.white,
@@ -586,7 +587,7 @@ class _MerchantJobDetailScreenState
                                     Icons.picture_as_pdf_rounded,
                                     size: 16,
                                   ),
-                                  label: const Text('PDF Invoice'),
+                                  label: Text(context.tr('pdfInvoice')),
                                 ),
                               ],
                               ElevatedButton.icon(
@@ -600,7 +601,7 @@ class _MerchantJobDetailScreenState
                                   size: 16,
                                   color: Colors.white,
                                 ),
-                                label: const Text('Share on WhatsApp'),
+                                label: Text(context.tr('shareOnWhatsApp')),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF25D366),
                                   foregroundColor: Colors.white,
@@ -635,7 +636,7 @@ class _MerchantJobDetailScreenState
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Original Reported Work',
+                              context.tr('originalReportedWork'),
                               style: AppFonts.titleMedium(
                                 color: primaryTextColor,
                               ).copyWith(fontWeight: FontWeight.bold),
@@ -645,7 +646,7 @@ class _MerchantJobDetailScreenState
                         const SizedBox(height: 10),
                         if (job.complaints.isEmpty)
                           Text(
-                            'General Bike Service requested.',
+                            context.tr('generalServiceRequested'),
                             style: AppFonts.bodySmall(
                               color: secondaryTextColor,
                             ),
@@ -699,7 +700,7 @@ class _MerchantJobDetailScreenState
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Extra Work Details',
+                                  context.tr('extraWorkDetails'),
                                   style: AppFonts.titleMedium(
                                     color: primaryTextColor,
                                   ).copyWith(fontWeight: FontWeight.bold),
@@ -708,7 +709,7 @@ class _MerchantJobDetailScreenState
                             ),
                             if (!isCompleted)
                               IconButton(
-                                tooltip: 'Add Extra Work',
+                                tooltip: context.tr('addExtraWork'),
                                 icon: const Icon(
                                   Icons.add_circle_outline_rounded,
                                   color: AppColors.accentBlue,
@@ -721,7 +722,7 @@ class _MerchantJobDetailScreenState
                         if (job.supplementalItems.isEmpty) ...[
                           const SizedBox(height: 6),
                           Text(
-                            'No additional problems or extra work recorded.',
+                            context.tr('noExtraWorkRecorded'),
                             style: AppFonts.bodySmall(
                               color: secondaryTextColor,
                             ),
@@ -732,7 +733,7 @@ class _MerchantJobDetailScreenState
                               onPressed: () =>
                                   _openAddExtraWorkDialog(context, job),
                               icon: const Icon(Icons.add_rounded, size: 16),
-                              label: const Text('Add Extra Work'),
+                              label: Text(context.tr('addExtraWork')),
                             ),
                           ],
                         ] else ...[
@@ -792,7 +793,7 @@ class _MerchantJobDetailScreenState
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Total Extra Work Charges:',
+                                context.tr('totalExtraWorkCharges'),
                                 style: AppFonts.titleSmall(
                                   color: primaryTextColor,
                                 ).copyWith(fontWeight: FontWeight.bold),
@@ -820,8 +821,8 @@ class _MerchantJobDetailScreenState
                                 size: 16,
                                 color: Colors.white,
                               ),
-                              label: const Text(
-                                'Inform Customer about Extra Work (WhatsApp)',
+                              label: Text(
+                                context.tr('informCustomerExtraWork'),
                               ),
                               onPressed: () => _openWhatsAppDialog(
                                 context,
@@ -862,7 +863,7 @@ class _MerchantJobDetailScreenState
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Invoice & Payment Summary',
+                                    context.tr('invoicePaymentSummary'),
                                     style: AppFonts.titleMedium(
                                       color: primaryTextColor,
                                     ).copyWith(fontWeight: FontWeight.bold),

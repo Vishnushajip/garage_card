@@ -28,8 +28,11 @@ import 'package:garage_card/features/merchant/invoices/View/merchant_invoices_sc
 import 'package:garage_card/features/merchant/merchant_navigation_shell.dart';
 import 'package:garage_card/features/merchant/more/View/merchant_more_screen.dart';
 import 'package:garage_card/features/merchant/notifications/View/merchant_notifications_screen.dart';
+import 'package:garage_card/features/merchant/service_jobs/View/merchant_complete_job_screen.dart';
+import 'package:garage_card/features/merchant/service_jobs/View/merchant_create_job_screen.dart';
 import 'package:garage_card/features/merchant/service_jobs/View/merchant_job_detail_screen.dart';
 import 'package:garage_card/features/merchant/service_jobs/View/merchant_jobs_screen.dart';
+import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:garage_card/features/chat/View/chat_screen.dart';
 import 'package:garage_card/features/chat/View/conversation_list_screen.dart';
 import 'package:garage_card/features/customer/garage_details/View/customer_garage_detail_screen.dart';
@@ -283,8 +286,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const MerchantNotificationsScreen(),
       ),
       GoRoute(
+        path: RoutePaths.merchantCreateJob,
+        builder: (context, state) => const MerchantCreateJobScreen(),
+      ),
+      GoRoute(
         path: RoutePaths.merchantJobDetail,
         builder: (context, state) {
+          final jobId = state.pathParameters['id'] ?? '';
+          return MerchantJobDetailScreen(jobId: jobId);
+        },
+      ),
+      GoRoute(
+        path: RoutePaths.merchantCompleteJob,
+        builder: (context, state) {
+          final job = state.extra as ServiceJobModel?;
+          if (job != null) {
+            return MerchantCompleteJobScreen(job: job);
+          }
           final jobId = state.pathParameters['id'] ?? '';
           return MerchantJobDetailScreen(jobId: jobId);
         },
