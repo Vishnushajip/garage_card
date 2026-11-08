@@ -34,6 +34,48 @@ class ActiveJobCard extends StatelessWidget {
     );
   }
 
+  Widget _buildViewDetailsButton(
+    BuildContext context, {
+    EdgeInsetsGeometry? padding,
+  }) {
+    return OutlinedButton.icon(
+      onPressed: onViewDetails,
+      icon: const Icon(Icons.visibility_outlined, size: 16),
+      label: Text(
+        context.tr('viewDetails'),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      style: OutlinedButton.styleFrom(
+        padding:
+            padding ?? const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  Widget _buildWhatsAppButton(
+    BuildContext context, {
+    EdgeInsetsGeometry? padding,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: () => _openWhatsApp(context),
+      icon: const AppWhatsAppIcon(size: 16, color: Colors.white),
+      label: Text(
+        context.tr('update'),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF25D366),
+        foregroundColor: Colors.white,
+        padding:
+            padding ?? const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -191,44 +233,78 @@ class ActiveJobCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: onViewDetails,
-                    icon: const Icon(Icons.visibility_outlined, size: 16),
-                    label: Text(context.tr('viewDetails')),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 10,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth >= 480) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minWidth: 120,
+                          maxWidth: 180,
+                        ),
+                        child: _buildViewDetailsButton(context),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                      const SizedBox(width: 10),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minWidth: 120,
+                          maxWidth: 180,
+                        ),
+                        child: _buildWhatsAppButton(context),
+                      ),
+                    ],
+                  );
+                }
+
+                if (constraints.maxWidth < 330) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildViewDetailsButton(
+                        context,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 10,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildWhatsAppButton(
+                        context,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 10,
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: _buildViewDetailsButton(
+                        context,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 10,
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _openWhatsApp(context),
-                    icon: const AppWhatsAppIcon(size: 16, color: Colors.white),
-                    label: Text(context.tr('update')),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF25D366),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 10,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildWhatsAppButton(
+                        context,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 10,
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ],
         ),

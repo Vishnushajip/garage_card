@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_date_text.dart';
 import 'package:garage_card/core/shared_widgets/app_status_badge.dart';
@@ -87,6 +88,120 @@ class CompletedJobCard extends ConsumerWidget {
         balanceDue: invoice?.balanceDue ?? 0.0,
         paymentStatus: invoice?.status ?? 'completed',
       ),
+    );
+  }
+
+  Widget _buildViewDetailsButton(
+    BuildContext context, {
+    EdgeInsetsGeometry? padding,
+  }) {
+    return OutlinedButton.icon(
+      onPressed: onViewDetails,
+      icon: const Icon(Icons.visibility_outlined, size: 16),
+      label: Text(
+        context.tr('viewDetails'),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      style: OutlinedButton.styleFrom(
+        padding:
+            padding ?? const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  Widget _buildWhatsAppButton(
+    BuildContext context, {
+    EdgeInsetsGeometry? padding,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: () => _openWhatsApp(context),
+      icon: const AppWhatsAppIcon(size: 16, color: Colors.white),
+      label: Text(
+        context.tr('whatsapp'),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF25D366),
+        foregroundColor: Colors.white,
+        padding:
+            padding ?? const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  Widget _buildMoreActionsButton(
+    BuildContext context,
+    WidgetRef ref,
+    Color cardBg,
+    Color borderColor,
+    double balance,
+  ) {
+    return PopupMenuButton<String>(
+      tooltip: 'More Actions',
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: cardBg,
+      icon: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: borderColor),
+        ),
+        child: const Icon(Icons.more_horiz_rounded, size: 18),
+      ),
+      onSelected: (val) {
+        if (val == 'edit') {
+          _openEditInvoice(context);
+        } else if (val == 'payment') {
+          _openUpdatePayment(context);
+        } else if (val == 'pdf') {
+          _downloadPdf(context, ref);
+        }
+      },
+      itemBuilder: (ctx) => [
+        const PopupMenuItem(
+          value: 'edit',
+          child: Row(
+            children: [
+              Icon(Icons.edit_note_rounded, size: 18),
+              SizedBox(width: 10),
+              Text('Edit Bill / Items'),
+            ],
+          ),
+        ),
+        if (balance > 0)
+          const PopupMenuItem(
+            value: 'payment',
+            child: Row(
+              children: [
+                Icon(
+                  Icons.payment_rounded,
+                  size: 18,
+                  color: AppColors.accentBlue,
+                ),
+                SizedBox(width: 10),
+                Text('Update Payment'),
+              ],
+            ),
+          ),
+        const PopupMenuItem(
+          value: 'pdf',
+          child: Row(
+            children: [
+              Icon(
+                Icons.picture_as_pdf_rounded,
+                size: 18,
+                color: AppColors.primaryRed,
+              ),
+              SizedBox(width: 10),
+              Text('Download PDF Invoice'),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -431,112 +546,106 @@ class CompletedJobCard extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: onViewDetails,
-                    icon: const Icon(Icons.visibility_outlined, size: 16),
-                    label: const Text('View Details'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 10,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final moreActions = invoice != null
+                    ? _buildMoreActionsButton(
+                        context,
+                        ref,
+                        cardBg,
+                        borderColor,
+                        balance,
+                      )
+                    : null;
+
+                if (constraints.maxWidth >= 480) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minWidth: 120,
+                          maxWidth: 180,
+                        ),
+                        child: _buildViewDetailsButton(context),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                      const SizedBox(width: 10),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minWidth: 120,
+                          maxWidth: 180,
+                        ),
+                        child: _buildWhatsAppButton(context),
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _openWhatsApp(context),
-                    icon: const AppWhatsAppIcon(size: 16, color: Colors.white),
-                    label: const Text('WhatsApp'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF25D366),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 10,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                ),
-                if (invoice != null) ...[
-                  const SizedBox(width: 8),
-                  PopupMenuButton<String>(
-                    tooltip: 'More Actions',
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    color: cardBg,
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: borderColor),
-                      ),
-                      child: const Icon(Icons.more_horiz_rounded, size: 18),
-                    ),
-                    onSelected: (val) {
-                      if (val == 'edit') {
-                        _openEditInvoice(context);
-                      } else if (val == 'payment') {
-                        _openUpdatePayment(context);
-                      } else if (val == 'pdf') {
-                        _downloadPdf(context, ref);
-                      }
-                    },
-                    itemBuilder: (ctx) => [
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit_note_rounded, size: 18),
-                            SizedBox(width: 10),
-                            Text('Edit Bill / Items'),
-                          ],
+                      if (moreActions != null) ...[
+                        const SizedBox(width: 8),
+                        moreActions,
+                      ],
+                    ],
+                  );
+                }
+
+                if (constraints.maxWidth < 330) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildViewDetailsButton(
+                        context,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 10,
                         ),
                       ),
-                      if (balance > 0)
-                        const PopupMenuItem(
-                          value: 'payment',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.payment_rounded,
-                                size: 18,
-                                color: AppColors.accentBlue,
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildWhatsAppButton(
+                              context,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 10,
                               ),
-                              SizedBox(width: 10),
-                              Text('Update Payment'),
-                            ],
-                          ),
-                        ),
-                      const PopupMenuItem(
-                        value: 'pdf',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.picture_as_pdf_rounded,
-                              size: 18,
-                              color: AppColors.primaryRed,
                             ),
-                            SizedBox(width: 10),
-                            Text('Download PDF Invoice'),
+                          ),
+                          if (moreActions != null) ...[
+                            const SizedBox(width: 8),
+                            moreActions,
                           ],
-                        ),
+                        ],
                       ),
                     ],
-                  ),
-                ],
-              ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: _buildViewDetailsButton(
+                        context,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 10,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildWhatsAppButton(
+                        context,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 10,
+                        ),
+                      ),
+                    ),
+                    if (moreActions != null) ...[
+                      const SizedBox(width: 8),
+                      moreActions,
+                    ],
+                  ],
+                );
+              },
             ),
           ],
         ),
