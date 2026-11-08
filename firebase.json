@@ -1,1 +1,157 @@
-{"functions":[{"source":"functions","codebase":"default","ignore":["node_modules",".git","firebase-debug.log","firebase-debug.*.log","*.local"]}],"firestore":{"rules":"firestore.rules","indexes":"firestore.indexes.json"},"storage":{"rules":"storage.rules"},"hosting":{"site":"app-wefix","public":"build/web","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}],"headers":[{"source":"**/*.wasm","headers":[{"key":"Content-Type","value":"application/wasm"},{"key":"Cache-Control","value":"max-age=31536000, immutable"}]},{"source":"**/*.@(js|mjs|css|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|otf)","headers":[{"key":"Cache-Control","value":"max-age=31536000, immutable"}]},{"source":"/sitemap.xml","headers":[{"key":"Content-Type","value":"application/xml; charset=utf-8"},{"key":"Cache-Control","value":"public, max-age=3600"}]},{"source":"/robots.txt","headers":[{"key":"Content-Type","value":"text/plain; charset=utf-8"},{"key":"Cache-Control","value":"public, max-age=3600"}]},{"source":"/index.html","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/firebase-messaging-sw.js","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"},{"key":"Content-Type","value":"application/javascript; charset=utf-8"}]},{"source":"**","headers":[{"key":"Cross-Origin-Opener-Policy","value":"same-origin-allow-popups"}]}]},"flutter":{"platforms":{"android":{"default":{"projectId":"garage-b7ed1","appId":"1:62265849009:android:f4ad5b2e0f39b3a3621e90","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"garage-b7ed1","configurations":{"android":"1:62265849009:android:f4ad5b2e0f39b3a3621e90","ios":"1:62265849009:ios:a58a147ffaec6bd8621e90","macos":"1:62265849009:ios:a58a147ffaec6bd8621e90","web":"1:62265849009:web:de72a4084ed3b138621e90","windows":"1:62265849009:web:6fb0e1a353236d13621e90"}}},"ios":{"default":{"projectId":"garage-b7ed1","appId":"1:62265849009:ios:a58a147ffaec6bd8621e90","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"garage-b7ed1","appId":"1:62265849009:ios:a58a147ffaec6bd8621e90","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}}}}}
+{
+    "functions": [
+        {
+            "source": "functions",
+            "codebase": "default",
+            "ignore": [
+                "node_modules",
+                ".git",
+                "firebase-debug.log",
+                "firebase-debug.*.log",
+                "*.local"
+            ]
+        }
+    ],
+    "firestore": {
+        "rules": "firestore.rules",
+        "indexes": "firestore.indexes.json"
+    },
+    "storage": {
+        "rules": "storage.rules"
+    },
+    "hosting": {
+        "site": "app-wefix",
+        "public": "build/web",
+        "ignore": [
+            "firebase.json",
+            "**/.*",
+            "**/node_modules/**"
+        ],
+        "rewrites": [
+            {
+                "source": "**",
+                "destination": "/index.html"
+            }
+        ],
+        "headers": [
+            {
+                "source": "**/*.wasm",
+                "headers": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/wasm"
+                    },
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=31536000, immutable"
+                    }
+                ]
+            },
+            {
+                "source": "**/*.@(js|mjs|css|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|otf)",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=31536000, immutable"
+                    }
+                ]
+            },
+            {
+                "source": "/sitemap.xml",
+                "headers": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/xml; charset=utf-8"
+                    },
+                    {
+                        "key": "Cache-Control",
+                        "value": "public, max-age=3600"
+                    }
+                ]
+            },
+            {
+                "source": "/robots.txt",
+                "headers": [
+                    {
+                        "key": "Content-Type",
+                        "value": "text/plain; charset=utf-8"
+                    },
+                    {
+                        "key": "Cache-Control",
+                        "value": "public, max-age=3600"
+                    }
+                ]
+            },
+            {
+                "source": "/index.html",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "no-cache, no-store, must-revalidate"
+                    }
+                ]
+            },
+            {
+                "source": "/firebase-messaging-sw.js",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "no-cache, no-store, must-revalidate"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/javascript; charset=utf-8"
+                    }
+                ]
+            },
+            {
+                "source": "**",
+                "headers": [
+                    {
+                        "key": "Cross-Origin-Opener-Policy",
+                        "value": "same-origin-allow-popups"
+                    }
+                ]
+            }
+        ]
+    },
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "garage-b7ed1",
+                    "appId": "1:62265849009:android:f4ad5b2e0f39b3a3621e90",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "garage-b7ed1",
+                    "configurations": {
+                        "android": "1:62265849009:android:f4ad5b2e0f39b3a3621e90",
+                        "ios": "1:62265849009:ios:a58a147ffaec6bd8621e90",
+                        "macos": "1:62265849009:ios:a58a147ffaec6bd8621e90",
+                        "web": "1:62265849009:web:de72a4084ed3b138621e90",
+                        "windows": "1:62265849009:web:6fb0e1a353236d13621e90"
+                    }
+                }
+            },
+            "ios": {
+                "default": {
+                    "projectId": "garage-b7ed1",
+                    "appId": "1:62265849009:ios:a58a147ffaec6bd8621e90",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "ios/Runner/GoogleService-Info.plist"
+                }
+            },
+            "macos": {
+                "default": {
+                    "projectId": "garage-b7ed1",
+                    "appId": "1:62265849009:ios:a58a147ffaec6bd8621e90",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "macos/Runner/GoogleService-Info.plist"
+                }
+            }
+        }
+    }
+}

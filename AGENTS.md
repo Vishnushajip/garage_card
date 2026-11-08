@@ -222,3 +222,13 @@ Never automatically:
 ### Rule 19: Dedicated Full Pages for Core Workflows & Multi-Device Responsive Standards
 - **Primary Workflows as Full Pages:** Complex operations such as creating new service jobs (`MerchantCreateJobScreen`) or completing jobs with billing and settlements (`MerchantCompleteJobScreen`) must be dedicated full pages with proper `AppCustomAppBar` and canonical routes, never crammed inside modal `AlertDialog`s.
 - **Adaptive Multi-Device Responsiveness (Mobile & Tablet):** Every newly created page, dialog, bottom sheet, and form must be fully responsive down to 320px viewport width with zero `RenderFlex` overflow errors. Dynamic layouts must use `LayoutBuilder` or `Wrap` on narrow widths. Total horizontal margins on mobile viewports must remain clean and consistent (16px) without double padding.
+
+### Rule 20: WebAssembly (Wasm) Web Compatibility Standard (`flutter build web --wasm --release`)
+- **Zero Legacy Web Imports:** Never import `dart:html`, `dart:js`, or `package:js`. All web browser interactions, DOM bindings, and JavaScript interoperability must exclusively use `dart:js_interop` and `package:web`.
+- **Wasm-Compatible Conditional Imports:** All conditional platform imports must check `if (dart.library.js_interop)` rather than legacy `if (dart.library.html)`.
+- **Wasm Asset & Security Headers in `firebase.json`:**
+  - All `.wasm` files must be served with `Content-Type: application/wasm` and long-term caching (`max-age=31536000, immutable`).
+  - Use `Cross-Origin-Opener-Policy: same-origin-allow-popups` on global routes (`**`) so that OAuth authentication (Google Sign-In via `signInWithPopup`) operates smoothly without having the popup opener communication blocked by the browser.
+  - Never impose strict `COOP: same-origin` or global `COEP: credentialless` on public web apps using third-party OAuth/Firebase Auth if the auth domain (`*.firebaseapp.com`) differs from the custom hosting domain (`app-wefix.web.app`), as this severs cross-window auth communication and traps users on loading screens.
+- **Defensive HTML Splash Recovery:** The web entry point (`web/index.html`) must dismiss the pre-Flutter HTML splash screen via `flutter-first-frame` with a maximum 3.5s timeout fallback so users are never trapped on a permanent blank splash.
+- **Modern Bootstrapping:** The web entry point (`web/index.html`) must use `flutter_bootstrap.js` so modern browsers run `main.dart.wasm` with native WasmGC speed while older environments automatically fall back to JavaScript without breaking.

@@ -13,9 +13,11 @@ Production-ready multi-tenant vehicle service and garage management platform bui
 # Clean previous build artifacts (optional)
 flutter clean
 flutter pub get
-
+flutter build web --wasm --release
+firebase deploy --only hosting
 # Build production Web release with WASM compilation
 flutter build web --wasm --release
+firebase deploy --only hosting
 ```
 
 > **Note on WASM:** This generates both modern WebAssembly (`main.dart.wasm` + `main.dart.mjs`) and JavaScript fallback (`main.dart.js`) for older browsers. Firebase Hosting is configured in `firebase.json` with the required `application/wasm` headers and cross-origin isolation.

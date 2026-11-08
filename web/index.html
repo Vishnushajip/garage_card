@@ -625,9 +625,9 @@
       event.preventDefault();
     }, false);
 
-    window.addEventListener('flutter-first-frame', function () {
+    function removeAppSplash() {
       var splash = document.getElementById('app-splash');
-      if (splash) {
+      if (splash && !splash.classList.contains('is-leaving')) {
         splash.classList.add('is-leaving');
         setTimeout(function () {
           if (splash && splash.parentNode) {
@@ -635,7 +635,9 @@
           }
         }, 520);
       }
-    });
+    }
+    window.addEventListener('flutter-first-frame', removeAppSplash);
+    setTimeout(removeAppSplash, 3500);
 
     window.showWebNotification = function (title, body, imageUrl, deepLink) {
       if (!("Notification" in window)) return;

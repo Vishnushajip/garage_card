@@ -60,6 +60,17 @@ class AuthViewModel extends Notifier<AuthState> {
         if (!FirebaseConfig.isInitialized) {
           await FirebaseConfig.initialize();
         }
+        if (kIsWeb) {
+          try {
+            final redirectRes = await FirebaseAuth.instance
+                .getRedirectResult()
+                .timeout(const Duration(seconds: 4));
+            if (redirectRes.user != null) {
+              await _restoreExistingSession(redirectRes.user!);
+              return;
+            }
+          } catch (_) {}
+        }
         final currentFirebaseUser = FirebaseAuth.instance.currentUser;
         if (currentFirebaseUser != null) {
           await _restoreExistingSession(currentFirebaseUser);
