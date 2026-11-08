@@ -25,17 +25,23 @@ import 'package:garage_card/features/merchant/estimates/View/merchant_estimates_
 import 'package:garage_card/features/merchant/garage_profile/View/garage_profile_screen.dart';
 import 'package:garage_card/features/merchant/inventory/View/merchant_inventory_screen.dart';
 import 'package:garage_card/features/merchant/invoices/View/merchant_invoices_screen.dart';
+import 'package:garage_card/features/merchant/mechanics/View/merchant_mechanics_screen.dart';
 import 'package:garage_card/features/merchant/merchant_navigation_shell.dart';
 import 'package:garage_card/features/merchant/more/View/merchant_more_screen.dart';
 import 'package:garage_card/features/merchant/notifications/View/merchant_notifications_screen.dart';
+import 'package:garage_card/features/merchant/packages/View/merchant_packages_screen.dart';
+import 'package:garage_card/features/merchant/recalls/View/merchant_recalls_screen.dart';
 import 'package:garage_card/features/merchant/service_jobs/View/merchant_complete_job_screen.dart';
 import 'package:garage_card/features/merchant/service_jobs/View/merchant_create_job_screen.dart';
 import 'package:garage_card/features/merchant/service_jobs/View/merchant_job_detail_screen.dart';
 import 'package:garage_card/features/merchant/service_jobs/View/merchant_jobs_screen.dart';
+import 'package:garage_card/features/merchant/bays/View/merchant_bays_screen.dart';
 import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:garage_card/features/chat/View/chat_screen.dart';
 import 'package:garage_card/features/chat/View/conversation_list_screen.dart';
 import 'package:garage_card/features/customer/garage_details/View/customer_garage_detail_screen.dart';
+import 'package:garage_card/features/legal/View/privacy_policy_screen.dart';
+import 'package:garage_card/features/legal/View/terms_conditions_screen.dart';
 import 'package:garage_card/features/merchant/service_catalog/View/merchant_services_screen.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 import 'package:garage_card/features/splash/View/splash_screen.dart';
@@ -65,6 +71,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authViewModelProvider);
       final isSplashRoute = state.matchedLocation == RoutePaths.splash;
       if (isSplashRoute) {
+        return null;
+      }
+
+      final isPublicLegalRoute =
+          state.matchedLocation == RoutePaths.privacy ||
+          state.matchedLocation == RoutePaths.terms;
+      if (isPublicLegalRoute) {
         return null;
       }
 
@@ -114,6 +127,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.auth,
         builder: (context, state) => const AuthScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.privacy,
+        builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.terms,
+        builder: (context, state) => const TermsConditionsScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
@@ -306,6 +327,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final jobId = state.pathParameters['id'] ?? '';
           return MerchantJobDetailScreen(jobId: jobId);
         },
+      ),
+      GoRoute(
+        path: RoutePaths.merchantMechanics,
+        builder: (context, state) => const MerchantMechanicsScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.merchantBays,
+        builder: (context, state) => const MerchantBaysScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.merchantRecalls,
+        builder: (context, state) => const MerchantRecallsScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.merchantPackages,
+        builder: (context, state) => const MerchantPackagesScreen(),
       ),
       GoRoute(
         path: RoutePaths.customerGarageDetail,

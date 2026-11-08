@@ -248,6 +248,34 @@ class MerchantMoreScreen extends ConsumerWidget {
         color: AppColors.primaryRed,
         onTap: (ctx) => ctx.push(RoutePaths.merchantSupport),
       ),
+      _MenuItemData(
+        title: 'Mechanics & Staff',
+        subtitle: 'Staff workload, efficiency & commission tracking',
+        icon: Icons.badge_rounded,
+        color: AppColors.accentBlue,
+        onTap: (ctx) => ctx.push(RoutePaths.merchantMechanics),
+      ),
+      _MenuItemData(
+        title: 'Workshop Bays & Lifts',
+        subtitle: 'Ramps, hydraulic lifts & floor capacity planner',
+        icon: Icons.garage_rounded,
+        color: AppColors.primaryRed,
+        onTap: (ctx) => ctx.push(RoutePaths.merchantBays),
+      ),
+      _MenuItemData(
+        title: 'Service Due & Recalls',
+        subtitle: 'Predictive periodic maintenance & WhatsApp re-engagement',
+        icon: Icons.event_repeat_rounded,
+        color: AppColors.accentAmber,
+        onTap: (ctx) => ctx.push(RoutePaths.merchantRecalls),
+      ),
+      _MenuItemData(
+        title: 'Packages & Offers',
+        subtitle: 'Seasonal repair bundles & promotional offers',
+        icon: Icons.loyalty_rounded,
+        color: AppColors.success,
+        onTap: (ctx) => ctx.push(RoutePaths.merchantPackages),
+      ),
     ];
 
     final workshopItems = [
@@ -548,6 +576,48 @@ class MerchantMoreScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        InkWell(
+                          onTap: () => context.push(RoutePaths.privacy),
+                          borderRadius: BorderRadius.circular(4),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 4,
+                            ),
+                            child: Text(
+                              context.tr('privacyPolicy'),
+                              style: AppFonts.labelSmall(
+                                color: AppColors.accentBlue,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '•',
+                          style: AppFonts.labelSmall(color: secondaryTextColor),
+                        ),
+                        InkWell(
+                          onTap: () => context.push(RoutePaths.terms),
+                          borderRadius: BorderRadius.circular(4),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 4,
+                            ),
+                            child: Text(
+                              context.tr('termsAndConditions'),
+                              style: AppFonts.labelSmall(
+                                color: AppColors.accentBlue,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

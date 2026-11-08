@@ -621,6 +621,10 @@
       }
     }
 
+    window.addEventListener('webglcontextlost', function (event) {
+      event.preventDefault();
+    }, false);
+
     window.addEventListener('flutter-first-frame', function () {
       var splash = document.getElementById('app-splash');
       if (splash) {

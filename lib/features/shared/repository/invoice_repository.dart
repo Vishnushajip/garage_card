@@ -53,6 +53,14 @@ mixin InvoiceRepository on GarageRepositoryStore {
         final items = snapshot.docs
             .map((d) => InvoiceModel.fromFirestore(d.data(), d.id))
             .toList();
+        for (final item in items) {
+          final idx = invoices.indexWhere((i) => i.id == item.id);
+          if (idx >= 0) {
+            invoices[idx] = item;
+          } else {
+            invoices.add(item);
+          }
+        }
         items.sort(
           (a, b) => (b.createdAt ?? b.issuedAt ?? DateTime.now()).compareTo(
             a.createdAt ?? a.issuedAt ?? DateTime.now(),
@@ -170,13 +178,60 @@ mixin InvoiceRepository on GarageRepositoryStore {
     required String notes,
     required String recordedByUid,
     double discountAdjustment = 0.0,
+    String? garageId,
+    InvoiceModel? existingInvoice,
   }) async {
-    final invIndex = invoices.indexWhere((inv) => inv.id == invoiceId);
-    if (invIndex < 0) {
-      throw Exception('Invoice not found');
+    int invIndex = invoices.indexWhere((inv) => inv.id == invoiceId);
+    InvoiceModel currentInv;
+
+    if (invIndex >= 0) {
+      currentInv = invoices[invIndex];
+    } else if (existingInvoice != null) {
+      currentInv = existingInvoice;
+      invoices.insert(0, currentInv);
+      invIndex = 0;
+    } else {
+      InvoiceModel? fetched;
+      final gId = garageId;
+      if (FirebaseConfig.isInitialized &&
+          FirebaseAuth.instance.currentUser != null) {
+        if (gId != null && gId.isNotEmpty) {
+          try {
+            final doc = await FirebaseFirestore.instance
+                .collection('garages')
+                .doc(gId)
+                .collection('invoices')
+                .doc(invoiceId)
+                .get();
+            if (doc.exists && doc.data() != null) {
+              fetched = InvoiceModel.fromFirestore(doc.data()!, doc.id);
+            }
+          } catch (_) {}
+        }
+        if (fetched == null) {
+          try {
+            final snap = await FirebaseFirestore.instance
+                .collectionGroup('invoices')
+                .where(FieldPath.documentId, isEqualTo: invoiceId)
+                .limit(1)
+                .get();
+            if (snap.docs.isNotEmpty) {
+              fetched = InvoiceModel.fromFirestore(
+                snap.docs.first.data(),
+                snap.docs.first.id,
+              );
+            }
+          } catch (_) {}
+        }
+      }
+      if (fetched == null) {
+        throw Exception('Invoice not found: $invoiceId');
+      }
+      currentInv = fetched;
+      invoices.insert(0, currentInv);
+      invIndex = 0;
     }
 
-    final currentInv = invoices[invIndex];
     final updatedDiscount = currentInv.discountAmount + discountAdjustment;
     final updatedTotal = (currentInv.totalAmount - discountAdjustment).clamp(
       0.0,
@@ -188,14 +243,6 @@ mixin InvoiceRepository on GarageRepositoryStore {
       double.infinity,
     );
     final updatedStatus = updatedBalance <= 0.0 ? 'paid' : 'partially_paid';
-
-    invoices[invIndex] = currentInv.copyWith(
-      discountAmount: updatedDiscount,
-      totalAmount: updatedTotal,
-      paidAmount: updatedPaid,
-      balanceDue: updatedBalance,
-      status: updatedStatus,
-    );
 
     final payment = PaymentModel(
       id: const Uuid().v4(),
@@ -225,7 +272,7 @@ mixin InvoiceRepository on GarageRepositoryStore {
       newPaymentRecord,
     ];
 
-    invoices[invIndex] = currentInv.copyWith(
+    final updatedInv = currentInv.copyWith(
       discountAmount: updatedDiscount,
       totalAmount: updatedTotal,
       paidAmount: updatedPaid,
@@ -233,6 +280,7 @@ mixin InvoiceRepository on GarageRepositoryStore {
       status: updatedStatus,
       paymentRecords: updatedPaymentRecords,
     );
+    invoices[invIndex] = updatedInv;
 
     if (updatedBalance <= 0.0 && currentInv.jobId.isNotEmpty) {
       final jIdx = jobs.indexWhere((j) => j.id == currentInv.jobId);
@@ -250,7 +298,7 @@ mixin InvoiceRepository on GarageRepositoryStore {
         recipientUid: currentInv.customerId,
         title: 'Payment Received',
         body:
-            'Payment of ₹${amount.toStringAsFixed(0)} recorded for invoice ${currentInv.invoiceNumber}. Balance: ₹${updatedBalance.toStringAsFixed(0)}',
+            'Payment of Rs. ${amount.toStringAsFixed(0)} recorded for invoice ${currentInv.invoiceNumber}. Balance: Rs. ${updatedBalance.toStringAsFixed(0)}',
         type: 'paymentRecorded',
         referenceId: payment.id,
         referenceType: 'payment',
@@ -264,24 +312,15 @@ mixin InvoiceRepository on GarageRepositoryStore {
     );
 
     if (FirebaseConfig.isInitialized &&
-        FirebaseAuth.instance.currentUser != null) {
+        FirebaseAuth.instance.currentUser != null &&
+        currentInv.garageId.isNotEmpty) {
       try {
         await FirebaseFirestore.instance
             .collection('garages')
             .doc(currentInv.garageId)
             .collection('invoices')
             .doc(invoiceId)
-            .update({
-              'discountAmount': updatedDiscount,
-              'totalAmount': updatedTotal,
-              'paidAmount': updatedPaid,
-              'balanceDue': updatedBalance,
-              'status': updatedStatus,
-              'paymentRecords': updatedPaymentRecords
-                  .map((p) => p.toMap())
-                  .toList(),
-              'updatedAt': DateTime.now().toIso8601String(),
-            });
+            .set(updatedInv.toFirestore(), SetOptions(merge: true));
 
         await FirebaseFirestore.instance
             .collection('garages')
@@ -355,10 +394,17 @@ mixin InvoiceRepository on GarageRepositoryStore {
             .limit(1)
             .get();
         if (snap.docs.isNotEmpty) {
-          return InvoiceModel.fromFirestore(
+          final inv = InvoiceModel.fromFirestore(
             snap.docs.first.data(),
             snap.docs.first.id,
           );
+          final idx = invoices.indexWhere((i) => i.id == inv.id);
+          if (idx >= 0) {
+            invoices[idx] = inv;
+          } else {
+            invoices.add(inv);
+          }
+          return inv;
         }
       } catch (e) {
         debugPrint('GARAGE_REPO_GET_INVOICE_BY_JOB_ERROR: $e');

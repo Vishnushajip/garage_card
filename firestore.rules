@@ -11,7 +11,8 @@ service cloud.firestore {
     //   - Subcollections: services, serviceCatalog, reviews, customers,
     //     vehicles, serviceJobs, jobs, inspections, estimates, invoices,
     //     payments, appointments, serviceRequests, reminders, inventory,
-    //     parts, members, mechanics, settings, subscriptions, notifications.
+    //     parts, members, mechanics, settings, subscriptions, notifications,
+    //     bays, packages, recalls, campaigns.
     //
     // users/{userId}
     //   - User profile (customer or merchant) managed with Firebase Auth.
@@ -94,6 +95,16 @@ service cloud.firestore {
         allow write: if isAuthenticated();
       }
 
+      match /packages/{packageId} {
+        allow read: if true;
+        allow write: if isAuthenticated();
+      }
+
+      match /campaigns/{campaignId} {
+        allow read: if true;
+        allow write: if isAuthenticated();
+      }
+
       match /reviews/{reviewId} {
         allow read: if true;
         allow write: if isAuthenticated();
@@ -165,6 +176,14 @@ service cloud.firestore {
         allow read, write: if isAuthenticated();
       }
 
+      match /bays/{bayId} {
+        allow read, write: if isAuthenticated();
+      }
+
+      match /recalls/{recallId} {
+        allow read, write: if isAuthenticated();
+      }
+
       match /members/{memberId} {
         allow read, write: if isAuthenticated();
       }
@@ -224,6 +243,33 @@ service cloud.firestore {
     }
 
     // ===============================================================
+    // Root-Level Direct Collections (Packages, Bays, Mechanics, Recalls, Campaigns)
+    // ===============================================================
+
+    match /packages/{packageId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /bays/{bayId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /mechanics/{mechanicId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /recalls/{recallId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /campaigns/{campaignId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // ===============================================================
     // Collection Group Queries
     // ===============================================================
     // Ensures Flutter collectionGroup queries do not trigger permission-denied
@@ -273,6 +319,34 @@ service cloud.firestore {
     }
 
     match /{path=**}/mechanics/{id} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /{path=**}/packages/{id} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /{path=**}/bays/{id} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /{path=**}/recalls/{id} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /{path=**}/campaigns/{id} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /{path=**}/services/{id} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /{path=**}/serviceCatalog/{id} {
       allow read: if true;
       allow write: if isAuthenticated();
     }

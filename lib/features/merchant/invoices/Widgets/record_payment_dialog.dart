@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
+import 'package:garage_card/core/notifications/app_notification_service.dart';
 import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_dropdown.dart';
 import 'package:garage_card/core/shared_widgets/app_text_field.dart';
@@ -82,6 +83,11 @@ class _RecordPaymentDialogState extends State<RecordPaymentDialog> {
       setState(() => _isLoading = false);
       if (success) {
         Navigator.pop(context);
+        AppNotificationService.success('Payment recorded successfully');
+      } else {
+        AppNotificationService.error(
+          'Failed to record payment. Please try again.',
+        );
       }
     }
   }

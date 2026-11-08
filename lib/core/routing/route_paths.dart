@@ -4,6 +4,8 @@ class RoutePaths {
   static const String splash = '/splash';
   static const String auth = '/auth';
   static const String noInternet = '/no-internet';
+  static const String privacy = '/privacy';
+  static const String terms = '/terms';
 
   static const String customer = '/customer';
   static const String customerSearch = '/customer/search';
@@ -40,4 +42,8 @@ class RoutePaths {
   static const String merchantMore = '/merchant/more';
   static const String merchantSupport = '/merchant/support';
   static const String merchantTicketDetail = '/merchant/support/:id';
+  static const String merchantMechanics = '/merchant/mechanics';
+  static const String merchantBays = '/merchant/bays';
+  static const String merchantRecalls = '/merchant/recalls';
+  static const String merchantPackages = '/merchant/packages';
 }

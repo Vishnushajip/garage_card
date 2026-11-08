@@ -5,8 +5,11 @@ import 'package:garage_card/core/branding/app_branding.dart';
 import 'package:garage_card/core/branding/app_logo.dart';
 import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
+import 'package:garage_card/core/localization/app_localizations.dart';
 import 'package:garage_card/core/notifications/app_notification_service.dart';
+import 'package:garage_card/core/routing/route_paths.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
+import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../ViewModel/auth_view_model.dart';
@@ -78,6 +81,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(localeProvider);
     ref.listen(authViewModelProvider, (prev, next) {
       if (next.isAuthenticated && !(prev?.isAuthenticated ?? false)) {
         AppNotificationService.success('Login successful! Welcome to WeFix.');
@@ -465,14 +469,76 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                             ),
                             const SizedBox(height: 18),
                             Center(
-                              child: Text(
-                                'By continuing, you agree to WeFix Terms & Privacy Policy',
-                                textAlign: TextAlign.center,
-                                style: AppFonts.labelSmall(
-                                  color: secondaryTextColor.withValues(
-                                    alpha: 0.8,
+                              child: Wrap(
+                                alignment: WrapAlignment.center,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  Text(
+                                    '${context.tr('byContinuingYouAgree')} ',
+                                    style: AppFonts.labelSmall(
+                                      color: secondaryTextColor.withValues(
+                                        alpha: 0.8,
+                                      ),
+                                    ).copyWith(fontSize: 11),
                                   ),
-                                ).copyWith(fontSize: 11),
+                                  InkWell(
+                                    onTap: () => context.push(RoutePaths.terms),
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 2,
+                                        vertical: 2,
+                                      ),
+                                      child: Text(
+                                        context.tr('termsAndConditions'),
+                                        style:
+                                            AppFonts.labelSmall(
+                                              color: AppColors.accentBlue,
+                                            ).copyWith(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              decorationColor:
+                                                  AppColors.accentBlue,
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    ' ${context.tr('andWord')} ',
+                                    style: AppFonts.labelSmall(
+                                      color: secondaryTextColor.withValues(
+                                        alpha: 0.8,
+                                      ),
+                                    ).copyWith(fontSize: 11),
+                                  ),
+                                  InkWell(
+                                    onTap: () =>
+                                        context.push(RoutePaths.privacy),
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 2,
+                                        vertical: 2,
+                                      ),
+                                      child: Text(
+                                        context.tr('privacyPolicy'),
+                                        style:
+                                            AppFonts.labelSmall(
+                                              color: AppColors.accentBlue,
+                                            ).copyWith(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              decorationColor:
+                                                  AppColors.accentBlue,
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],

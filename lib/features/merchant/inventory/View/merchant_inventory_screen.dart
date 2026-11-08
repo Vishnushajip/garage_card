@@ -159,59 +159,133 @@ class _MerchantInventoryScreenState
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: AppTextField(
-                  controller: _searchCtrl,
-                  hint: 'Search by part name, SKU, or category...',
-                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                  suffixIcon: _searchCtrl.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 18),
-                          onPressed: () {
-                            _searchCtrl.clear();
-                            vm.setSearch('');
-                          },
-                        )
-                      : null,
-                  onChanged: vm.setSearch,
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: AppTextField(
+                        controller: _searchCtrl,
+                        hint: 'Search by part name, SKU, or category...',
+                        prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                        suffixIcon: _searchCtrl.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear_rounded, size: 18),
+                                onPressed: () {
+                                  _searchCtrl.clear();
+                                  vm.setSearch('');
+                                },
+                              )
+                            : null,
+                        onChanged: vm.setSearch,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      height: 48,
+                      width: 48,
+                      decoration: BoxDecoration(
+                        color: cardBg,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: state.selectedCategory != 'All'
+                              ? AppColors.accentBlue
+                              : borderColor,
+                          width: state.selectedCategory != 'All' ? 1.5 : 1,
+                        ),
+                      ),
+                      child: PopupMenuButton<String>(
+                        tooltip: 'Filter Category',
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          side: BorderSide(color: borderColor),
+                        ),
+                        color: cardBg,
+                        icon: Icon(
+                          Icons.filter_list_rounded,
+                          color: state.selectedCategory != 'All'
+                              ? AppColors.accentBlue
+                              : primaryTextColor,
+                          size: 22,
+                        ),
+                        onSelected: vm.setCategory,
+                        itemBuilder: (ctx) =>
+                            MerchantInventoryState.categories.map((cat) {
+                              final isSelected = state.selectedCategory == cat;
+                              return PopupMenuItem<String>(
+                                value: cat,
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      cat,
+                                      style:
+                                          AppFonts.bodySmall(
+                                            color: isSelected
+                                                ? AppColors.accentBlue
+                                                : primaryTextColor,
+                                          ).copyWith(
+                                            fontWeight: isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                    ),
+                                    if (isSelected) ...[
+                                      const Spacer(),
+                                      const Icon(
+                                        Icons.check_rounded,
+                                        size: 16,
+                                        color: AppColors.accentBlue,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(
-                height: 44,
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: MerchantInventoryState.categories.length,
-                  separatorBuilder: (ctx, i) => const SizedBox(width: 8),
-                  itemBuilder: (ctx, i) {
-                    final cat = MerchantInventoryState.categories[i];
-                    final isSelected = state.selectedCategory == cat;
-                    return ChoiceChip(
-                      label: Text(cat),
-                      selected: isSelected,
-                      onSelected: (_) => vm.setCategory(cat),
-                      selectedColor: AppColors.accentBlue,
-                      backgroundColor: cardBg,
-                      labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : primaryTextColor,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                        fontSize: 13,
+              if (state.selectedCategory != 'All')
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentBlue.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: AppColors.accentBlue.withValues(alpha: 0.25),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              state.selectedCategory,
+                              style: AppFonts.labelSmall(
+                                color: AppColors.accentBlue,
+                              ).copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(width: 6),
+                            InkWell(
+                              onTap: () => vm.setCategory('All'),
+                              child: const Icon(
+                                Icons.close_rounded,
+                                size: 14,
+                                color: AppColors.accentBlue,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      side: BorderSide(
-                        color: isSelected ? AppColors.accentBlue : borderColor,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    );
-                  },
+                    ],
+                  ),
                 ),
-              ),
               const SizedBox(height: 12),
               Expanded(
                 child: Builder(

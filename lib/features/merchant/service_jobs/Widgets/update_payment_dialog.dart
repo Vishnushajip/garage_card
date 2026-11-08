@@ -90,6 +90,8 @@ class _UpdatePaymentDialogState extends ConsumerState<UpdatePaymentDialog> {
           paymentMethod: _paymentMethod,
           reference: _refCtrl.text.trim(),
           notes: _notesCtrl.text.trim(),
+          invoice: widget.invoice,
+          garageId: widget.invoice.garageId,
         );
 
     if (mounted) {
@@ -116,6 +118,13 @@ class _UpdatePaymentDialogState extends ConsumerState<UpdatePaymentDialog> {
             ),
           );
         }
+      } else {
+        final err = ref.read(merchantJobsViewModelProvider).errorMessage;
+        AppNotificationService.error(
+          err != null && err.isNotEmpty
+              ? err
+              : 'Failed to record payment. Please try again.',
+        );
       }
     }
   }

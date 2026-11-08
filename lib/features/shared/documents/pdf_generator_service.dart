@@ -1,8 +1,9 @@
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/core/formatting/date_formatter.dart';
 
 import '../models/estimate_model.dart';
@@ -19,6 +20,7 @@ class PdfGeneratorService {
     required String customerName,
     required String vehicleDisplay,
   }) async {
+    final logoBytes = await _loadGarageLogo(garage.logoUrl);
     final pdf = pw.Document();
 
     pdf.addPage(
@@ -31,32 +33,66 @@ class PdfGeneratorService {
             children: [
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(
-                        garage.name,
-                        style: pw.TextStyle(
-                          fontSize: 20,
-                          fontWeight: pw.FontWeight.bold,
+                  pw.Expanded(
+                    child: pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        if (logoBytes != null) ...[
+                          pw.Container(
+                            width: 48,
+                            height: 48,
+                            margin: const pw.EdgeInsets.only(right: 12),
+                            decoration: pw.BoxDecoration(
+                              borderRadius: pw.BorderRadius.circular(8),
+                              border: pw.Border.all(
+                                color: PdfColors.grey300,
+                                width: 1,
+                              ),
+                            ),
+                            child: pw.ClipRRect(
+                              horizontalRadius: 7,
+                              verticalRadius: 7,
+                              child: pw.Image(
+                                pw.MemoryImage(logoBytes),
+                                fit: pw.BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        ],
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
+                                garage.name.isNotEmpty
+                                    ? garage.name
+                                    : 'WeFix Workshop',
+                                style: pw.TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                              ),
+                              pw.SizedBox(height: 3),
+                              pw.Text(
+                                garage.address,
+                                style: const pw.TextStyle(fontSize: 9),
+                              ),
+                              pw.Text(
+                                'Phone: ${garage.phone} | Email: ${garage.email}',
+                                style: const pw.TextStyle(fontSize: 9),
+                              ),
+                              if (garage.taxNumber.isNotEmpty)
+                                pw.Text(
+                                  'GSTIN / Tax ID: ${garage.taxNumber}',
+                                  style: const pw.TextStyle(fontSize: 9),
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
-                      pw.SizedBox(height: 4),
-                      pw.Text(
-                        garage.address,
-                        style: const pw.TextStyle(fontSize: 10),
-                      ),
-                      pw.Text(
-                        'Phone: ${garage.phone} | Email: ${garage.email}',
-                        style: const pw.TextStyle(fontSize: 10),
-                      ),
-                      if (garage.taxNumber.isNotEmpty)
-                        pw.Text(
-                          'GSTIN / Tax ID: ${garage.taxNumber}',
-                          style: const pw.TextStyle(fontSize: 10),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                   pw.Container(
                     padding: const pw.EdgeInsets.all(12),
@@ -164,14 +200,8 @@ class PdfGeneratorService {
                     item.description,
                     item.type.toUpperCase(),
                     '${item.quantity}',
-                    CurrencyFormatter.format(
-                      item.unitPrice,
-                      currencyCode: estimate.currencyCode,
-                    ),
-                    CurrencyFormatter.format(
-                      item.totalPrice,
-                      currencyCode: estimate.currencyCode,
-                    ),
+                    _formatPdfCurrency(item.unitPrice, estimate.currencyCode),
+                    _formatPdfCurrency(item.totalPrice, estimate.currencyCode),
                   ];
                 }),
                 headerStyle: pw.TextStyle(
@@ -202,30 +232,30 @@ class PdfGeneratorService {
                       children: [
                         _buildTotalRow(
                           'Subtotal:',
-                          CurrencyFormatter.format(
+                          _formatPdfCurrency(
                             estimate.subtotal,
-                            currencyCode: estimate.currencyCode,
+                            estimate.currencyCode,
                           ),
                         ),
                         if (estimate.discountAmount > 0)
                           _buildTotalRow(
                             'Discount:',
-                            '-${CurrencyFormatter.format(estimate.discountAmount, currencyCode: estimate.currencyCode)}',
+                            '-${_formatPdfCurrency(estimate.discountAmount, estimate.currencyCode)}',
                           ),
                         if (estimate.taxAmount > 0)
                           _buildTotalRow(
                             'Tax (${estimate.taxRate}%):',
-                            CurrencyFormatter.format(
+                            _formatPdfCurrency(
                               estimate.taxAmount,
-                              currencyCode: estimate.currencyCode,
+                              estimate.currencyCode,
                             ),
                           ),
                         pw.Divider(thickness: 1, color: PdfColors.grey400),
                         _buildTotalRow(
                           'Estimated Total:',
-                          CurrencyFormatter.format(
+                          _formatPdfCurrency(
                             estimate.totalAmount,
-                            currencyCode: estimate.currencyCode,
+                            estimate.currencyCode,
                           ),
                           isBold: true,
                           fontSize: 14,
@@ -266,6 +296,7 @@ class PdfGeneratorService {
     required String customerName,
     required String vehicleDisplay,
   }) async {
+    final logoBytes = await _loadGarageLogo(garage.logoUrl);
     final pdf = pw.Document();
 
     pdf.addPage(
@@ -278,32 +309,66 @@ class PdfGeneratorService {
             children: [
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(
-                        garage.name,
-                        style: pw.TextStyle(
-                          fontSize: 20,
-                          fontWeight: pw.FontWeight.bold,
+                  pw.Expanded(
+                    child: pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        if (logoBytes != null) ...[
+                          pw.Container(
+                            width: 48,
+                            height: 48,
+                            margin: const pw.EdgeInsets.only(right: 12),
+                            decoration: pw.BoxDecoration(
+                              borderRadius: pw.BorderRadius.circular(8),
+                              border: pw.Border.all(
+                                color: PdfColors.grey300,
+                                width: 1,
+                              ),
+                            ),
+                            child: pw.ClipRRect(
+                              horizontalRadius: 7,
+                              verticalRadius: 7,
+                              child: pw.Image(
+                                pw.MemoryImage(logoBytes),
+                                fit: pw.BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        ],
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
+                                garage.name.isNotEmpty
+                                    ? garage.name
+                                    : 'WeFix Workshop',
+                                style: pw.TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                              ),
+                              pw.SizedBox(height: 3),
+                              pw.Text(
+                                garage.address,
+                                style: const pw.TextStyle(fontSize: 9),
+                              ),
+                              pw.Text(
+                                'Phone: ${garage.phone} | Email: ${garage.email}',
+                                style: const pw.TextStyle(fontSize: 9),
+                              ),
+                              if (garage.taxNumber.isNotEmpty)
+                                pw.Text(
+                                  'GSTIN / Tax ID: ${garage.taxNumber}',
+                                  style: const pw.TextStyle(fontSize: 9),
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
-                      pw.SizedBox(height: 4),
-                      pw.Text(
-                        garage.address,
-                        style: const pw.TextStyle(fontSize: 10),
-                      ),
-                      pw.Text(
-                        'Phone: ${garage.phone} | Email: ${garage.email}',
-                        style: const pw.TextStyle(fontSize: 10),
-                      ),
-                      if (garage.taxNumber.isNotEmpty)
-                        pw.Text(
-                          'GSTIN / Tax ID: ${garage.taxNumber}',
-                          style: const pw.TextStyle(fontSize: 10),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                   pw.Container(
                     padding: const pw.EdgeInsets.all(12),
@@ -411,14 +476,8 @@ class PdfGeneratorService {
                     item.description,
                     item.type.toUpperCase(),
                     '${item.quantity}',
-                    CurrencyFormatter.format(
-                      item.unitPrice,
-                      currencyCode: invoice.currencyCode,
-                    ),
-                    CurrencyFormatter.format(
-                      item.totalPrice,
-                      currencyCode: invoice.currencyCode,
-                    ),
+                    _formatPdfCurrency(item.unitPrice, invoice.currencyCode),
+                    _formatPdfCurrency(item.totalPrice, invoice.currencyCode),
                   ];
                 }),
                 headerStyle: pw.TextStyle(
@@ -449,47 +508,47 @@ class PdfGeneratorService {
                       children: [
                         _buildTotalRow(
                           'Subtotal:',
-                          CurrencyFormatter.format(
+                          _formatPdfCurrency(
                             invoice.subtotal,
-                            currencyCode: invoice.currencyCode,
+                            invoice.currencyCode,
                           ),
                         ),
                         if (invoice.discountAmount > 0)
                           _buildTotalRow(
                             'Discount:',
-                            '-${CurrencyFormatter.format(invoice.discountAmount, currencyCode: invoice.currencyCode)}',
+                            '-${_formatPdfCurrency(invoice.discountAmount, invoice.currencyCode)}',
                           ),
                         if (invoice.taxAmount > 0)
                           _buildTotalRow(
                             'Tax (${invoice.taxRate}%):',
-                            CurrencyFormatter.format(
+                            _formatPdfCurrency(
                               invoice.taxAmount,
-                              currencyCode: invoice.currencyCode,
+                              invoice.currencyCode,
                             ),
                           ),
                         pw.Divider(thickness: 1, color: PdfColors.grey400),
                         _buildTotalRow(
                           'Grand Total:',
-                          CurrencyFormatter.format(
+                          _formatPdfCurrency(
                             invoice.totalAmount,
-                            currencyCode: invoice.currencyCode,
+                            invoice.currencyCode,
                           ),
                           isBold: true,
                           fontSize: 13,
                         ),
                         _buildTotalRow(
                           'Amount Paid:',
-                          CurrencyFormatter.format(
+                          _formatPdfCurrency(
                             invoice.paidAmount,
-                            currencyCode: invoice.currencyCode,
+                            invoice.currencyCode,
                           ),
                         ),
                         pw.Divider(thickness: 1.5, color: PdfColors.blue900),
                         _buildTotalRow(
                           'Balance Due:',
-                          CurrencyFormatter.format(
+                          _formatPdfCurrency(
                             invoice.balanceDue,
-                            currencyCode: invoice.currencyCode,
+                            invoice.currencyCode,
                           ),
                           isBold: true,
                           fontSize: 14,
@@ -568,6 +627,7 @@ class PdfGeneratorService {
     required ServiceJobModel job,
     required InvoiceModel invoice,
   }) async {
+    final logoBytes = await _loadGarageLogo(garage.logoUrl);
     final pdf = pw.Document();
 
     final partItems = invoice.items
@@ -601,7 +661,10 @@ class PdfGeneratorService {
         : 'Vehicle Service';
     final extraWorkDesc = job.supplementalItems.isNotEmpty
         ? job.supplementalItems
-              .map((e) => '${e.title} (₹${e.totalAmount.toStringAsFixed(0)})')
+              .map(
+                (e) =>
+                    '${e.title} (${_formatPdfCurrency(e.totalAmount, invoice.currencyCode)})',
+              )
               .join(', ')
         : (extraItems.isNotEmpty
               ? extraItems.map((e) => e.description).join(', ')
@@ -620,36 +683,67 @@ class PdfGeneratorService {
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Expanded(
-                    child: pw.Column(
+                    child: pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Text(
-                          garage.name,
-                          style: pw.TextStyle(
-                            fontSize: 18,
-                            fontWeight: pw.FontWeight.bold,
+                        if (logoBytes != null) ...[
+                          pw.Container(
+                            width: 48,
+                            height: 48,
+                            margin: const pw.EdgeInsets.only(right: 12),
+                            decoration: pw.BoxDecoration(
+                              borderRadius: pw.BorderRadius.circular(8),
+                              border: pw.Border.all(
+                                color: PdfColors.grey300,
+                                width: 1,
+                              ),
+                            ),
+                            child: pw.ClipRRect(
+                              horizontalRadius: 7,
+                              verticalRadius: 7,
+                              child: pw.Image(
+                                pw.MemoryImage(logoBytes),
+                                fit: pw.BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        ],
+                        pw.Expanded(
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
+                                garage.name.isNotEmpty
+                                    ? garage.name
+                                    : 'WeFix Workshop',
+                                style: pw.TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                              ),
+                              if (garage.address.isNotEmpty) ...[
+                                pw.SizedBox(height: 3),
+                                pw.Text(
+                                  garage.address,
+                                  style: const pw.TextStyle(
+                                    fontSize: 9,
+                                    color: PdfColors.grey700,
+                                  ),
+                                ),
+                              ],
+                              if (garage.phone.isNotEmpty) ...[
+                                pw.SizedBox(height: 2),
+                                pw.Text(
+                                  'Phone: ${garage.phone}',
+                                  style: const pw.TextStyle(
+                                    fontSize: 9,
+                                    color: PdfColors.grey700,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
-                        if (garage.address.isNotEmpty) ...[
-                          pw.SizedBox(height: 3),
-                          pw.Text(
-                            garage.address,
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                              color: PdfColors.grey700,
-                            ),
-                          ),
-                        ],
-                        if (garage.phone.isNotEmpty) ...[
-                          pw.SizedBox(height: 2),
-                          pw.Text(
-                            'Phone: ${garage.phone}',
-                            style: const pw.TextStyle(
-                              fontSize: 9,
-                              color: PdfColors.grey700,
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                   ),
@@ -789,19 +883,13 @@ class PdfGeneratorService {
                         color: PdfColors.grey800,
                       ),
                     ),
-                    pw.SizedBox(height: 3),
-                    pw.Text(
-                      '• Original Problem: $originalWork',
-                      style: const pw.TextStyle(fontSize: 9),
-                    ),
+                    pw.SizedBox(height: 4),
+                    _buildWorkDetailBullet('Original Problem', originalWork),
                     if (extraWorkDesc != '-')
-                      pw.Text(
-                        '• Extra Work: $extraWorkDesc',
-                        style: const pw.TextStyle(fontSize: 9),
-                      ),
-                    pw.Text(
-                      '• Labour Charges: ₹${laborTotal.toStringAsFixed(0)}',
-                      style: const pw.TextStyle(fontSize: 9),
+                      _buildWorkDetailBullet('Extra Work', extraWorkDesc),
+                    _buildWorkDetailBullet(
+                      'Labour Charges',
+                      _formatPdfCurrency(laborTotal, invoice.currencyCode),
                     ),
                   ],
                 ),
@@ -822,14 +910,8 @@ class PdfGeneratorService {
                     return [
                       p.description,
                       '${p.quantity}',
-                      CurrencyFormatter.format(
-                        p.unitPrice,
-                        currencyCode: invoice.currencyCode,
-                      ),
-                      CurrencyFormatter.format(
-                        p.totalPrice,
-                        currencyCode: invoice.currencyCode,
-                      ),
+                      _formatPdfCurrency(p.unitPrice, invoice.currencyCode),
+                      _formatPdfCurrency(p.totalPrice, invoice.currencyCode),
                     ];
                   }).toList(),
                   headerStyle: pw.TextStyle(
@@ -871,46 +953,40 @@ class PdfGeneratorService {
                       children: [
                         _buildTotalRow(
                           'Parts Total:',
-                          CurrencyFormatter.format(
-                            partsTotal,
-                            currencyCode: invoice.currencyCode,
-                          ),
+                          _formatPdfCurrency(partsTotal, invoice.currencyCode),
                         ),
                         _buildTotalRow(
                           'Labour Charges:',
-                          CurrencyFormatter.format(
-                            laborTotal,
-                            currencyCode: invoice.currencyCode,
-                          ),
+                          _formatPdfCurrency(laborTotal, invoice.currencyCode),
                         ),
                         if (extraTotal > 0)
                           _buildTotalRow(
                             'Extra Work Charges:',
-                            CurrencyFormatter.format(
+                            _formatPdfCurrency(
                               extraTotal,
-                              currencyCode: invoice.currencyCode,
+                              invoice.currencyCode,
                             ),
                           ),
                         if (invoice.discountAmount > 0)
                           _buildTotalRow(
                             'Discount:',
-                            '-${CurrencyFormatter.format(invoice.discountAmount, currencyCode: invoice.currencyCode)}',
+                            '-${_formatPdfCurrency(invoice.discountAmount, invoice.currencyCode)}',
                           ),
                         pw.Divider(thickness: 1, color: PdfColors.grey400),
                         _buildTotalRow(
                           'Final Bill Amount:',
-                          CurrencyFormatter.format(
+                          _formatPdfCurrency(
                             invoice.totalAmount,
-                            currencyCode: invoice.currencyCode,
+                            invoice.currencyCode,
                           ),
                           isBold: true,
                           fontSize: 12,
                         ),
                         _buildTotalRow(
                           'Amount Paid:',
-                          CurrencyFormatter.format(
+                          _formatPdfCurrency(
                             invoice.paidAmount,
-                            currencyCode: invoice.currencyCode,
+                            invoice.currencyCode,
                           ),
                         ),
                         pw.Divider(
@@ -919,9 +995,9 @@ class PdfGeneratorService {
                         ),
                         _buildTotalRow(
                           'Balance Due:',
-                          CurrencyFormatter.format(
+                          _formatPdfCurrency(
                             invoice.balanceDue,
-                            currencyCode: invoice.currencyCode,
+                            invoice.currencyCode,
                           ),
                           isBold: true,
                           fontSize: 12,
@@ -1011,6 +1087,73 @@ class PdfGeneratorService {
               fontSize: fontSize,
               fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
               color: textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Future<Uint8List?> _loadGarageLogo(String? logoUrl) async {
+    if (logoUrl == null || logoUrl.trim().isEmpty) return null;
+    try {
+      final res = await http
+          .get(Uri.parse(logoUrl.trim()))
+          .timeout(const Duration(seconds: 4));
+      if (res.statusCode == 200 && res.bodyBytes.isNotEmpty) {
+        return res.bodyBytes;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  static String _formatPdfCurrency(
+    double amount, [
+    String currencyCode = 'INR',
+  ]) {
+    final code = currencyCode.toUpperCase();
+    final prefix = switch (code) {
+      'INR' => 'Rs. ',
+      'AED' => 'AED ',
+      'USD' => '\$ ',
+      'EUR' => 'EUR ',
+      'GBP' => 'GBP ',
+      'SAR' => 'SAR ',
+      'QAR' => 'QAR ',
+      'OMR' => 'OMR ',
+      _ => '$code ',
+    };
+    final formatter = NumberFormat('#,##0.00');
+    return '$prefix${formatter.format(amount)}';
+  }
+
+  static pw.Widget _buildWorkDetailBullet(String label, String value) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 2),
+      child: pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Container(
+            margin: const pw.EdgeInsets.only(top: 3.5, right: 6),
+            width: 3.5,
+            height: 3.5,
+            decoration: const pw.BoxDecoration(
+              color: PdfColors.blueGrey800,
+              shape: pw.BoxShape.circle,
+            ),
+          ),
+          pw.Expanded(
+            child: pw.RichText(
+              text: pw.TextSpan(
+                style: const pw.TextStyle(fontSize: 9, color: PdfColors.black),
+                children: [
+                  pw.TextSpan(
+                    text: '$label: ',
+                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                  ),
+                  pw.TextSpan(text: value),
+                ],
+              ),
             ),
           ),
         ],

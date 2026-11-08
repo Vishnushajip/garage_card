@@ -41,56 +41,116 @@ class TimeRangeChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     final options = [
-      (AnalyticsTimeRange.today, 'Today'),
-      (AnalyticsTimeRange.thisWeek, 'This Week'),
-      (AnalyticsTimeRange.thisMonth, 'This Month'),
-      (AnalyticsTimeRange.thisYear, 'This Year'),
-      (AnalyticsTimeRange.custom, _customLabel),
+      (AnalyticsTimeRange.today, 'Today', Icons.today_rounded),
+      (
+        AnalyticsTimeRange.thisWeek,
+        'This Week',
+        Icons.calendar_view_week_rounded,
+      ),
+      (
+        AnalyticsTimeRange.thisMonth,
+        'This Month',
+        Icons.calendar_month_rounded,
+      ),
+      (AnalyticsTimeRange.thisYear, 'This Year', Icons.event_note_rounded),
+      (AnalyticsTimeRange.custom, _customLabel, Icons.date_range_rounded),
     ];
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: options.map((opt) {
-          final isSelected = selectedRange == opt.$1;
+    final currentOption = options.firstWhere(
+      (opt) => opt.$1 == selectedRange,
+      orElse: () => options[2],
+    );
 
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(
-                opt.$2,
-                style: AppFonts.labelLarge(
-                  color: isSelected
-                      ? Colors.white
-                      : isDark
-                      ? AppColors.textPrimaryDark
-                      : AppColors.textPrimaryLight,
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: PopupMenuButton<AnalyticsTimeRange>(
+        tooltip: 'Select date range',
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: borderColor),
+        ),
+        color: cardBg,
+        onSelected: (val) {
+          if (val == AnalyticsTimeRange.custom) {
+            _pickCustomRange(context);
+          } else {
+            onSelect(val);
+          }
+        },
+        itemBuilder: (context) => options.map((opt) {
+          final isSelected = selectedRange == opt.$1;
+          return PopupMenuItem<AnalyticsTimeRange>(
+            value: opt.$1,
+            child: Row(
+              children: [
+                Icon(
+                  opt.$3,
+                  size: 18,
+                  color: isSelected ? AppColors.accentBlue : primaryTextColor,
                 ),
-              ),
-              selected: isSelected,
-              selectedColor: AppColors.accentBlue,
-              backgroundColor: isDark
-                  ? AppColors.surfaceDark
-                  : AppColors.surfaceLight,
-              side: BorderSide(
-                color: isSelected
-                    ? AppColors.accentBlue
-                    : isDark
-                    ? AppColors.borderDark
-                    : AppColors.borderLight,
-              ),
-              onSelected: (val) {
-                if (opt.$1 == AnalyticsTimeRange.custom) {
-                  _pickCustomRange(context);
-                } else {
-                  onSelect(opt.$1);
-                }
-              },
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    opt.$2,
+                    style:
+                        AppFonts.bodyMedium(
+                          color: isSelected
+                              ? AppColors.accentBlue
+                              : primaryTextColor,
+                        ).copyWith(
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                  ),
+                ),
+                if (isSelected)
+                  const Icon(
+                    Icons.check_rounded,
+                    size: 18,
+                    color: AppColors.accentBlue,
+                  ),
+              ],
             ),
           );
         }).toList(),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: selectedRange != AnalyticsTimeRange.thisMonth
+                  ? AppColors.accentBlue
+                  : borderColor,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(currentOption.$3, size: 18, color: AppColors.accentBlue),
+              const SizedBox(width: 8),
+              Text(
+                currentOption.$2,
+                style: AppFonts.labelLarge(color: primaryTextColor)
+                    .copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(width: 6),
+              Icon(
+                Icons.arrow_drop_down_rounded,
+                size: 20,
+                color: primaryTextColor,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

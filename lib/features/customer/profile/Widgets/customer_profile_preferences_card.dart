@@ -285,6 +285,35 @@ class CustomerProfilePreferencesCard extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            InkWell(
+              onTap: () => context.push(RoutePaths.privacy),
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: Text(
+                  context.tr('privacyPolicy'),
+                  style: AppFonts.labelSmall(color: AppColors.accentBlue),
+                ),
+              ),
+            ),
+            Text('•', style: AppFonts.labelSmall(color: secondaryTextColor)),
+            InkWell(
+              onTap: () => context.push(RoutePaths.terms),
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: Text(
+                  context.tr('termsAndConditions'),
+                  style: AppFonts.labelSmall(color: AppColors.accentBlue),
+                ),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }

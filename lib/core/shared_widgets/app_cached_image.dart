@@ -67,17 +67,23 @@ class AppCachedImage extends StatelessWidget {
     }
 
     final url = imageUrl!.trim();
+    final safeWidth = (width != null && width!.isFinite && width! > 0)
+        ? width
+        : null;
+    final safeHeight = (height != null && height!.isFinite && height! > 0)
+        ? height
+        : null;
+
     final resolvedCacheWidth =
-        memCacheWidth ??
-        (width != null && width! > 0 ? (width! * 2.5).round() : null);
+        memCacheWidth ?? (safeWidth != null ? (safeWidth * 2.5).round() : null);
     final resolvedCacheHeight =
         memCacheHeight ??
-        (height != null && height! > 0 ? (height! * 2.5).round() : null);
+        (safeHeight != null ? (safeHeight * 2.5).round() : null);
 
     final imageWidget = Image.network(
       url,
-      width: width,
-      height: height,
+      width: safeWidth,
+      height: safeHeight,
       fit: fit,
       cacheWidth: resolvedCacheWidth,
       cacheHeight: resolvedCacheHeight,
@@ -85,11 +91,13 @@ class AppCachedImage extends StatelessWidget {
         if (loadingProgress == null) return child;
         return placeholder ??
             SizedBox(
-              width: width,
-              height: height,
+              width: safeWidth,
+              height: safeHeight,
               child: isCircle
-                  ? AppSkeletonLoader.circle(size: width ?? height ?? 44)
-                  : AppSkeletonLoader.card(height: height ?? 100),
+                  ? AppSkeletonLoader.circle(
+                      size: safeWidth ?? safeHeight ?? 44,
+                    )
+                  : AppSkeletonLoader.card(height: safeHeight ?? 100),
             );
       },
       errorBuilder: (context, error, stackTrace) {

@@ -51,6 +51,64 @@ class _JobsAnalyticsViewState extends ConsumerState<JobsAnalyticsView> {
     }
   }
 
+  String _filterName(_AnalyticsFilter f) {
+    switch (f) {
+      case _AnalyticsFilter.today:
+        return 'Today';
+      case _AnalyticsFilter.thisWeek:
+        return 'This Week';
+      case _AnalyticsFilter.thisMonth:
+        return 'This Month';
+      case _AnalyticsFilter.custom:
+        final r = _getDateRange();
+        return '${DateFormatter.formatGarageDate(r.start)} - ${DateFormatter.formatGarageDate(r.end)}';
+    }
+  }
+
+  PopupMenuItem<_AnalyticsFilter> _buildPopupFilterItem(
+    _AnalyticsFilter value,
+    String title,
+    IconData icon,
+    bool isDark,
+  ) {
+    final isSelected = _filter == value;
+    final primaryTextColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    return PopupMenuItem<_AnalyticsFilter>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: isSelected ? AppColors.accentBlue : primaryTextColor,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              title,
+              style:
+                  AppFonts.bodyMedium(
+                    color: isSelected ? AppColors.accentBlue : primaryTextColor,
+                  ).copyWith(
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                  ),
+            ),
+          ),
+          if (isSelected)
+            const Icon(
+              Icons.check_rounded,
+              size: 18,
+              color: AppColors.accentBlue,
+            ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _pickCustomRange() async {
     final picked = await showDateRangePicker(
       context: context,
@@ -150,42 +208,93 @@ class _JobsAnalyticsViewState extends ConsumerState<JobsAnalyticsView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              ChoiceChip(
-                label: const Text('Today'),
-                selected: _filter == _AnalyticsFilter.today,
-                onSelected: (val) {
-                  if (val) setState(() => _filter = _AnalyticsFilter.today);
-                },
-              ),
-              ChoiceChip(
-                label: const Text('This Week'),
-                selected: _filter == _AnalyticsFilter.thisWeek,
-                onSelected: (val) {
-                  if (val) setState(() => _filter = _AnalyticsFilter.thisWeek);
-                },
-              ),
-              ChoiceChip(
-                label: const Text('This Month'),
-                selected: _filter == _AnalyticsFilter.thisMonth,
-                onSelected: (val) {
-                  if (val) setState(() => _filter = _AnalyticsFilter.thisMonth);
-                },
-              ),
-              ActionChip(
-                avatar: const Icon(Icons.date_range_rounded, size: 16),
-                label: Text(
-                  _filter == _AnalyticsFilter.custom
-                      ? '${DateFormatter.formatGarageDate(dateRange.start)} - ${DateFormatter.formatGarageDate(dateRange.end)}'
-                      : 'Custom Range',
+          Align(
+            alignment: Alignment.centerLeft,
+            child: PopupMenuButton<_AnalyticsFilter>(
+              tooltip: 'Select date filter',
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(
+                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
                 ),
-                onPressed: _pickCustomRange,
               ),
-            ],
+              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+              onSelected: (val) {
+                if (val == _AnalyticsFilter.custom) {
+                  _pickCustomRange();
+                } else {
+                  setState(() => _filter = val);
+                }
+              },
+              itemBuilder: (context) => [
+                _buildPopupFilterItem(
+                  _AnalyticsFilter.today,
+                  'Today',
+                  Icons.today_rounded,
+                  isDark,
+                ),
+                _buildPopupFilterItem(
+                  _AnalyticsFilter.thisWeek,
+                  'This Week',
+                  Icons.calendar_view_week_rounded,
+                  isDark,
+                ),
+                _buildPopupFilterItem(
+                  _AnalyticsFilter.thisMonth,
+                  'This Month',
+                  Icons.calendar_month_rounded,
+                  isDark,
+                ),
+                const PopupMenuDivider(),
+                _buildPopupFilterItem(
+                  _AnalyticsFilter.custom,
+                  'Custom Range...',
+                  Icons.date_range_rounded,
+                  isDark,
+                ),
+              ],
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? AppColors.surfaceDark
+                      : AppColors.surfaceLight,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: _filter != _AnalyticsFilter.thisMonth
+                        ? AppColors.accentBlue
+                        : (isDark
+                              ? AppColors.borderDark
+                              : AppColors.borderLight),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.filter_list_rounded,
+                      size: 18,
+                      color: AppColors.accentBlue,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _filterName(_filter),
+                      style: AppFonts.labelLarge(color: primaryTextColor)
+                          .copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(
+                      Icons.arrow_drop_down_rounded,
+                      size: 20,
+                      color: primaryTextColor,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           Text(

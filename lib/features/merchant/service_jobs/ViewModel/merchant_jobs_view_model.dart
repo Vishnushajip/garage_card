@@ -628,9 +628,19 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
     required String paymentMethod,
     String? reference,
     String? notes,
+    InvoiceModel? invoice,
+    String? garageId,
   }) async {
     state = state.copyWith(isRecordingPayment: true, errorMessage: null);
     try {
+      final user = ref.read(authViewModelProvider).userProfile;
+      final gId = garageId ?? invoice?.garageId ?? _effectiveGarageId();
+      final inv =
+          invoice ??
+          state.invoices.cast<InvoiceModel?>().firstWhere(
+            (i) => i?.id == invoiceId,
+            orElse: () => null,
+          );
       await ref
           .read(garageRepositoryProvider)
           .recordPayment(
@@ -639,7 +649,9 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
             paymentMethod: paymentMethod,
             referenceNumber: reference ?? '',
             notes: notes ?? '',
-            recordedByUid: 'Staff',
+            recordedByUid: user?.uid ?? 'Staff',
+            garageId: gId,
+            existingInvoice: inv,
           );
       if (state.selectedJob != null) {
         await selectJob(state.selectedJob!.id);
@@ -648,9 +660,10 @@ class MerchantJobsViewModel extends Notifier<MerchantJobsState> {
       state = state.copyWith(isRecordingPayment: false);
       return true;
     } catch (e) {
+      debugPrint('MERCHANT_JOBS_VM_RECORD_PAYMENT_ERROR: $e');
       state = state.copyWith(
         isRecordingPayment: false,
-        errorMessage: e.toString(),
+        errorMessage: e.toString().replaceFirst('Exception: ', ''),
       );
       return false;
     }

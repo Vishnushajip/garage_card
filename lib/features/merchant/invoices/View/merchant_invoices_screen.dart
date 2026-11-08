@@ -50,6 +50,8 @@ class MerchantInvoicesScreen extends ConsumerWidget {
                       referenceNumber: referenceNumber,
                       notes: notes,
                       discountAdjustment: discountAdjustment,
+                      invoice: invoice,
+                      garageId: invoice.garageId,
                     );
               },
         );

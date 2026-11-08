@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
+import 'package:garage_card/features/shared/models/invoice_model.dart';
 import 'package:garage_card/features/shared/repository/garage_repository.dart';
 
 import '../Model/merchant_invoices_state.dart';
@@ -44,10 +45,19 @@ class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
     required String referenceNumber,
     required String notes,
     double discountAdjustment = 0.0,
+    InvoiceModel? invoice,
+    String? garageId,
   }) async {
     state = state.copyWith(isRecordingPayment: true, errorMessage: null);
     try {
       final user = ref.read(authViewModelProvider).userProfile;
+      final inv =
+          invoice ??
+          state.invoices.cast<InvoiceModel?>().firstWhere(
+            (i) => i?.id == invoiceId,
+            orElse: () => null,
+          );
+      final gId = garageId ?? inv?.garageId ?? user?.garageId;
       await ref
           .read(garageRepositoryProvider)
           .recordPayment(
@@ -58,6 +68,8 @@ class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
             notes: notes,
             recordedByUid: user?.uid ?? 'merchant_1',
             discountAdjustment: discountAdjustment,
+            garageId: gId,
+            existingInvoice: inv,
           );
       await _loadInvoices();
       state = state.copyWith(isRecordingPayment: false);
@@ -65,7 +77,7 @@ class MerchantInvoicesViewModel extends Notifier<MerchantInvoicesState> {
     } catch (e) {
       state = state.copyWith(
         isRecordingPayment: false,
-        errorMessage: e.toString(),
+        errorMessage: e.toString().replaceFirst('Exception: ', ''),
       );
       return false;
     }

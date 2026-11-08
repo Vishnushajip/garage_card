@@ -14,6 +14,7 @@ import 'package:garage_card/core/shared_widgets/app_skeleton_loader.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:garage_card/features/shared/models/garage_service_model.dart';
 
+import '../Model/merchant_services_state.dart';
 import '../ViewModel/merchant_services_view_model.dart';
 import '../Widgets/service_edit_dialog.dart';
 
@@ -37,6 +38,8 @@ class MerchantServicesScreen extends ConsumerWidget {
     final secondaryText = isDark
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
+    final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     return Scaffold(
       appBar: AppCustomAppBar(
@@ -57,83 +60,65 @@ class MerchantServicesScreen extends ConsumerWidget {
         isLoading: state.isSaving,
         message: 'Saving service details...',
         child: AppResponsiveLayout(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: AppRefresh(
             onRefresh: vm.loadServices,
-            child: Column(
-              children: [
-                if (state.categories.length > 1)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 768;
+
+                if (isWide) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSidebarFilter(
+                        context,
+                        state,
+                        vm,
+                        cardBg,
+                        borderColor,
+                        primaryText,
+                        secondaryText,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildServiceList(
+                          context,
+                          state,
+                          vm,
+                          garageId,
+                          primaryText,
+                          secondaryText,
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                return Column(
+                  children: [
+                    _buildMobileFilterHeader(
+                      context,
+                      state,
+                      vm,
+                      cardBg,
+                      borderColor,
+                      primaryText,
+                      secondaryText,
                     ),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: state.categories.map((cat) {
-                          final isSelected = state.selectedCategory == cat;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              label: Text(cat),
-                              selected: isSelected,
-                              selectedColor: AppColors.primaryRed,
-                              labelStyle: TextStyle(
-                                color: isSelected ? Colors.white : primaryText,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
-                              onSelected: (_) => vm.filterCategory(cat),
-                            ),
-                          );
-                        }).toList(),
+                    Expanded(
+                      child: _buildServiceList(
+                        context,
+                        state,
+                        vm,
+                        garageId,
+                        primaryText,
+                        secondaryText,
                       ),
                     ),
-                  ),
-                Expanded(
-                  child: state.isLoading && state.services.isEmpty
-                      ? AppSkeletonLoader.list(itemCount: 4)
-                      : state.errorMessage != null
-                      ? AppErrorState(
-                          message: state.errorMessage!,
-                          onRetry: vm.loadServices,
-                        )
-                      : state.filteredServices.isEmpty
-                      ? Center(
-                          child: AppEmptyState(
-                            title: state.services.isEmpty
-                                ? 'You haven\'t added any services yet'
-                                : 'No services in "${state.selectedCategory}"',
-                            description: state.services.isEmpty
-                                ? 'Add your workshop services with vehicle-specific pricing to showcase in discovery searches.'
-                                : 'Try choosing another category or tap below to add a service in this category.',
-                            icon: Icons.miscellaneous_services_rounded,
-                            actionLabel: 'Add Service',
-                            onAction: () => ServiceEditDialog.show(
-                              context,
-                              garageId: garageId,
-                              onSave: vm.saveService,
-                            ),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: state.filteredServices.length,
-                          itemBuilder: (ctx, index) {
-                            final service = state.filteredServices[index];
-                            return _buildServiceTile(
-                              context,
-                              service,
-                              garageId,
-                              vm,
-                              primaryText,
-                              secondaryText,
-                            );
-                          },
-                        ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -148,6 +133,401 @@ class MerchantServicesScreen extends ConsumerWidget {
           onSave: vm.saveService,
         ),
       ),
+    );
+  }
+
+  int _getCategoryCount(String cat, List<GarageServiceModel> services) {
+    if (cat == 'All') return services.length;
+    return services.where((s) => s.category == cat).length;
+  }
+
+  IconData _getCategoryIcon(String cat) {
+    final lower = cat.toLowerCase();
+    if (lower == 'all') return Icons.all_inclusive_rounded;
+    if (lower.contains('air') || lower.contains('ac')) {
+      return Icons.ac_unit_rounded;
+    }
+    if (lower.contains('brake')) return Icons.disc_full_rounded;
+    if (lower.contains('detail') || lower.contains('wash')) {
+      return Icons.local_car_wash_rounded;
+    }
+    if (lower.contains('diagnos')) return Icons.insights_rounded;
+    if (lower.contains('period') || lower.contains('service')) {
+      return Icons.build_circle_outlined;
+    }
+    if (lower.contains('wheel') ||
+        lower.contains('tyre') ||
+        lower.contains('tire')) {
+      return Icons.tire_repair_rounded;
+    }
+    if (lower.contains('engine') || lower.contains('oil')) {
+      return Icons.oil_barrel_rounded;
+    }
+    if (lower.contains('battery') || lower.contains('electric')) {
+      return Icons.electric_bolt_rounded;
+    }
+    return Icons.miscellaneous_services_rounded;
+  }
+
+  Widget _buildSidebarFilter(
+    BuildContext context,
+    MerchantServicesState state,
+    MerchantServicesViewModel vm,
+    Color cardBg,
+    Color borderColor,
+    Color primaryText,
+    Color secondaryText,
+  ) {
+    return Container(
+      width: 240,
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.category_rounded,
+                  size: 18,
+                  color: AppColors.primaryRed,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Categories',
+                  style: AppFonts.titleSmall(color: primaryText)
+                      .copyWith(fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryRed.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${state.services.length}',
+                    style: AppFonts.labelSmall(color: AppColors.primaryRed)
+                        .copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: borderColor),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              itemCount: state.categories.length,
+              itemBuilder: (ctx, i) {
+                final cat = state.categories[i];
+                final isSelected = state.selectedCategory == cat;
+                final count = _getCategoryCount(cat, state.services);
+                final icon = _getCategoryIcon(cat);
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Material(
+                    color: isSelected
+                        ? AppColors.primaryRed.withValues(alpha: 0.12)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                    child: InkWell(
+                      onTap: () => vm.filterCategory(cat),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: isSelected
+                              ? Border.all(
+                                  color: AppColors.primaryRed.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              icon,
+                              size: 18,
+                              color: isSelected
+                                  ? AppColors.primaryRed
+                                  : secondaryText,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                cat,
+                                style:
+                                    AppFonts.bodySmall(
+                                      color: isSelected
+                                          ? AppColors.primaryRed
+                                          : primaryText,
+                                    ).copyWith(
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
+                                    ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primaryRed
+                                    : borderColor.withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '$count',
+                                style:
+                                    AppFonts.labelSmall(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : secondaryText,
+                                    ).copyWith(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileFilterHeader(
+    BuildContext context,
+    MerchantServicesState state,
+    MerchantServicesViewModel vm,
+    Color cardBg,
+    Color borderColor,
+    Color primaryText,
+    Color secondaryText,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.category_outlined,
+                  size: 16,
+                  color: AppColors.primaryRed,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    state.selectedCategory == 'All'
+                        ? 'All Services (${state.services.length})'
+                        : '${state.selectedCategory} (${state.filteredServices.length})',
+                    style: AppFonts.labelMedium(color: primaryText)
+                        .copyWith(fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (state.selectedCategory != 'All') ...[
+            InkWell(
+              onTap: () => vm.filterCategory('All'),
+              borderRadius: BorderRadius.circular(6),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryRed.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Clear',
+                      style: AppFonts.labelSmall(color: AppColors.primaryRed)
+                          .copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.close_rounded,
+                      size: 14,
+                      color: AppColors.primaryRed,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: state.selectedCategory != 'All'
+                    ? AppColors.primaryRed
+                    : borderColor,
+              ),
+            ),
+            child: PopupMenuButton<String>(
+              tooltip: 'Filter Category',
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+                side: BorderSide(color: borderColor),
+              ),
+              color: cardBg,
+              icon: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.tune_rounded,
+                    size: 18,
+                    color: state.selectedCategory != 'All'
+                        ? AppColors.primaryRed
+                        : primaryText,
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.arrow_drop_down_rounded, size: 18),
+                ],
+              ),
+              onSelected: vm.filterCategory,
+              itemBuilder: (ctx) => state.categories.map((cat) {
+                final isSelected = state.selectedCategory == cat;
+                final count = _getCategoryCount(cat, state.services);
+                final icon = _getCategoryIcon(cat);
+
+                return PopupMenuItem<String>(
+                  value: cat,
+                  child: Row(
+                    children: [
+                      Icon(
+                        icon,
+                        size: 18,
+                        color: isSelected
+                            ? AppColors.primaryRed
+                            : secondaryText,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          cat,
+                          style:
+                              AppFonts.bodySmall(
+                                color: isSelected
+                                    ? AppColors.primaryRed
+                                    : primaryText,
+                              ).copyWith(
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                        ),
+                      ),
+                      Text(
+                        '($count)',
+                        style: AppFonts.labelSmall(color: secondaryText),
+                      ),
+                      if (isSelected) ...[
+                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.check_rounded,
+                          size: 16,
+                          color: AppColors.primaryRed,
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServiceList(
+    BuildContext context,
+    MerchantServicesState state,
+    MerchantServicesViewModel vm,
+    String garageId,
+    Color primaryText,
+    Color secondaryText,
+  ) {
+    if (state.isLoading && state.services.isEmpty) {
+      return AppSkeletonLoader.list(itemCount: 4);
+    }
+    if (state.errorMessage != null) {
+      return AppErrorState(
+        message: state.errorMessage!,
+        onRetry: vm.loadServices,
+      );
+    }
+    if (state.filteredServices.isEmpty) {
+      return Center(
+        child: AppEmptyState(
+          title: state.services.isEmpty
+              ? 'You haven\'t added any services yet'
+              : 'No services in "${state.selectedCategory}"',
+          description: state.services.isEmpty
+              ? 'Add your workshop services with vehicle-specific pricing to showcase in discovery searches.'
+              : 'Try choosing another category or tap below to add a service in this category.',
+          icon: Icons.miscellaneous_services_rounded,
+          actionLabel: 'Add Service',
+          onAction: () => ServiceEditDialog.show(
+            context,
+            garageId: garageId,
+            onSave: vm.saveService,
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: state.filteredServices.length,
+      itemBuilder: (ctx, index) {
+        final service = state.filteredServices[index];
+        return _buildServiceTile(
+          context,
+          service,
+          garageId,
+          vm,
+          primaryText,
+          secondaryText,
+        );
+      },
     );
   }
 
@@ -195,13 +575,16 @@ class MerchantServicesScreen extends ConsumerWidget {
             if (service.imageUrl != null && service.imageUrl!.isNotEmpty) ...[
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: AppCachedImage(
-                  imageUrl: service.imageUrl,
+                child: SizedBox(
                   height: 140,
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(10),
-                  memCacheHeight: 280,
+                  child: AppCachedImage(
+                    imageUrl: service.imageUrl,
+                    height: 140,
+                    fit: BoxFit.cover,
+                    borderRadius: BorderRadius.circular(10),
+                    memCacheHeight: 280,
+                  ),
                 ),
               ),
             ],
