@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "62265849009-gqvfqedu44r6ke672ninkv60j0u1dvfk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.garagecard.app",
+            "certificate_hash": "a3f32c294c2fa5b25d5c70ce77706fc90d8cf272"
+          }
+        },
+        {
           "client_id": "62265849009-mushlhju9uianaf4aqq4qtcj11kfiij5.apps.googleusercontent.com",
           "client_type": 3
         }
