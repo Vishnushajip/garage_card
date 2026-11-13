@@ -75,7 +75,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     Future.delayed(const Duration(milliseconds: 2500), () {
       if (mounted && !_hasNavigated) {
-        _navigateToTarget();
+        _navigateToTarget(force: true);
       }
     });
   }
@@ -85,15 +85,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     super.didChangeDependencies();
     if (MediaQuery.of(context).disableAnimations && !_hasNavigated) {
       _mainController.value = 1.0;
-      _navigateToTarget();
+      _navigateToTarget(force: true);
     }
   }
 
-  void _navigateToTarget() {
+  void _navigateToTarget({bool force = false}) {
     if (_hasNavigated || !mounted) return;
 
     final authState = ref.read(authViewModelProvider);
-    if (!authState.isInitialized) {
+    if (!authState.isInitialized && !force) {
       return;
     }
     _hasNavigated = true;

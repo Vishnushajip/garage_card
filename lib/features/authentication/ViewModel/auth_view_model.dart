@@ -64,7 +64,7 @@ class AuthViewModel extends Notifier<AuthState> {
           try {
             final redirectRes = await FirebaseAuth.instance
                 .getRedirectResult()
-                .timeout(const Duration(seconds: 4));
+                .timeout(const Duration(seconds: 6));
             if (redirectRes.user != null) {
               await _restoreExistingSession(redirectRes.user!);
               return;
@@ -359,9 +359,21 @@ class AuthViewModel extends Notifier<AuthState> {
         final googleProvider = GoogleAuthProvider();
         googleProvider.addScope('email');
         googleProvider.addScope('profile');
-        credential = await FirebaseAuth.instance
-            .signInWithPopup(googleProvider)
-            .timeout(const Duration(seconds: 60));
+        try {
+          credential = await FirebaseAuth.instance
+              .signInWithPopup(googleProvider)
+              .timeout(const Duration(seconds: 25));
+        } catch (popupError) {
+          final errStr = popupError.toString().toLowerCase();
+          if (errStr.contains('popup-closed-by-user') ||
+              errStr.contains('auth/cancelled') ||
+              errStr.contains('user-cancelled')) {
+            state = state.copyWith(isLoading: false);
+            return false;
+          }
+          await FirebaseAuth.instance.signInWithRedirect(googleProvider);
+          return false;
+        }
       } else {
         const webClientId =
             '62265849009-mushlhju9uianaf4aqq4qtcj11kfiij5.apps.googleusercontent.com';

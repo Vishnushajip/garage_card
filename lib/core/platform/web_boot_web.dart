@@ -4,4 +4,3 @@ import 'dart:js_interop';
 external JSFunction? get _wefixAppReady;
 
 void notifyAppReady() => _wefixAppReady?.callAsFunction();
-

@@ -28,15 +28,26 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyD1LMs5Rzha-BIrg2982MG_Hf88sRFLa-I',
-    appId: '1:62265849009:web:de72a4084ed3b138621e90',
-    messagingSenderId: '62265849009',
-    projectId: 'garage-b7ed1',
-    authDomain: 'garage-b7ed1.firebaseapp.com',
-    storageBucket: 'garage-b7ed1.firebasestorage.app',
-    measurementId: 'G-B9QQTW2D4C',
-  );
+  static FirebaseOptions get web {
+    var domain = 'garage-b7ed1.firebaseapp.com';
+    if (kIsWeb) {
+      final host = Uri.base.host;
+      if (host.isNotEmpty &&
+          !host.contains('localhost') &&
+          !host.contains('127.0.0.1')) {
+        domain = host;
+      }
+    }
+    return FirebaseOptions(
+      apiKey: 'AIzaSyD1LMs5Rzha-BIrg2982MG_Hf88sRFLa-I',
+      appId: '1:62265849009:web:de72a4084ed3b138621e90',
+      messagingSenderId: '62265849009',
+      projectId: 'garage-b7ed1',
+      authDomain: domain,
+      storageBucket: 'garage-b7ed1.firebasestorage.app',
+      measurementId: 'G-B9QQTW2D4C',
+    );
+  }
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAD9PjSN7lU28SkjJYI9cZqSLt4JS5OOY8',

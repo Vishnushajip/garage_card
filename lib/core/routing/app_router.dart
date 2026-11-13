@@ -78,12 +78,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      if (!authState.isInitialized) {
-        return isSplashRoute ? null : RoutePaths.splash;
-      }
-
       final isAuth = authState.isAuthenticated;
       final isAuthRoute = state.matchedLocation == RoutePaths.auth;
+
+      if (!authState.isInitialized) {
+        if (isSplashRoute || isAuthRoute) {
+          return null;
+        }
+        return RoutePaths.splash;
+      }
 
       if (isSplashRoute) {
         if (!isAuth) {

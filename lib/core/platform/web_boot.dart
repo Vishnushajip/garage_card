@@ -13,4 +13,3 @@ abstract final class WebBoot {
     WidgetsBinding.instance.addPostFrameCallback((_) => impl.notifyAppReady());
   }
 }
-

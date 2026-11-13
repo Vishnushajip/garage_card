@@ -4,6 +4,7 @@
 *.pyc
 *.swp
 .DS_Store
+Thumbs.db
 .atom/
 .build/
 .buildlog/
@@ -12,16 +13,46 @@
 .swiftpm/
 migrate_working_dir/
 
+# Node.js / Cloud Functions
+**/node_modules/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json.backup
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# Firebase logs & cache
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
+
 # IntelliJ related
 *.iml
 *.ipr
 *.iws
 .idea/
 
+# Kotlin / Android compiler daemon caches
+.kotlin/
+**/.kotlin/
+**/build/
+android/.gradle/
+android/app/build/
+android/build/
+
 # Flutter/Dart/Pub related (high MB build and cache directories)
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
@@ -45,10 +76,7 @@ app.*.map.json
 # Temporary browser testing artifacts
 .playwright-mcp/
 
-# Firebase cache
-.firebase/
-
-# Explicitly do NOT ignore configuration, signing keys, keystores, or source files
+# Explicitly preserve project configuration and essential source files
 !local.properties
 !**/local.properties
 !key.properties

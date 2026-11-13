@@ -633,12 +633,12 @@
           if (splash && splash.parentNode) {
             splash.parentNode.removeChild(splash);
           }
-        }, 520);
+        }, 400);
       }
     }
     window.wefixAppReady = removeAppSplash;
     window.addEventListener('flutter-first-frame', removeAppSplash);
-    setTimeout(removeAppSplash, 3500);
+    setTimeout(removeAppSplash, 2500);
 
     window.showWebNotification = function (title, body, imageUrl, deepLink) {
       if (!("Notification" in window)) return;
