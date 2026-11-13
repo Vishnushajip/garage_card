@@ -15,5 +15,5 @@ Future<void> main() async {
   if (!kIsWeb) {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   }
-  runApp(const ProviderScope(child: GarageCardApp()));
+  runApp(const ProviderScope(child: WeFixApp()));
 }

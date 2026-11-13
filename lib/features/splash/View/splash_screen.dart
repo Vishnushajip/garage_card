@@ -3,7 +3,9 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:garage_card/core/platform/web_boot.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
+import 'package:garage_card/features/authentication/Model/auth_state.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:go_router/go_router.dart';
 
@@ -70,6 +72,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
 
     _mainController.forward();
+
+    Future.delayed(const Duration(milliseconds: 2500), () {
+      if (mounted && !_hasNavigated) {
+        _navigateToTarget();
+      }
+    });
   }
 
   @override
@@ -83,9 +91,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   void _navigateToTarget() {
     if (_hasNavigated || !mounted) return;
-    _hasNavigated = true;
 
     final authState = ref.read(authViewModelProvider);
+    if (!authState.isInitialized) {
+      return;
+    }
+    _hasNavigated = true;
+
     if (!authState.isAuthenticated) {
       context.go(RoutePaths.auth);
     } else if (authState.activeExperience == 'merchant') {
@@ -123,6 +135,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    WebBoot.appReady();
+    ref.listen<AuthState>(authViewModelProvider, (previous, next) {
+      if (next.isInitialized && _mainController.isCompleted && !_hasNavigated) {
+        _navigateToTarget();
+      }
+    });
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(

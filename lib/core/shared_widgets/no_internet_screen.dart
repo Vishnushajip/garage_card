@@ -130,7 +130,7 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Garage Card requires an active internet connection to sync live repair jobs, digital estimates, and customer invoices in real time. Please check your Wi-Fi router or cellular mobile data connection.',
+                      'WeFix requires an active internet connection to sync live repair jobs, digital estimates, and customer invoices in real time. Please check your Wi-Fi router or cellular mobile data connection.',
                       style: AppFonts.bodyMedium(color: secondaryTextColor)
                           .copyWith(height: 1.5),
                       textAlign: TextAlign.center,

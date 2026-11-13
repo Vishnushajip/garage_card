@@ -70,9 +70,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final authState = ref.read(authViewModelProvider);
       final isSplashRoute = state.matchedLocation == RoutePaths.splash;
-      if (isSplashRoute) {
-        return null;
-      }
 
       final isPublicLegalRoute =
           state.matchedLocation == RoutePaths.privacy ||
@@ -82,11 +79,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
 
       if (!authState.isInitialized) {
-        return null;
+        return isSplashRoute ? null : RoutePaths.splash;
       }
 
       final isAuth = authState.isAuthenticated;
       final isAuthRoute = state.matchedLocation == RoutePaths.auth;
+
+      if (isSplashRoute) {
+        if (!isAuth) {
+          return RoutePaths.auth;
+        }
+        return authState.activeExperience == 'merchant'
+            ? RoutePaths.merchant
+            : RoutePaths.customer;
+      }
 
       if (!isAuth) {
         return isAuthRoute ? null : RoutePaths.auth;

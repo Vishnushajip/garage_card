@@ -12,8 +12,8 @@ import 'core/shared_widgets/app_responsive_layout.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 
-class GarageCardApp extends ConsumerWidget {
-  const GarageCardApp({super.key});
+class WeFixApp extends ConsumerWidget {
+  const WeFixApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
