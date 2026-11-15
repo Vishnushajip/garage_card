@@ -45,8 +45,7 @@ class WorkshopPipelineDiagram extends StatelessWidget {
         stepNumber: '01',
         title: 'Booked & Intake',
         subtitle: 'Unassigned & Appointments',
-        count:
-            operationalMetrics.jobsAwaitingAssignment +
+        count: operationalMetrics.jobsAwaitingAssignment +
             operationalMetrics.todayAppointments,
         icon: PhosphorIconsFill.calendarCheck,
         color: const Color(0xFF6366F1),
@@ -56,8 +55,7 @@ class WorkshopPipelineDiagram extends StatelessWidget {
         stepNumber: '02',
         title: 'Inspection & Quote',
         subtitle: 'Diagnostics & Quotes',
-        count:
-            operationalMetrics.jobsAwaitingInspection +
+        count: operationalMetrics.jobsAwaitingInspection +
             operationalMetrics.estimatesAwaitingApproval,
         icon: PhosphorIconsFill.clipboardText,
         color: const Color(0xFF8B5CF6),
@@ -104,13 +102,17 @@ class WorkshopPipelineDiagram extends StatelessWidget {
 
   Widget _buildLiveDot() {
     return Container(
-      width: 8,
-      height: 8,
+      width: 7,
+      height: 7,
       decoration: const BoxDecoration(
         color: Color(0xFF10B981),
         shape: BoxShape.circle,
         boxShadow: [
-          BoxShadow(color: Color(0x6610B981), blurRadius: 6, spreadRadius: 2),
+          BoxShadow(
+            color: Color(0x6610B981),
+            blurRadius: 5,
+            spreadRadius: 1.5,
+          ),
         ],
       ),
     );
@@ -120,7 +122,6 @@ class WorkshopPipelineDiagram extends StatelessWidget {
     required BuildContext context,
     required _PipelineStageData stage,
     required bool isDark,
-    required bool isCompact,
   }) {
     final primaryTextColor = isDark
         ? AppColors.textPrimaryDark
@@ -137,77 +138,83 @@ class WorkshopPipelineDiagram extends StatelessWidget {
           onNavigateToJobs!();
         }
       },
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF161C28) : Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: stage.color.withValues(alpha: isDark ? 0.32 : 0.22),
             width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
-              color: stage.color.withValues(alpha: isDark ? 0.12 : 0.06),
-              offset: const Offset(0, 3),
-              blurRadius: 8,
+              color: stage.color.withValues(alpha: isDark ? 0.12 : 0.05),
+              offset: const Offset(0, 2),
+              blurRadius: 6,
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                   decoration: BoxDecoration(
                     color: stage.color.withValues(alpha: isDark ? 0.2 : 0.12),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(5),
                   ),
                   child: Text(
                     stage.stepNumber,
-                    style: AppFonts.labelSmall(color: stage.color)
-                        .copyWith(fontSize: 10, fontWeight: FontWeight.w800),
+                    style: AppFonts.labelSmall(color: stage.color).copyWith(
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
                 Container(
-                  width: 32,
-                  height: 32,
+                  width: 26,
+                  height: 26,
                   decoration: BoxDecoration(
                     color: stage.color.withValues(alpha: isDark ? 0.18 : 0.12),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(7),
                   ),
                   child: Center(
                     child: PhosphorIcon(
                       stage.icon,
-                      size: 16,
+                      size: 14,
                       color: stage.color,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              '${stage.count}',
-              style: AppFonts.titleLarge(color: primaryTextColor).copyWith(
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.5,
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '${stage.count}',
+                style: AppFonts.titleLarge(color: primaryTextColor).copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                ),
               ),
             ),
             const SizedBox(height: 2),
             Text(
               stage.title,
-              style: AppFonts.labelSmall(color: primaryTextColor)
-                  .copyWith(fontWeight: FontWeight.w700, fontSize: 11.5),
+              style: AppFonts.labelSmall(color: primaryTextColor).copyWith(
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -215,7 +222,7 @@ class WorkshopPipelineDiagram extends StatelessWidget {
               stage.subtitle,
               style: AppFonts.labelSmall(
                 color: secondaryTextColor.withValues(alpha: 0.8),
-              ).copyWith(fontSize: 10),
+              ).copyWith(fontSize: 9.5),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -274,7 +281,7 @@ class WorkshopPipelineDiagram extends StatelessWidget {
     final activeFloorLoad = operationalMetrics.vehiclesCurrentlyUnderService;
 
     return ClayContainer(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -284,40 +291,45 @@ class WorkshopPipelineDiagram extends StatelessWidget {
               final headerInfo = Row(
                 children: [
                   Container(
-                    width: 38,
-                    height: 38,
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFF2563EB), Color(0xFF06B6D4)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Center(
                       child: PhosphorIcon(
                         PhosphorIconsFill.gitFork,
-                        size: 20,
+                        size: 18,
                         color: Colors.white,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Text(
-                              'Workshop Bay & Pipeline Stage Diagram',
-                              style: AppFonts.titleMedium(
-                                color: primaryTextColor,
-                              ).copyWith(fontWeight: FontWeight.bold),
+                            Flexible(
+                              child: Text(
+                                'Workshop Bay & Pipeline Stage Diagram',
+                                style: AppFonts.titleMedium(
+                                  color: primaryTextColor,
+                                ).copyWith(fontWeight: FontWeight.bold),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                             const SizedBox(width: 6),
                             const ClayTooltip(
-                              message: 'Real-time vehicle lifecycle progression across intake, diagnostics, active repair bays, parts logistics, and final delivery.',
+                              message:
+                                  'Real-time vehicle lifecycle progression across intake, diagnostics, active repair bays, parts logistics, and final delivery.',
                               iconSize: 14,
                             ),
                           ],
@@ -335,10 +347,7 @@ class WorkshopPipelineDiagram extends StatelessWidget {
               );
 
               final bayCapacityBadge = Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: isDark
                       ? const Color(0xFF1E2638)
@@ -353,7 +362,7 @@ class WorkshopPipelineDiagram extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildLiveDot(),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Text(
                       '$activeFloorLoad in Floor Bays',
                       style: AppFonts.labelSmall(
@@ -385,12 +394,12 @@ class WorkshopPipelineDiagram extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth;
 
-              if (width >= 1100) {
+              if (width >= 1150) {
                 return Row(
                   children: [
                     for (int i = 0; i < stages.length; i++) ...[
@@ -399,7 +408,6 @@ class WorkshopPipelineDiagram extends StatelessWidget {
                           context: context,
                           stage: stages[i],
                           isDark: isDark,
-                          isCompact: false,
                         ),
                       ),
                       if (i < stages.length - 1)
@@ -416,7 +424,7 @@ class WorkshopPipelineDiagram extends StatelessWidget {
                 );
               }
 
-              if (width >= 700) {
+              if (width >= 680) {
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -424,7 +432,7 @@ class WorkshopPipelineDiagram extends StatelessWidget {
                     crossAxisCount: 3,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
-                    mainAxisExtent: 108,
+                    mainAxisExtent: 124,
                   ),
                   itemCount: stages.length,
                   itemBuilder: (context, index) {
@@ -432,7 +440,6 @@ class WorkshopPipelineDiagram extends StatelessWidget {
                       context: context,
                       stage: stages[index],
                       isDark: isDark,
-                      isCompact: true,
                     );
                   },
                 );
@@ -445,7 +452,7 @@ class WorkshopPipelineDiagram extends StatelessWidget {
                   crossAxisCount: 2,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
-                  mainAxisExtent: 104,
+                  mainAxisExtent: 120,
                 ),
                 itemCount: stages.length,
                 itemBuilder: (context, index) {
@@ -453,7 +460,6 @@ class WorkshopPipelineDiagram extends StatelessWidget {
                     context: context,
                     stage: stages[index],
                     isDark: isDark,
-                    isCompact: true,
                   );
                 },
               );
@@ -461,7 +467,7 @@ class WorkshopPipelineDiagram extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           _buildDistributionBar(stages, isDark),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -475,10 +481,7 @@ class WorkshopPipelineDiagram extends StatelessWidget {
                 onTap: onNavigateToJobs,
                 borderRadius: BorderRadius.circular(6),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 2,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   child: Row(
                     children: [
                       Text(

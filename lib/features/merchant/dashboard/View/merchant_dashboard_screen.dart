@@ -297,9 +297,9 @@ class MerchantDashboardScreen extends ConsumerWidget {
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        mainAxisExtent: 86,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        mainAxisExtent: 94,
                       ),
                       itemCount: kpis.length,
                       itemBuilder: (context, index) => kpis[index],

@@ -195,10 +195,15 @@ class PaymentMethodBreakdownCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Text(
-                        CurrencyFormatter.format(e.value),
-                        style: AppFonts.labelLarge(color: primaryTextColor)
-                            .copyWith(fontWeight: FontWeight.w700),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          CurrencyFormatter.format(e.value),
+                          style: AppFonts.labelLarge(color: primaryTextColor)
+                              .copyWith(fontWeight: FontWeight.w700),
+                          maxLines: 1,
+                        ),
                       ),
                     ],
                   ),

@@ -143,13 +143,18 @@ class FinancialOperationsCard extends StatelessWidget {
                         style: AppFonts.labelSmall(color: secondaryTextColor),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        CurrencyFormatter.format(
-                          financialMetrics.totalOutstanding,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          CurrencyFormatter.format(
+                            financialMetrics.totalOutstanding,
+                          ),
+                          style: AppFonts.displaySmall(
+                            color: AppColors.error,
+                          ).copyWith(fontWeight: FontWeight.w800, fontSize: 22),
+                          maxLines: 1,
                         ),
-                        style: AppFonts.displaySmall(
-                          color: AppColors.error,
-                        ).copyWith(fontWeight: FontWeight.w800, fontSize: 22),
                       ),
                     ],
                   ),
@@ -170,13 +175,18 @@ class FinancialOperationsCard extends StatelessWidget {
                           style: AppFonts.labelSmall(color: secondaryTextColor),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          CurrencyFormatter.format(
-                            financialMetrics.overdueOutstanding,
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            CurrencyFormatter.format(
+                              financialMetrics.overdueOutstanding,
+                            ),
+                            style: AppFonts.displaySmall(
+                              color: AppColors.accentAmber,
+                            ).copyWith(fontWeight: FontWeight.w800, fontSize: 22),
+                            maxLines: 1,
                           ),
-                          style: AppFonts.displaySmall(
-                            color: AppColors.accentAmber,
-                          ).copyWith(fontWeight: FontWeight.w800, fontSize: 22),
                         ),
                       ],
                     ),

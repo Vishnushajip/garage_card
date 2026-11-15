@@ -57,20 +57,22 @@ class ClayKpiCard extends StatelessWidget {
     final formatted = percent.abs().toStringAsFixed(1);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
       decoration: BoxDecoration(
         color: chipBg,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          PhosphorIcon(trendIcon, size: 10, color: textColor),
-          const SizedBox(width: 3),
+          PhosphorIcon(trendIcon, size: 9, color: textColor),
+          const SizedBox(width: 2.5),
           Text(
             isZero ? '0.0%' : '${isPositive ? '+' : '-'}$formatted%',
-            style: AppFonts.labelSmall(color: textColor)
-                .copyWith(fontSize: 10, fontWeight: FontWeight.w700),
+            style: AppFonts.labelSmall(color: textColor).copyWith(
+              fontSize: 9.5,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
@@ -89,30 +91,31 @@ class ClayKpiCard extends StatelessWidget {
 
     return ClayContainer(
       onTap: onTap,
-      borderRadius: 16,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      borderRadius: 14,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 42,
-            height: 42,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
               color: accentColor.withValues(alpha: isDark ? 0.16 : 0.12),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: accentColor.withValues(alpha: isDark ? 0.28 : 0.18),
                 width: 1.2,
               ),
             ),
             child: Center(
-              child: PhosphorIcon(icon, size: 20, color: accentColor),
+              child: PhosphorIcon(icon, size: 18, color: accentColor),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Row(
@@ -120,36 +123,40 @@ class ClayKpiCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: AppFonts.labelSmall(color: secondaryTextColor)
-                            .copyWith(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.1,
-                            ),
+                        style: AppFonts.labelSmall(
+                          color: secondaryTextColor,
+                        ).copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.1,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (trendPercent != null) ...[
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       _buildTrendChip(trendPercent!, isDark),
                     ],
                     if (tooltipMessage != null) ...[
                       const SizedBox(width: 4),
-                      ClayTooltip(message: tooltipMessage!, iconSize: 12),
+                      ClayTooltip(message: tooltipMessage!, iconSize: 11),
                     ],
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: AppFonts.titleLarge(color: primaryTextColor).copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.4,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: AppFonts.titleLarge(color: primaryTextColor).copyWith(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.4,
+                    ),
+                    maxLines: 1,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 if (subtitle != null) ...[
                   const SizedBox(height: 1),
@@ -157,7 +164,7 @@ class ClayKpiCard extends StatelessWidget {
                     subtitle!,
                     style: AppFonts.labelSmall(
                       color: secondaryTextColor.withValues(alpha: 0.8),
-                    ).copyWith(fontSize: 10.5),
+                    ).copyWith(fontSize: 9.5),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

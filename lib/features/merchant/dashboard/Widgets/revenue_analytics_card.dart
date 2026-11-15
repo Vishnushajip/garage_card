@@ -235,26 +235,30 @@ class _RevenueAnalyticsCardState extends State<RevenueAnalyticsCard> {
               _buildPointTooltip(points[_hoveredIndex!], isDark),
               const SizedBox(height: 14),
             ],
-            SizedBox(
-              height: 190,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: points.asMap().entries.map((entry) {
-                  final idx = entry.key;
-                  final pt = entry.value;
-                  final isHovered = _hoveredIndex == idx;
+            LayoutBuilder(
+              builder: (context, chartConstraints) {
+                final minRequiredWidth = points.length * 38.0;
+                final shouldScroll =
+                    chartConstraints.maxWidth < minRequiredWidth;
 
-                  final primaryVal = _showInvoiced ? pt.invoiced : pt.collected;
-                  final barHeight = primaryVal > 0
-                      ? (primaryVal / maxVal * 140).clamp(6.0, 140.0)
-                      : 4.0;
+                final chartRow = Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: points.asMap().entries.map((entry) {
+                    final idx = entry.key;
+                    final pt = entry.value;
+                    final isHovered = _hoveredIndex == idx;
 
-                  final barColor = _showInvoiced
-                      ? AppColors.accentBlue
-                      : AppColors.success;
+                    final primaryVal =
+                        _showInvoiced ? pt.invoiced : pt.collected;
+                    final barHeight = primaryVal > 0
+                        ? (primaryVal / maxVal * 140).clamp(6.0, 140.0)
+                        : 4.0;
 
-                  return Expanded(
-                    child: InkWell(
+                    final barColor = _showInvoiced
+                        ? AppColors.accentBlue
+                        : AppColors.success;
+
+                    final barWidget = InkWell(
                       onTap: () {
                         setState(() {
                           _hoveredIndex = _hoveredIndex == idx ? null : idx;
@@ -301,27 +305,46 @@ class _RevenueAnalyticsCardState extends State<RevenueAnalyticsCard> {
                             const SizedBox(height: 10),
                             Text(
                               pt.label,
-                              style:
-                                  AppFonts.labelSmall(
-                                    color: isHovered
-                                        ? primaryTextColor
-                                        : secondaryTextColor,
-                                  ).copyWith(
-                                    fontSize: 10.5,
-                                    fontWeight: isHovered
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                  ),
+                              style: AppFonts.labelSmall(
+                                color: isHovered
+                                    ? primaryTextColor
+                                    : secondaryTextColor,
+                              ).copyWith(
+                                fontSize: 10.5,
+                                fontWeight: isHovered
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
                       ),
+                    );
+
+                    if (shouldScroll) {
+                      return SizedBox(width: 38, child: barWidget);
+                    }
+                    return Expanded(child: barWidget);
+                  }).toList(),
+                );
+
+                if (shouldScroll) {
+                  return SizedBox(
+                    height: 190,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SizedBox(
+                        width: minRequiredWidth,
+                        child: chartRow,
+                      ),
                     ),
                   );
-                }).toList(),
-              ),
+                }
+
+                return SizedBox(height: 190, child: chartRow);
+              },
             ),
           ],
         ],
