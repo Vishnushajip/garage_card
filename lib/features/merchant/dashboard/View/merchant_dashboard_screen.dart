@@ -4,7 +4,6 @@ import 'package:garage_card/core/colors/app_colors.dart';
 import 'package:garage_card/core/fonts/app_fonts.dart';
 import 'package:garage_card/core/formatting/currency_formatter.dart';
 import 'package:garage_card/core/routing/route_paths.dart';
-import 'package:garage_card/core/shared_widgets/app_button.dart';
 import 'package:garage_card/core/shared_widgets/app_cached_image.dart';
 import 'package:garage_card/core/shared_widgets/app_custom_app_bar.dart';
 import 'package:garage_card/core/shared_widgets/app_empty_state.dart';
@@ -14,13 +13,21 @@ import 'package:garage_card/core/shared_widgets/app_refresh.dart';
 import 'package:garage_card/core/shared_widgets/app_responsive_layout.dart';
 import 'package:garage_card/features/authentication/ViewModel/auth_view_model.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-import '../../analytics/ViewModel/merchant_analytics_view_model.dart';
-import '../../analytics/Widgets/daily_briefing_modal.dart';
 import '../../notifications/ViewModel/merchant_notifications_view_model.dart';
 import '../ViewModel/merchant_dashboard_view_model.dart';
-import '../Widgets/kpi_metric_card.dart';
-import '../Widgets/merchant_job_row.dart';
+import '../Widgets/clay_kpi_card.dart';
+import '../Widgets/customer_retention_card.dart';
+import '../Widgets/dashboard_header.dart';
+import '../Widgets/financial_operations_card.dart';
+import '../Widgets/job_distribution_card.dart';
+import '../Widgets/mechanic_productivity_card.dart';
+import '../Widgets/payment_method_breakdown_card.dart';
+import '../Widgets/recent_jobs_segmented_feed.dart';
+import '../Widgets/revenue_analytics_card.dart';
+import '../Widgets/smart_alerts_banner.dart';
+import '../Widgets/workshop_pipeline_diagram.dart';
 
 class MerchantDashboardScreen extends ConsumerWidget {
   const MerchantDashboardScreen({
@@ -65,67 +72,20 @@ class MerchantDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPipelineCard({
-    required String label,
-    required String value,
-    required String unit,
-    required Color color,
-    required Color secondaryTextColor,
-  }) {
-    return Container(
-      height: 84,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppFonts.labelSmall(color: secondaryTextColor),
-          ),
-          Text(value, maxLines: 1, style: AppFonts.numberLarge(color: color)),
-          Text(
-            unit,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppFonts.labelSmall(color: secondaryTextColor),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(merchantDashboardViewModelProvider);
     final vm = ref.read(merchantDashboardViewModelProvider.notifier);
-    final analyticsState = ref.watch(merchantAnalyticsViewModelProvider);
-    final analyticsVm = ref.read(merchantAnalyticsViewModelProvider.notifier);
     final unreadNotifCount = ref.watch(
       merchantNotificationsViewModelProvider.select((s) => s.unreadCount),
     );
     final user = ref.watch(authViewModelProvider.select((s) => s.userProfile));
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor = isDark
-        ? AppColors.textPrimaryDark
-        : AppColors.textPrimaryLight;
-    final secondaryTextColor = isDark
-        ? AppColors.textSecondaryDark
-        : AppColors.textSecondaryLight;
-    final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
-    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     if (state.isLoading) {
       return const Scaffold(
-        body: AppLoading(message: 'Loading garage dashboard...'),
+        body: AppLoading(message: 'Loading workshop analytics dashboard...'),
       );
     }
 
@@ -163,14 +123,18 @@ class MerchantDashboardScreen extends ConsumerWidget {
             !rawGarageName.endsWith('\'s Garage'))
         ? rawGarageName
         : 'Garage Operations';
-    final pipelineJobs = state.recentJobs
-        .where((j) => j.status != 'completed' && j.status != 'closed')
-        .toList();
+
+    final financial = state.financialMetrics;
+    final operational = state.operationalMetrics;
+    final customer = state.customerMetrics;
 
     return Scaffold(
+      backgroundColor: isDark
+          ? const Color(0xFF0C1019)
+          : const Color(0xFFF1F5F9),
       appBar: AppCustomAppBar(
         title: garageName,
-        subtitle: 'Garage Operations & Overview',
+        subtitle: 'Workshop Intelligence & Performance',
         leading: InkWell(
           onTap: () => context.push(RoutePaths.merchantSettings),
           borderRadius: BorderRadius.circular(10),
@@ -180,9 +144,7 @@ class MerchantDashboardScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.borderDark
-                    : AppColors.borderLight,
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
                 width: 1,
               ),
             ),
@@ -202,439 +164,280 @@ class MerchantDashboardScreen extends ConsumerWidget {
         unreadNotificationCount: unreadNotifCount,
       ),
       body: AppRefresh(
-        onRefresh: () async {
-          await vm.refresh();
-          await analyticsVm.refresh();
-        },
+        onRefresh: vm.refresh,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: AppResponsiveLayout(
+            maxWidth: 1440,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (analyticsState.showMorningBriefing) ...[
-                  DailyBriefingModal(
-                    todayDeliveries: analyticsState.todayDeliveriesCount,
-                    pendingDues: analyticsState.todayPendingPaymentsCount,
-                    yesterdayCompleted: analyticsState.yesterdayCompletedCount,
-                    onDismiss: analyticsVm.dismissMorningBriefing,
-                    onViewTodo: onNavigateToAnalytics,
-                  ),
-                  const SizedBox(height: 16),
+                if (state.smartAlerts.isNotEmpty) ...[
+                  SmartAlertsBanner(alerts: state.smartAlerts),
+                  const SizedBox(height: 8),
                 ],
-                GridView.count(
-                  crossAxisCount: AppResponsiveLayout.isDesktop(context)
-                      ? 4
-                      : AppResponsiveLayout.isTablet(context)
-                      ? 3
-                      : 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: AppResponsiveLayout.isMobile(context)
-                      ? 1.4
-                      : 1.5,
-                  children: [
-                    KpiMetricCard(
-                      title: 'Active Jobs',
-                      value: '${state.totalActiveJobs}',
-                      icon: Icons.car_repair_rounded,
-                      accentColor: AppColors.accentBlue,
-                      onTap: onNavigateToJobs,
-                    ),
-                    KpiMetricCard(
-                      title: 'In Progress',
-                      value: '${state.jobsInProgress}',
-                      icon: Icons.handyman_rounded,
-                      accentColor: AppColors.info,
-                      onTap: onNavigateToJobs,
-                    ),
-                    KpiMetricCard(
-                      title: 'Pending Estimate',
-                      value: '${state.estimatesAwaitingApproval}',
-                      icon: Icons.request_quote_rounded,
-                      accentColor: AppColors.warning,
-                      onTap: onNavigateToEstimates,
-                    ),
-                    KpiMetricCard(
-                      title: 'Ready for Pickup',
-                      value: '${state.vehiclesReady}',
-                      icon: Icons.check_circle_outline_rounded,
-                      accentColor: AppColors.success,
-                      onTap: onNavigateToJobs,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Quick Access',
-                  style: AppFonts.titleMedium(color: primaryTextColor)
-                      .copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                GridView.count(
-                  crossAxisCount: AppResponsiveLayout.isDesktop(context)
-                      ? 4
-                      : AppResponsiveLayout.isTablet(context)
-                      ? 4
-                      : 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: AppResponsiveLayout.isMobile(context)
-                      ? 2.6
-                      : 3.0,
-                  children: [
-                    _QuickAccessCard(
-                      title: 'Analytics',
-                      icon: Icons.insights_rounded,
-                      color: AppColors.primaryRed,
-                      onTap: onNavigateToAnalytics,
-                    ),
-                    _QuickAccessCard(
-                      title: 'Invoices',
-                      icon: Icons.receipt_long_rounded,
-                      color: AppColors.success,
-                      onTap: onNavigateToInvoices,
-                    ),
-                    _QuickAccessCard(
-                      title: 'Clients',
-                      icon: Icons.people_alt_rounded,
-                      color: AppColors.accentBlue,
-                      onTap: onNavigateToCustomers,
-                    ),
-                    _QuickAccessCard(
-                      title: 'Garage Profile',
-                      icon: Icons.storefront_rounded,
-                      color: AppColors.accentAmber,
-                      onTap: () => context.push(RoutePaths.merchantSettings),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Card(
-                  color: cardBg,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: borderColor),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Outstanding Receivables',
-                                style: AppFonts.labelSmall(
-                                  color: secondaryTextColor,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  CurrencyFormatter.format(
-                                    state.totalUnpaidAmount,
-                                  ),
-                                  style: AppFonts.numberLarge(
-                                    color: AppColors.error,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                '${state.unpaidInvoices.length} invoices awaiting payment',
-                                style: AppFonts.labelSmall(
-                                  color: secondaryTextColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        AppButton(
-                          label: 'View Invoices',
-                          onPressed: onNavigateToInvoices,
-                          variant: AppButtonVariant.outline,
-                          height: 38,
-                        ),
-                      ],
-                    ),
-                  ),
+                DashboardHeader(
+                  ownerName: user?.fullName ?? '',
+                  garageName: garageName,
+                  selectedTimeRange: state.selectedTimeRange,
+                  customStartDate: state.customStartDate,
+                  customEndDate: state.customEndDate,
+                  onTimeRangeSelected: vm.setTimeRange,
+                  onNavigateToJobs: onNavigateToJobs,
+                  onNavigateToCustomers: onNavigateToCustomers,
+                  onNavigateToInvoices: onNavigateToInvoices,
                 ),
                 const SizedBox(height: 16),
-                Card(
-                  color: cardBg,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: borderColor),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.accentBlue.withValues(
-                                        alpha: 0.12,
-                                      ),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: const Icon(
-                                      Icons.insights_rounded,
-                                      color: AppColors.accentBlue,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      'Daily Pipeline',
-                                      style: AppFonts.titleMedium(
-                                        color: primaryTextColor,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: onNavigateToAnalytics,
-                              style: TextButton.styleFrom(
-                                visualDensity: VisualDensity.compact,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text('Analytics'),
-                                  SizedBox(width: 4),
-                                  Icon(Icons.arrow_forward_rounded, size: 14),
-                                ],
-                              ),
-                            ),
-                          ],
+                WorkshopPipelineDiagram(
+                  operationalMetrics: operational,
+                  onNavigateToJobs: onNavigateToJobs,
+                ),
+                const SizedBox(height: 16),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth;
+                    final int crossAxisCount;
+
+                    if (width >= 1100) {
+                      crossAxisCount = 4;
+                    } else if (width >= 640) {
+                      crossAxisCount = 2;
+                    } else {
+                      crossAxisCount = 1;
+                    }
+
+                    final kpis = [
+                      ClayKpiCard(
+                        title: 'Total Revenue',
+                        value: CurrencyFormatter.format(
+                          financial.totalCollected,
                         ),
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildPipelineCard(
-                                label: 'Due Today',
-                                value: '${analyticsState.todayDeliveriesCount}',
-                                unit: 'Vehicles',
-                                color: AppColors.info,
-                                secondaryTextColor: secondaryTextColor,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _buildPipelineCard(
-                                label: 'Completed',
-                                value:
-                                    '${analyticsState.yesterdayCompletedCount}',
-                                unit: 'Yesterday',
-                                color: AppColors.success,
-                                secondaryTextColor: secondaryTextColor,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _buildPipelineCard(
-                                label: 'Payment Due',
-                                value:
-                                    '${analyticsState.todayPendingPaymentsCount}',
-                                unit: 'Invoices',
-                                color: AppColors.warning,
-                                secondaryTextColor: secondaryTextColor,
-                              ),
-                            ),
-                          ],
+                        icon: PhosphorIconsFill.wallet,
+                        accentColor: AppColors.success,
+                        trendPercent: financial.collectedGrowthRate,
+                        subtitle: 'Collected in selected period',
+                        tooltipMessage: 'Total settled revenue from paid invoices and partial payment receipts within this timeframe.',
+                        onTap: onNavigateToAnalytics,
+                      ),
+                      ClayKpiCard(
+                        title: 'Active Floor Repairs',
+                        value: '${operational.jobsInProgress}',
+                        icon: PhosphorIconsFill.wrench,
+                        accentColor: AppColors.accentBlue,
+                        subtitle:
+                            '${operational.vehiclesCurrentlyUnderService} vehicles in garage bays',
+                        tooltipMessage: 'Total repair jobs currently in progress, waiting for parts, or undergoing inspection.',
+                        onTap: onNavigateToJobs,
+                      ),
+                      ClayKpiCard(
+                        title: 'Completed Jobs',
+                        value: '${operational.jobsCompleted}',
+                        icon: PhosphorIconsFill.checkCircle,
+                        accentColor: const Color(0xFF10B981),
+                        trendPercent: operational.jobsGrowthRate,
+                        subtitle: 'Finished & verified repairs',
+                        tooltipMessage: 'Vehicles where all servicing, testing, and inspection requirements have been fulfilled.',
+                        onTap: onNavigateToJobs,
+                      ),
+                      ClayKpiCard(
+                        title: 'Receivables Due',
+                        value: CurrencyFormatter.format(
+                          financial.totalOutstanding,
                         ),
-                        const SizedBox(height: 14),
-                        if (pipelineJobs.isNotEmpty) ...[
-                          const Divider(height: 1),
-                          const SizedBox(height: 8),
-                          ...pipelineJobs
-                              .take(2)
-                              .map(
-                                (job) => MerchantJobRow(
-                                  job: job,
-                                  onTap: () => onJobSelected(job.id),
-                                ),
-                              ),
-                        ] else ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 12,
+                        icon: PhosphorIconsFill.receipt,
+                        accentColor: AppColors.error,
+                        subtitle: financial.overdueOutstanding > 0
+                            ? '${CurrencyFormatter.format(financial.overdueOutstanding)} overdue'
+                            : 'Pending invoice balances',
+                        tooltipMessage: 'Unsettled payments owed by customers across all active workshop invoices.',
+                        onTap: onNavigateToInvoices,
+                      ),
+                      ClayKpiCard(
+                        title: 'Awaiting Tech Assignment',
+                        value: '${operational.jobsAwaitingAssignment}',
+                        icon: PhosphorIconsFill.userPlus,
+                        accentColor: AppColors.accentAmber,
+                        subtitle: 'Checked in without technician',
+                        tooltipMessage: 'Jobs in queue requiring a mechanic to be allocated to begin diagnosis or repair.',
+                        onTap: onNavigateToJobs,
+                      ),
+                      ClayKpiCard(
+                        title: 'Estimates Pending',
+                        value: '${operational.estimatesAwaitingApproval}',
+                        icon: PhosphorIconsFill.fileText,
+                        accentColor: const Color(0xFF8B5CF6),
+                        subtitle: 'Quotes awaiting client approval',
+                        tooltipMessage: 'Digital estimates sent to customers that require digital consent before starting work.',
+                        onTap: onNavigateToEstimates,
+                      ),
+                      ClayKpiCard(
+                        title: 'Ready for Pickup',
+                        value: '${operational.jobsReadyForPickup}',
+                        icon: PhosphorIconsFill.key,
+                        accentColor: const Color(0xFF06B6D4),
+                        subtitle: 'Awaiting client collection',
+                        tooltipMessage: 'Vehicles fully repaired, cleaned, and awaiting gate pass issuance or customer pickup.',
+                        onTap: onNavigateToJobs,
+                      ),
+                      ClayKpiCard(
+                        title: 'Repeat Clients',
+                        value: '${customer.returningCustomersInPeriod}',
+                        icon: PhosphorIconsFill.arrowsClockwise,
+                        accentColor: const Color(0xFF6366F1),
+                        subtitle:
+                            '${customer.repeatCustomerRate.toStringAsFixed(1)}% retention rate',
+                        tooltipMessage: 'Customers returning to your garage for repeat maintenance or follow-up service.',
+                        onTap: onNavigateToCustomers,
+                      ),
+                    ];
+
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        mainAxisExtent: 86,
+                      ),
+                      itemCount: kpis.length,
+                      itemBuilder: (context, index) => kpis[index],
+                    );
+                  },
+                ),
+                const SizedBox(height: 18),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isWide = constraints.maxWidth >= 960;
+                    if (isWide) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 6,
+                            child: RevenueAnalyticsCard(
+                              financialMetrics: financial,
+                              currencyCode: state.garage?.currencyCode ?? 'INR',
                             ),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? AppColors.backgroundDark
-                                  : AppColors.backgroundLight,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.check_circle_outline_rounded,
-                                  size: 18,
-                                  color: AppColors.success,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    'All scheduled repair tasks are on track today.',
-                                    style: AppFonts.bodySmall(
-                                      color: secondaryTextColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            flex: 4,
+                            child: PaymentMethodBreakdownCard(
+                              breakdown: financial.paymentMethodBreakdown,
+                              percentages: financial.paymentMethodPercentages,
+                              totalCollected: financial.totalCollected,
                             ),
                           ),
                         ],
+                      );
+                    }
+
+                    return Column(
+                      children: [
+                        RevenueAnalyticsCard(
+                          financialMetrics: financial,
+                          currencyCode: state.garage?.currencyCode ?? 'INR',
+                        ),
+                        const SizedBox(height: 16),
+                        PaymentMethodBreakdownCard(
+                          breakdown: financial.paymentMethodBreakdown,
+                          percentages: financial.paymentMethodPercentages,
+                          totalCollected: financial.totalCollected,
+                        ),
                       ],
-                    ),
-                  ),
+                    );
+                  },
                 ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Recent Service Jobs',
-                        style: AppFonts.titleLarge(color: primaryTextColor),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: onNavigateToJobs,
-                      child: const Text('View All'),
-                    ),
-                  ],
+                const SizedBox(height: 18),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isWide = constraints.maxWidth >= 960;
+                    if (isWide) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: JobDistributionCard(
+                              operationalMetrics: operational,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: MechanicProductivityCard(
+                              mechanics: state.mechanicMetrics,
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    return Column(
+                      children: [
+                        JobDistributionCard(operationalMetrics: operational),
+                        const SizedBox(height: 16),
+                        MechanicProductivityCard(
+                          mechanics: state.mechanicMetrics,
+                        ),
+                      ],
+                    );
+                  },
                 ),
-                const SizedBox(height: 10),
-                if (state.recentJobs.isEmpty)
-                  AppEmptyState(
-                    title: 'No repair jobs found',
-                    description: 'Create your first repair job or digital inspection to get started.',
-                    icon: Icons.car_repair_rounded,
-                    actionLabel: 'Create New Job',
-                    onAction: onNavigateToJobs,
-                    layoutSize: AppStateLayoutSize.compact,
-                  )
-                else
-                  Card(
-                    color: cardBg,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(color: borderColor),
-                    ),
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: state.recentJobs.length,
-                      separatorBuilder: (context, index) =>
-                          const Divider(height: 1),
-                      itemBuilder: (ctx, index) {
-                        final job = state.recentJobs[index];
-                        return MerchantJobRow(
-                          job: job,
-                          onTap: () => onJobSelected(job.id),
-                        );
-                      },
-                    ),
-                  ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 18),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isWide = constraints.maxWidth >= 960;
+                    if (isWide) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: CustomerRetentionCard(
+                              customerMetrics: customer,
+                              onNavigateToCustomers: onNavigateToCustomers,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: FinancialOperationsCard(
+                              financialMetrics: financial,
+                              transactions: state.recentTransactions,
+                              onNavigateToInvoices: onNavigateToInvoices,
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    return Column(
+                      children: [
+                        CustomerRetentionCard(
+                          customerMetrics: customer,
+                          onNavigateToCustomers: onNavigateToCustomers,
+                        ),
+                        const SizedBox(height: 16),
+                        FinancialOperationsCard(
+                          financialMetrics: financial,
+                          transactions: state.recentTransactions,
+                          onNavigateToInvoices: onNavigateToInvoices,
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 18),
+                RecentJobsSegmentedFeed(
+                  jobs: state.filteredRecentJobs,
+                  selectedFilter: state.selectedJobFilter,
+                  onFilterChanged: vm.setJobFilter,
+                  onJobSelected: onJobSelected,
+                  onNavigateToJobs: onNavigateToJobs,
+                ),
+                const SizedBox(height: 28),
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _QuickAccessCard extends StatelessWidget {
-  const _QuickAccessCard({
-    required this.title,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  final String title;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
-    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final primaryTextColor = isDark
-        ? AppColors.textPrimaryDark
-        : AppColors.textPrimaryLight;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: cardBg,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: borderColor),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: color, size: 18),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                title,
-                style: AppFonts.bodySmall(color: primaryTextColor)
-                    .copyWith(fontWeight: FontWeight.w600),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Icon(
-              Icons.chevron_right_rounded,
-              size: 16,
-              color: isDark
-                  ? AppColors.textSecondaryDark
-                  : AppColors.textSecondaryLight,
-            ),
-          ],
         ),
       ),
     );
