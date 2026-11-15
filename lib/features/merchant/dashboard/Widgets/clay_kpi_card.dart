@@ -69,10 +69,8 @@ class ClayKpiCard extends StatelessWidget {
           const SizedBox(width: 2.5),
           Text(
             isZero ? '0.0%' : '${isPositive ? '+' : '-'}$formatted%',
-            style: AppFonts.labelSmall(color: textColor).copyWith(
-              fontSize: 9.5,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppFonts.labelSmall(color: textColor)
+                .copyWith(fontSize: 9.5, fontWeight: FontWeight.w700),
           ),
         ],
       ),
@@ -123,13 +121,12 @@ class ClayKpiCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: AppFonts.labelSmall(
-                          color: secondaryTextColor,
-                        ).copyWith(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.1,
-                        ),
+                        style: AppFonts.labelSmall(color: secondaryTextColor)
+                            .copyWith(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.1,
+                            ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -150,11 +147,12 @@ class ClayKpiCard extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     value,
-                    style: AppFonts.titleLarge(color: primaryTextColor).copyWith(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.4,
-                    ),
+                    style: AppFonts.titleLarge(color: primaryTextColor)
+                        .copyWith(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.4,
+                        ),
                     maxLines: 1,
                   ),
                 ),

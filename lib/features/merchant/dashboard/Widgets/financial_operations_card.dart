@@ -182,9 +182,13 @@ class FinancialOperationsCard extends StatelessWidget {
                             CurrencyFormatter.format(
                               financialMetrics.overdueOutstanding,
                             ),
-                            style: AppFonts.displaySmall(
-                              color: AppColors.accentAmber,
-                            ).copyWith(fontWeight: FontWeight.w800, fontSize: 22),
+                            style:
+                                AppFonts.displaySmall(
+                                  color: AppColors.accentAmber,
+                                ).copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 22,
+                                ),
                             maxLines: 1,
                           ),
                         ),

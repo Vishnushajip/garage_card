@@ -256,13 +256,17 @@ class RecentJobsSegmentedFeed extends StatelessWidget {
                                 color: secondaryTextColor,
                               ),
                               const SizedBox(width: 4),
-                              Text(
-                                job.customerName,
-                                style: AppFonts.labelSmall(
-                                  color: secondaryTextColor,
+                              Flexible(
+                                child: Text(
+                                  job.customerName,
+                                  style: AppFonts.labelSmall(
+                                    color: secondaryTextColor,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 8),
                               if (job.technicianName.isNotEmpty) ...[
                                 PhosphorIcon(
                                   PhosphorIconsFill.wrench,
@@ -270,11 +274,15 @@ class RecentJobsSegmentedFeed extends StatelessWidget {
                                   color: AppColors.accentBlue,
                                 ),
                                 const SizedBox(width: 4),
-                                Text(
-                                  job.technicianName,
-                                  style: AppFonts.labelSmall(
-                                    color: AppColors.accentBlue,
-                                  ).copyWith(fontWeight: FontWeight.bold),
+                                Flexible(
+                                  child: Text(
+                                    job.technicianName,
+                                    style: AppFonts.labelSmall(
+                                      color: AppColors.accentBlue,
+                                    ).copyWith(fontWeight: FontWeight.bold),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ] else ...[
                                 Container(
@@ -296,7 +304,7 @@ class RecentJobsSegmentedFeed extends StatelessWidget {
                                   ),
                                 ),
                               ],
-                              const Spacer(),
+                              const SizedBox(width: 8),
                               Text(
                                 DateFormatter.formatRelative(
                                   job.updatedAt ?? job.createdAt,

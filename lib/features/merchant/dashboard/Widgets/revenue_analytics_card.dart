@@ -248,8 +248,9 @@ class _RevenueAnalyticsCardState extends State<RevenueAnalyticsCard> {
                     final pt = entry.value;
                     final isHovered = _hoveredIndex == idx;
 
-                    final primaryVal =
-                        _showInvoiced ? pt.invoiced : pt.collected;
+                    final primaryVal = _showInvoiced
+                        ? pt.invoiced
+                        : pt.collected;
                     final barHeight = primaryVal > 0
                         ? (primaryVal / maxVal * 140).clamp(6.0, 140.0)
                         : 4.0;
@@ -305,16 +306,17 @@ class _RevenueAnalyticsCardState extends State<RevenueAnalyticsCard> {
                             const SizedBox(height: 10),
                             Text(
                               pt.label,
-                              style: AppFonts.labelSmall(
-                                color: isHovered
-                                    ? primaryTextColor
-                                    : secondaryTextColor,
-                              ).copyWith(
-                                fontSize: 10.5,
-                                fontWeight: isHovered
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
+                              style:
+                                  AppFonts.labelSmall(
+                                    color: isHovered
+                                        ? primaryTextColor
+                                        : secondaryTextColor,
+                                  ).copyWith(
+                                    fontSize: 10.5,
+                                    fontWeight: isHovered
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -335,10 +337,7 @@ class _RevenueAnalyticsCardState extends State<RevenueAnalyticsCard> {
                     height: 190,
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      child: SizedBox(
-                        width: minRequiredWidth,
-                        child: chartRow,
-                      ),
+                      child: SizedBox(width: minRequiredWidth, child: chartRow),
                     ),
                   );
                 }

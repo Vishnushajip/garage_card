@@ -94,55 +94,74 @@ class JobDistributionCard extends StatelessWidget {
               style: AppFonts.bodySmall(color: secondaryTextColor),
             )
           else
-            Row(
-              children: vTypes.map((vt) {
-                final PhosphorIconData icon;
-                if (vt.key == 'Bikes') {
-                  icon = PhosphorIconsFill.motorcycle;
-                } else if (vt.key == 'Scooters') {
-                  icon = PhosphorIconsFill.scooter;
-                } else {
-                  icon = PhosphorIconsFill.car;
-                }
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final minRequired = vTypes.length * 90.0;
+                final shouldScroll = constraints.maxWidth < minRequired;
 
-                return Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF1E2638)
-                          : const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
+                final rowContent = Row(
+                  children: vTypes.map((vt) {
+                    final PhosphorIconData icon;
+                    if (vt.key == 'Bikes') {
+                      icon = PhosphorIconsFill.motorcycle;
+                    } else if (vt.key == 'Scooters') {
+                      icon = PhosphorIconsFill.scooter;
+                    } else {
+                      icon = PhosphorIconsFill.car;
+                    }
+
+                    final tile = Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
                         color: isDark
-                            ? AppColors.borderDark
-                            : AppColors.borderLight,
+                            ? const Color(0xFF1E2638)
+                            : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark
+                              ? AppColors.borderDark
+                              : AppColors.borderLight,
+                        ),
                       ),
-                    ),
-                    child: Column(
-                      children: [
-                        PhosphorIcon(
-                          icon,
-                          size: 20,
-                          color: AppColors.accentBlue,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          '${vt.value}',
-                          style: AppFonts.titleMedium(color: primaryTextColor)
-                              .copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          vt.key,
-                          style: AppFonts.labelSmall(color: secondaryTextColor)
-                              .copyWith(fontSize: 10.5),
-                        ),
-                      ],
-                    ),
-                  ),
+                      child: Column(
+                        children: [
+                          PhosphorIcon(
+                            icon,
+                            size: 20,
+                            color: AppColors.accentBlue,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '${vt.value}',
+                            style: AppFonts.titleMedium(color: primaryTextColor)
+                                .copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            vt.key,
+                            style: AppFonts.labelSmall(
+                              color: secondaryTextColor,
+                            ).copyWith(fontSize: 10.5),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (shouldScroll) {
+                      return SizedBox(width: 88, child: tile);
+                    }
+                    return Expanded(child: tile);
+                  }).toList(),
                 );
-              }).toList(),
+
+                if (shouldScroll) {
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(width: minRequired, child: rowContent),
+                  );
+                }
+                return rowContent;
+              },
             ),
           const SizedBox(height: 22),
           Text(
