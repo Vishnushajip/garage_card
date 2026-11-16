@@ -110,13 +110,14 @@ class FinancialOperationsCard extends StatelessWidget {
                 style: TextButton.styleFrom(
                   visualDensity: VisualDensity.compact,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
+                  foregroundColor: AppColors.primaryRed,
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('Invoices'),
                     SizedBox(width: 4),
-                    PhosphorIcon(PhosphorIconsRegular.caretRight, size: 12),
+                    PhosphorIcon(PhosphorIconsRegular.arrowRight, size: 12),
                   ],
                 ),
               ),

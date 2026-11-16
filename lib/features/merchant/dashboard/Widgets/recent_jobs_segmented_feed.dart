@@ -7,9 +7,8 @@ import 'package:garage_card/features/shared/models/service_job_model.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'clay_container.dart';
-import 'clay_tooltip.dart';
 
-class RecentJobsSegmentedFeed extends StatelessWidget {
+class RecentJobsSegmentedFeed extends StatefulWidget {
   const RecentJobsSegmentedFeed({
     super.key,
     required this.jobs,
@@ -25,14 +24,61 @@ class RecentJobsSegmentedFeed extends StatelessWidget {
   final ValueChanged<String> onJobSelected;
   final VoidCallback onNavigateToJobs;
 
+  @override
+  State<RecentJobsSegmentedFeed> createState() =>
+      _RecentJobsSegmentedFeedState();
+}
+
+class _RecentJobsSegmentedFeedState extends State<RecentJobsSegmentedFeed> {
+  String _searchQuery = '';
+  String _selectedTechnician = 'All Technicians';
+  String _selectedVehicleType = 'All Vehicle Types';
+  String _selectedPriority = 'All Priorities';
+
   static const List<(String, String)> _filters = [
     ('all', 'All Active'),
     ('in_progress', 'In Progress'),
     ('pending_assignment', 'Unassigned'),
     ('ready_for_pickup', 'Ready'),
     ('completed', 'Completed'),
-    ('overdue', 'Overdue'),
   ];
+
+  Widget _buildDropdownPill({
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+    required bool isDark,
+    required Color secondaryTextColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E2638) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+        ),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          isDense: true,
+          icon: PhosphorIcon(
+            PhosphorIconsRegular.caretDown,
+            size: 11,
+            color: secondaryTextColor,
+          ),
+          style: AppFonts.labelSmall(color: secondaryTextColor)
+              .copyWith(fontSize: 11, fontWeight: FontWeight.w600),
+          dropdownColor: isDark ? const Color(0xFF1E2638) : Colors.white,
+          onChanged: onChanged,
+          items: items.map((item) {
+            return DropdownMenuItem<String>(value: item, child: Text(item));
+          }).toList(),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,139 +90,231 @@ class RecentJobsSegmentedFeed extends StatelessWidget {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
 
+    final technicians = [
+      'All Technicians',
+      ...{
+        ...widget.jobs
+            .map((j) => j.technicianName)
+            .where((name) => name.isNotEmpty),
+      },
+    ];
+
+    final filteredJobs = widget.jobs.where((job) {
+      if (_searchQuery.isNotEmpty) {
+        final query = _searchQuery.toLowerCase();
+        final matchesNumber = job.jobNumber.toLowerCase().contains(query);
+        final matchesCustomer = job.customerName.toLowerCase().contains(query);
+        final matchesVehicle = job.vehicleDisplay.toLowerCase().contains(query);
+        if (!matchesNumber && !matchesCustomer && !matchesVehicle) {
+          return false;
+        }
+      }
+      if (_selectedTechnician != 'All Technicians' &&
+          job.technicianName != _selectedTechnician) {
+        return false;
+      }
+      return true;
+    }).toList();
+
     return ClayContainer(
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 640;
+              final searchField = Container(
+                height: 38,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF1E2638)
+                      : const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isDark
+                        ? AppColors.borderDark
+                        : AppColors.borderLight,
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Row(
                   children: [
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: AppColors.accentBlue.withValues(
-                          alpha: isDark ? 0.16 : 0.12,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Center(
-                        child: PhosphorIcon(
-                          PhosphorIconsFill.car,
-                          size: 20,
-                          color: AppColors.accentBlue,
-                        ),
-                      ),
+                    PhosphorIcon(
+                      PhosphorIconsRegular.magnifyingGlass,
+                      size: 14,
+                      color: secondaryTextColor,
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                'Workshop Jobs & Operations',
-                                style: AppFonts.titleMedium(
-                                  color: primaryTextColor,
-                                ).copyWith(fontWeight: FontWeight.bold),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(width: 6),
-                              const ClayTooltip(
-                                message: 'Live repair pipeline with quick filtering by status, assignment, and completion.',
-                                iconSize: 14,
-                              ),
-                            ],
-                          ),
-                          Text(
-                            'Real-time status across garage bays',
-                            style: AppFonts.labelSmall(
-                              color: secondaryTextColor,
-                            ),
-                          ),
-                        ],
+                      child: TextField(
+                        onChanged: (val) => setState(() => _searchQuery = val),
+                        style: AppFonts.bodySmall(color: primaryTextColor),
+                        decoration: InputDecoration(
+                          hintText: 'Search by Job ID, plate, customer...',
+                          hintStyle: AppFonts.labelSmall(
+                            color: secondaryTextColor.withValues(alpha: 0.7),
+                          ).copyWith(fontSize: 11.5),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              TextButton(
-                onPressed: onNavigateToJobs,
-                style: TextButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                ),
-                child: const Row(
+              );
+
+              final dropdownRow = SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('View All'),
-                    SizedBox(width: 4),
-                    PhosphorIcon(PhosphorIconsRegular.caretRight, size: 12),
+                    _buildDropdownPill(
+                      value: _selectedTechnician,
+                      items: technicians,
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _selectedTechnician = val);
+                        }
+                      },
+                      isDark: isDark,
+                      secondaryTextColor: secondaryTextColor,
+                    ),
+                    const SizedBox(width: 6),
+                    _buildDropdownPill(
+                      value: _selectedVehicleType,
+                      items: const [
+                        'All Vehicle Types',
+                        'Cars',
+                        'Bikes',
+                        'Commercial',
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _selectedVehicleType = val);
+                        }
+                      },
+                      isDark: isDark,
+                      secondaryTextColor: secondaryTextColor,
+                    ),
+                    const SizedBox(width: 6),
+                    _buildDropdownPill(
+                      value: _selectedPriority,
+                      items: const ['All Priorities', 'High', 'Normal', 'Low'],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _selectedPriority = val);
+                        }
+                      },
+                      isDark: isDark,
+                      secondaryTextColor: secondaryTextColor,
+                    ),
                   ],
                 ),
+              );
+
+              if (isWide) {
+                return Row(
+                  children: [
+                    Expanded(flex: 5, child: searchField),
+                    const SizedBox(width: 10),
+                    Expanded(flex: 6, child: dropdownRow),
+                  ],
+                );
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  searchField,
+                  const SizedBox(height: 10),
+                  dropdownRow,
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _filters.map((f) {
+                      final isSelected = widget.selectedFilter == f.$1;
+                      final count = f.$1 == 'all'
+                          ? widget.jobs.length
+                          : widget.jobs.where((j) {
+                              if (f.$1 == 'in_progress') {
+                                return j.status == 'in_progress';
+                              }
+                              if (f.$1 == 'pending_assignment') {
+                                return j.status == 'pending_assignment' ||
+                                    j.technicianName.isEmpty;
+                              }
+                              if (f.$1 == 'ready_for_pickup') {
+                                return j.status == 'ready_for_pickup';
+                              }
+                              if (f.$1 == 'completed') {
+                                return j.status == 'completed';
+                              }
+                              return false;
+                            }).length;
+
+                      final chipColor = isSelected
+                          ? AppColors.primaryRed
+                          : (isDark
+                                ? const Color(0xFF1E2638)
+                                : const Color(0xFFF1F5F9));
+                      final textColor = isSelected
+                          ? Colors.white
+                          : (isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondaryLight);
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: InkWell(
+                          onTap: () => widget.onFilterChanged(f.$1),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: chipColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${f.$2} ($count)',
+                              style: AppFonts.labelSmall(color: textColor)
+                                  .copyWith(
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.w600,
+                                    fontSize: 10.5,
+                                  ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Showing ${filteredJobs.length} of ${widget.jobs.length} jobs',
+                style: AppFonts.labelSmall(
+                  color: secondaryTextColor.withValues(alpha: 0.7),
+                ).copyWith(fontSize: 10),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _filters.map((f) {
-                final isSelected = selectedFilter == f.$1;
-                final chipColor = isSelected
-                    ? AppColors.accentBlue
-                    : (isDark
-                          ? const Color(0xFF1E2638)
-                          : const Color(0xFFF1F5F9));
-                final textColor = isSelected
-                    ? Colors.white
-                    : (isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight);
-
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: InkWell(
-                    onTap: () => onFilterChanged(f.$1),
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: chipColor,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.accentBlue
-                              : (isDark
-                                    ? Colors.white.withValues(alpha: 0.08)
-                                    : Colors.white.withValues(alpha: 0.8)),
-                          width: 1.2,
-                        ),
-                      ),
-                      child: Text(
-                        f.$2,
-                        style: AppFonts.labelSmall(color: textColor).copyWith(
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: 18),
-          if (jobs.isEmpty)
+          const SizedBox(height: 14),
+          if (filteredJobs.isEmpty)
             Container(
               height: 120,
               decoration: BoxDecoration(
@@ -190,13 +328,13 @@ class RecentJobsSegmentedFeed extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     PhosphorIcon(
-                      PhosphorIconsRegular.checkCircle,
+                      PhosphorIconsRegular.car,
                       size: 28,
                       color: secondaryTextColor.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'No jobs found matching selected filter',
+                      'No jobs found matching criteria',
                       style: AppFonts.bodySmall(color: secondaryTextColor),
                     ),
                   ],
@@ -205,19 +343,19 @@ class RecentJobsSegmentedFeed extends StatelessWidget {
             )
           else
             Column(
-              children: jobs.take(6).map((job) {
+              children: filteredJobs.take(5).map((job) {
+                final displayId = job.jobNumber;
+
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: 10),
                   child: InkWell(
-                    onTap: () => onJobSelected(job.id),
-                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => widget.onJobSelected(job.id),
+                    borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      padding: const EdgeInsets.all(14),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF1E2638)
-                            : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(14),
+                        color: isDark ? const Color(0xFF1E2638) : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isDark
                               ? AppColors.borderDark
@@ -230,12 +368,21 @@ class RecentJobsSegmentedFeed extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                job.jobNumber,
-                                style: AppFonts.labelLarge(
-                                  color: AppColors.accentBlue,
-                                ).copyWith(fontWeight: FontWeight.bold),
+                              Flexible(
+                                child: Text(
+                                  displayId,
+                                  style:
+                                      AppFonts.labelLarge(
+                                        color: AppColors.primaryRed,
+                                      ).copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 12,
+                                      ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               AppStatusBadge(status: job.status),
                             ],
                           ),
@@ -243,7 +390,10 @@ class RecentJobsSegmentedFeed extends StatelessWidget {
                           Text(
                             job.vehicleDisplay,
                             style: AppFonts.titleSmall(color: primaryTextColor)
-                                .copyWith(fontWeight: FontWeight.bold),
+                                .copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 13.5,
+                                ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -261,59 +411,44 @@ class RecentJobsSegmentedFeed extends StatelessWidget {
                                   job.customerName,
                                   style: AppFonts.labelSmall(
                                     color: secondaryTextColor,
-                                  ),
+                                  ).copyWith(fontSize: 11),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 10),
                               if (job.technicianName.isNotEmpty) ...[
                                 PhosphorIcon(
                                   PhosphorIconsFill.wrench,
                                   size: 12,
-                                  color: AppColors.accentBlue,
+                                  color: AppColors.primaryRed,
                                 ),
                                 const SizedBox(width: 4),
                                 Flexible(
                                   child: Text(
                                     job.technicianName,
-                                    style: AppFonts.labelSmall(
-                                      color: AppColors.accentBlue,
-                                    ).copyWith(fontWeight: FontWeight.bold),
+                                    style:
+                                        AppFonts.labelSmall(
+                                          color: AppColors.primaryRed,
+                                        ).copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 11,
+                                        ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                              ] else ...[
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.error.withValues(
-                                      alpha: 0.12,
-                                    ),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    'Unassigned',
-                                    style: AppFonts.labelSmall(
-                                      color: AppColors.error,
-                                    ).copyWith(fontSize: 10),
-                                  ),
-                                ),
                               ],
-                              const SizedBox(width: 8),
+                              const Spacer(),
                               Text(
                                 DateFormatter.formatRelative(
                                   job.updatedAt ?? job.createdAt,
                                 ),
                                 style: AppFonts.labelSmall(
                                   color: secondaryTextColor.withValues(
-                                    alpha: 0.7,
+                                    alpha: 0.6,
                                   ),
-                                ).copyWith(fontSize: 11),
+                                ).copyWith(fontSize: 10.5),
                               ),
                             ],
                           ),

@@ -82,6 +82,9 @@ class MerchantDashboardScreen extends ConsumerWidget {
     final user = ref.watch(authViewModelProvider.select((s) => s.userProfile));
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryTextColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     if (state.isLoading) {
       return const Scaffold(
@@ -117,35 +120,35 @@ class MerchantDashboardScreen extends ConsumerWidget {
     }
 
     final rawGarageName = state.garage?.name ?? '';
-    final garageName =
-        (rawGarageName.isNotEmpty &&
-            !rawGarageName.contains('Vishnu') &&
-            !rawGarageName.endsWith('\'s Garage'))
+    final garageName = rawGarageName.trim().isNotEmpty
         ? rawGarageName
-        : 'Garage Operations';
+        : 'Apex Garage Workshop';
+    final garageCity = state.garage?.city ?? 'Bengaluru';
+    final addressText = state.garage?.address;
+    final garageAddress = (addressText != null && addressText.isNotEmpty)
+        ? addressText
+        : 'Main Bay - $garageCity';
 
-    final financial = state.financialMetrics;
     final operational = state.operationalMetrics;
+    final financial = state.financialMetrics;
     final customer = state.customerMetrics;
 
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF0C1019)
-          : const Color(0xFFF1F5F9),
+          ? const Color(0xFF0F172A)
+          : const Color(0xFFF8FAFC),
       appBar: AppCustomAppBar(
         title: garageName,
         subtitle: 'Workshop Intelligence & Performance',
-        leading: InkWell(
-          onTap: () => context.push(RoutePaths.merchantSettings),
-          borderRadius: BorderRadius.circular(10),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12),
           child: Container(
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(9),
               border: Border.all(
                 color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                width: 1,
               ),
             ),
             clipBehavior: Clip.antiAlias,
@@ -180,6 +183,7 @@ class MerchantDashboardScreen extends ConsumerWidget {
                 DashboardHeader(
                   ownerName: user?.fullName ?? '',
                   garageName: garageName,
+                  garageAddress: garageAddress,
                   selectedTimeRange: state.selectedTimeRange,
                   customStartDate: state.customStartDate,
                   customEndDate: state.customEndDate,
@@ -197,97 +201,118 @@ class MerchantDashboardScreen extends ConsumerWidget {
                 LayoutBuilder(
                   builder: (context, constraints) {
                     final width = constraints.maxWidth;
-                    final int crossAxisCount;
+                    final int cols = width >= 1100 ? 4 : (width >= 640 ? 2 : 1);
 
-                    if (width >= 1100) {
-                      crossAxisCount = 4;
-                    } else if (width >= 640) {
-                      crossAxisCount = 2;
-                    } else {
-                      crossAxisCount = 1;
-                    }
-
-                    final kpis = [
-                      ClayKpiCard(
+                    final majorKpis = [
+                      ClayMajorKpiCard(
                         title: 'Total Revenue',
                         value: CurrencyFormatter.format(
                           financial.totalCollected,
                         ),
                         icon: PhosphorIconsFill.wallet,
-                        accentColor: AppColors.success,
+                        iconBgColor: const Color(0xFFDCFCE7),
+                        iconColor: const Color(0xFF16A34A),
                         trendPercent: financial.collectedGrowthRate,
                         subtitle: 'Collected in selected period',
-                        tooltipMessage: 'Total settled revenue from paid invoices and partial payment receipts within this timeframe.',
+                        tooltipMessage: 'Total settled revenue from paid invoices and receipts within this timeframe.',
                         onTap: onNavigateToAnalytics,
                       ),
-                      ClayKpiCard(
+                      ClayMajorKpiCard(
                         title: 'Active Floor Repairs',
                         value: '${operational.jobsInProgress}',
                         icon: PhosphorIconsFill.wrench,
-                        accentColor: AppColors.accentBlue,
+                        iconBgColor: const Color(0xFFFEE2E2),
+                        iconColor: const Color(0xFFEF4444),
                         subtitle:
                             '${operational.vehiclesCurrentlyUnderService} vehicles in garage bays',
                         tooltipMessage: 'Total repair jobs currently in progress, waiting for parts, or undergoing inspection.',
                         onTap: onNavigateToJobs,
                       ),
-                      ClayKpiCard(
+                      ClayMajorKpiCard(
                         title: 'Completed Jobs',
                         value: '${operational.jobsCompleted}',
                         icon: PhosphorIconsFill.checkCircle,
-                        accentColor: const Color(0xFF10B981),
+                        iconBgColor: const Color(0xFFDCFCE7),
+                        iconColor: const Color(0xFF16A34A),
                         trendPercent: operational.jobsGrowthRate,
                         subtitle: 'Finished & verified repairs',
                         tooltipMessage: 'Vehicles where all servicing, testing, and inspection requirements have been fulfilled.',
                         onTap: onNavigateToJobs,
                       ),
-                      ClayKpiCard(
+                      ClayMajorKpiCard(
                         title: 'Receivables Due',
                         value: CurrencyFormatter.format(
                           financial.totalOutstanding,
                         ),
                         icon: PhosphorIconsFill.receipt,
-                        accentColor: AppColors.error,
+                        iconBgColor: const Color(0xFFEFF6FF),
+                        iconColor: const Color(0xFF3B82F6),
                         subtitle: financial.overdueOutstanding > 0
                             ? '${CurrencyFormatter.format(financial.overdueOutstanding)} overdue'
                             : 'Pending invoice balances',
                         tooltipMessage: 'Unsettled payments owed by customers across all active workshop invoices.',
                         onTap: onNavigateToInvoices,
                       ),
-                      ClayKpiCard(
+                    ];
+
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: cols,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        mainAxisExtent: 148,
+                      ),
+                      itemCount: majorKpis.length,
+                      itemBuilder: (context, index) => majorKpis[index],
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth;
+                    final int cols = width >= 1100 ? 4 : (width >= 640 ? 2 : 1);
+
+                    final subKpis = [
+                      ClaySubKpiCard(
                         title: 'Awaiting Tech Assignment',
                         value: '${operational.jobsAwaitingAssignment}',
                         icon: PhosphorIconsFill.userPlus,
-                        accentColor: AppColors.accentAmber,
-                        subtitle: 'Checked in without technician',
-                        tooltipMessage: 'Jobs in queue requiring a mechanic to be allocated to begin diagnosis or repair.',
+                        iconColor: const Color(0xFFF59E0B),
+                        subtitle: 'Checked-in w/o tech',
+                        tooltipMessage: 'Vehicles registered at intake but not yet allocated to a technician bay.',
                         onTap: onNavigateToJobs,
                       ),
-                      ClayKpiCard(
+                      ClaySubKpiCard(
                         title: 'Estimates Pending',
                         value: '${operational.estimatesAwaitingApproval}',
                         icon: PhosphorIconsFill.fileText,
-                        accentColor: const Color(0xFF8B5CF6),
-                        subtitle: 'Quotes awaiting client approval',
-                        tooltipMessage: 'Digital estimates sent to customers that require digital consent before starting work.',
+                        iconColor: const Color(0xFF8B5CF6),
+                        subtitle: 'Quotes awaiting approval',
+                        tooltipMessage: 'Price quotations sent to car owners awaiting authorization.',
                         onTap: onNavigateToEstimates,
                       ),
-                      ClayKpiCard(
+                      ClaySubKpiCard(
                         title: 'Ready for Pickup',
                         value: '${operational.jobsReadyForPickup}',
                         icon: PhosphorIconsFill.key,
-                        accentColor: const Color(0xFF06B6D4),
-                        subtitle: 'Awaiting client collection',
-                        tooltipMessage: 'Vehicles fully repaired, cleaned, and awaiting gate pass issuance or customer pickup.',
+                        iconColor: const Color(0xFF06B6D4),
+                        subtitle: 'Awaiting collection',
+                        tooltipMessage: 'Vehicles that have passed quality inspection and are awaiting customer hand-off.',
                         onTap: onNavigateToJobs,
                       ),
-                      ClayKpiCard(
+                      ClaySubKpiCard(
                         title: 'Repeat Clients',
-                        value: '${customer.returningCustomersInPeriod}',
-                        icon: PhosphorIconsFill.arrowsClockwise,
-                        accentColor: const Color(0xFF6366F1),
-                        subtitle:
-                            '${customer.repeatCustomerRate.toStringAsFixed(1)}% retention rate',
-                        tooltipMessage: 'Customers returning to your garage for repeat maintenance or follow-up service.',
+                        value:
+                            '${customer.returningCustomersInPeriod} (${customer.repeatCustomerRate.toStringAsFixed(1)}%)',
+                        icon: PhosphorIconsFill.users,
+                        iconColor: const Color(0xFF3B82F6),
+                        subtitle: customer.repeatCustomerRate >= 50
+                            ? 'High retention'
+                            : 'Workshop loyalty',
+                        tooltipMessage: 'Percentage of workshop clients who have serviced more than one vehicle.',
                         onTap: onNavigateToCustomers,
                       ),
                     ];
@@ -296,13 +321,13 @@ class MerchantDashboardScreen extends ConsumerWidget {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        mainAxisExtent: 94,
+                        crossAxisCount: cols,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        mainAxisExtent: 72,
                       ),
-                      itemCount: kpis.length,
-                      itemBuilder: (context, index) => kpis[index],
+                      itemCount: subKpis.length,
+                      itemBuilder: (context, index) => subKpis[index],
                     );
                   },
                 ),
@@ -315,19 +340,42 @@ class MerchantDashboardScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            flex: 6,
-                            child: RevenueAnalyticsCard(
-                              financialMetrics: financial,
-                              currencyCode: state.garage?.currencyCode ?? 'INR',
+                            flex: 7,
+                            child: Column(
+                              children: [
+                                RevenueAnalyticsCard(
+                                  financialMetrics: financial,
+                                  currencyCode:
+                                      state.garage?.currencyCode ?? 'INR',
+                                ),
+                                const SizedBox(height: 16),
+                                JobDistributionCard(
+                                  operationalMetrics: operational,
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
-                            flex: 4,
-                            child: PaymentMethodBreakdownCard(
-                              breakdown: financial.paymentMethodBreakdown,
-                              percentages: financial.paymentMethodPercentages,
-                              totalCollected: financial.totalCollected,
+                            flex: 5,
+                            child: Column(
+                              children: [
+                                PaymentMethodBreakdownCard(
+                                  breakdown: financial.paymentMethodBreakdown,
+                                  percentages:
+                                      financial.paymentMethodPercentages,
+                                  totalCollected: financial.totalCollected,
+                                ),
+                                const SizedBox(height: 16),
+                                MechanicProductivityCard(
+                                  mechanics: state.mechanicMetrics,
+                                ),
+                                const SizedBox(height: 16),
+                                CustomerRetentionCard(
+                                  customerMetrics: customer,
+                                  onNavigateToCustomers: onNavigateToCustomers,
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -346,39 +394,16 @@ class MerchantDashboardScreen extends ConsumerWidget {
                           percentages: financial.paymentMethodPercentages,
                           totalCollected: financial.totalCollected,
                         ),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 18),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isWide = constraints.maxWidth >= 960;
-                    if (isWide) {
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: JobDistributionCard(
-                              operationalMetrics: operational,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: MechanicProductivityCard(
-                              mechanics: state.mechanicMetrics,
-                            ),
-                          ),
-                        ],
-                      );
-                    }
-
-                    return Column(
-                      children: [
+                        const SizedBox(height: 16),
                         JobDistributionCard(operationalMetrics: operational),
                         const SizedBox(height: 16),
                         MechanicProductivityCard(
                           mechanics: state.mechanicMetrics,
+                        ),
+                        const SizedBox(height: 16),
+                        CustomerRetentionCard(
+                          customerMetrics: customer,
+                          onNavigateToCustomers: onNavigateToCustomers,
                         ),
                       ],
                     );
@@ -393,48 +418,85 @@ class MerchantDashboardScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: CustomerRetentionCard(
-                              customerMetrics: customer,
-                              onNavigateToCustomers: onNavigateToCustomers,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
+                            flex: 5,
                             child: FinancialOperationsCard(
                               financialMetrics: financial,
                               transactions: state.recentTransactions,
                               onNavigateToInvoices: onNavigateToInvoices,
                             ),
                           ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            flex: 7,
+                            child: RecentJobsSegmentedFeed(
+                              jobs: state.filteredRecentJobs,
+                              selectedFilter: state.selectedJobFilter,
+                              onFilterChanged: vm.setJobFilter,
+                              onJobSelected: onJobSelected,
+                              onNavigateToJobs: onNavigateToJobs,
+                            ),
+                          ),
                         ],
                       );
                     }
 
                     return Column(
                       children: [
-                        CustomerRetentionCard(
-                          customerMetrics: customer,
-                          onNavigateToCustomers: onNavigateToCustomers,
-                        ),
-                        const SizedBox(height: 16),
                         FinancialOperationsCard(
                           financialMetrics: financial,
                           transactions: state.recentTransactions,
                           onNavigateToInvoices: onNavigateToInvoices,
                         ),
+                        const SizedBox(height: 16),
+                        RecentJobsSegmentedFeed(
+                          jobs: state.filteredRecentJobs,
+                          selectedFilter: state.selectedJobFilter,
+                          onFilterChanged: vm.setJobFilter,
+                          onJobSelected: onJobSelected,
+                          onNavigateToJobs: onNavigateToJobs,
+                        ),
                       ],
                     );
                   },
                 ),
-                const SizedBox(height: 18),
-                RecentJobsSegmentedFeed(
-                  jobs: state.filteredRecentJobs,
-                  selectedFilter: state.selectedJobFilter,
-                  onFilterChanged: vm.setJobFilter,
-                  onJobSelected: onJobSelected,
-                  onNavigateToJobs: onNavigateToJobs,
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E2638) : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'Apex Garage Operations ERP • v4.10.2 Stable • All systems operational',
+                          style: AppFonts.labelSmall(color: secondaryTextColor)
+                              .copyWith(fontSize: 10.5),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Keyboard shortcut: ⌘+K to quick-add vehicle',
+                        style: AppFonts.labelSmall(
+                          color: secondaryTextColor.withValues(alpha: 0.7),
+                        ).copyWith(fontSize: 10),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
               ],
             ),
           ),

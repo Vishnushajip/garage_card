@@ -40,16 +40,14 @@ class JobDistributionCard extends StatelessWidget {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: AppColors.accentBlue.withValues(
-                    alpha: isDark ? 0.16 : 0.12,
-                  ),
+                  color: const Color(0xFFFEE2E2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Center(
                   child: PhosphorIcon(
-                    PhosphorIconsFill.carProfile,
+                    PhosphorIconsFill.wrench,
                     size: 20,
-                    color: AppColors.accentBlue,
+                    color: AppColors.primaryRed,
                   ),
                 ),
               ),
@@ -129,7 +127,7 @@ class JobDistributionCard extends StatelessWidget {
                           PhosphorIcon(
                             icon,
                             size: 20,
-                            color: AppColors.accentBlue,
+                            color: AppColors.primaryRed,
                           ),
                           const SizedBox(height: 6),
                           Text(
@@ -217,7 +215,7 @@ class JobDistributionCard extends StatelessWidget {
                               ? Colors.white.withValues(alpha: 0.08)
                               : const Color(0xFFE2E8F0),
                           valueColor: const AlwaysStoppedAnimation<Color>(
-                            AppColors.accentBlue,
+                            AppColors.primaryRed,
                           ),
                         ),
                       ),

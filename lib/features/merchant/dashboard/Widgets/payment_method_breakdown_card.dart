@@ -195,15 +195,33 @@ class PaymentMethodBreakdownCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          CurrencyFormatter.format(e.value),
-                          style: AppFonts.labelLarge(color: primaryTextColor)
-                              .copyWith(fontWeight: FontWeight.w700),
-                          maxLines: 1,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              CurrencyFormatter.format(e.value),
+                              style: AppFonts.labelLarge(
+                                color: primaryTextColor,
+                              ).copyWith(fontWeight: FontWeight.w700),
+                              maxLines: 1,
+                            ),
+                          ),
+                          Text(
+                            e.key.toLowerCase().contains('cash')
+                                ? 'Primary Channel'
+                                : (e.key.toLowerCase().contains('upi')
+                                      ? 'Instant Settlement'
+                                      : 'Settled'),
+                            style: AppFonts.labelSmall(color: methodColor)
+                                .copyWith(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

@@ -42,16 +42,14 @@ class CustomerRetentionCard extends StatelessWidget {
                       width: 38,
                       height: 38,
                       decoration: BoxDecoration(
-                        color: AppColors.accentBlue.withValues(
-                          alpha: isDark ? 0.16 : 0.12,
-                        ),
+                        color: const Color(0xFFFEE2E2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Center(
                         child: PhosphorIcon(
-                          PhosphorIconsFill.usersThree,
+                          PhosphorIconsFill.heartStraight,
                           size: 20,
-                          color: AppColors.accentBlue,
+                          color: AppColors.primaryRed,
                         ),
                       ),
                     ),
@@ -94,13 +92,14 @@ class CustomerRetentionCard extends StatelessWidget {
                 style: TextButton.styleFrom(
                   visualDensity: VisualDensity.compact,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
+                  foregroundColor: AppColors.primaryRed,
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('View All'),
                     SizedBox(width: 4),
-                    PhosphorIcon(PhosphorIconsRegular.caretRight, size: 12),
+                    PhosphorIcon(PhosphorIconsRegular.arrowRight, size: 12),
                   ],
                 ),
               ),
@@ -208,12 +207,16 @@ class CustomerRetentionCard extends StatelessWidget {
                             style: AppFonts.labelMedium(color: primaryTextColor)
                                 .copyWith(fontWeight: FontWeight.bold),
                           ),
-                          if (c.pendingBalance > 0)
-                            Text(
-                              'Due: ${CurrencyFormatter.format(c.pendingBalance)}',
-                              style: AppFonts.labelSmall(color: AppColors.error)
-                                  .copyWith(fontSize: 10.5),
-                            ),
+                          Text(
+                            c.pendingBalance > 0
+                                ? 'Due: ${CurrencyFormatter.format(c.pendingBalance)}'
+                                : 'Lifetime Val',
+                            style: AppFonts.labelSmall(
+                              color: c.pendingBalance > 0
+                                  ? AppColors.error
+                                  : secondaryTextColor,
+                            ).copyWith(fontSize: 10),
+                          ),
                         ],
                       ),
                     ],
